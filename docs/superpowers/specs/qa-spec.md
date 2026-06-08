@@ -168,6 +168,24 @@ RamBase API modules available: Product, Sales, Finance, Procurement, Logistics, 
 
 > **Action:** audit the RamBase API for Sales order + Finance invoice/credit-note query (list + detail), document/PDF retrieval, and supported filter/query parameters. Records 7a–7c. (See investigation below / to continue during build.)
 
+**RamBase API investigation (findings):**
+- RamBase stores business data as **documents in a chain**: sales **quote → order → shipping advice → invoice**. So both **orders and invoices are first-class resources** (orders under Sales, invoices under Finance/Sales invoicing).
+- **List + detail both supported:** `GET /sales/orders` (collection) and `GET /sales/orders/{id}` (single). Same pattern for invoices.
+- **Standard query params:** `$filter` (field filtering + sorting), `$top`/`$pageno` (**pagination**), `$select`, `$expand`, `$format=json`, `$db` (company), `$lang`, `$access_token`. → **7c date/status/order-number filtering + pagination are feasible** via `$filter`; exact field names to confirm during build.
+- **Order fields available:** status, type, dates, customer (nested, with ID — basis for **company scoping** in 7d), invoice/shipping addresses, totals (subtotal, VAT, freight, fees), shipment/delivery terms, payment terms. → rich enough for Min side list + detail.
+- **7b documents/PDF:** **not confirmed** on the Sales Order resource page — RamBase likely has separate document/print endpoints but this is **still to verify**.
+- **Source:** https://api.rambase.net/documentation , https://api.rambase.net/gettingstarted/operations
+
+**Resolved:** 7a = orders + invoices, list + detail ✔ · 7c = filtering/pagination supported ✔ · 7b PDF = still to verify · scoping via `$filter` on the customer from the token claim ✔
+
+### S9-Q8 — Resilience & infrastructure
+**Q:** Behavior when RamBase is slow/down? Cart datastore standard? Environments/observability?
+**A (8a — resilience):** RamBase being slow/down is a recognized risk (price, cart pricing, quote submission depend on it).
+- **Mitigation pattern (preferred):** **load the catalog WITHOUT prices first** (from synced catalog data — fast, no RamBase dependency), then **fetch prices afterward from the UI/frontend layer** (client-side batch price calls to the Service API once the page has rendered). Catalog stays usable even if pricing is slow/unavailable; prices fill in progressively (and can degrade to "price on request").
+- _Note flagged: confirm/expand quote-submission failure handling (clear retryable error) during design._
+**A (8b — datastore):** **MongoDB** — the Service API persists cart state (and any service-owned state) in MongoDB in EKS.
+**A (8c — observability & environments):** **OpenTelemetry (OTEL) + Grafana** for tracing/metrics/logs. **Environments: test, staging, production.**
+
 ## References
 - **RamBase API:** https://api.rambase.net/ — the upstream API the **Pretec Service API** (#9) wraps for live Price / Query / Cart / Quote. To be reviewed in detail when speccing the Pretec Service API and the live flows.
 

@@ -106,6 +106,9 @@ Note: the output is a **quote/request**, not a directly-confirmed sales order (B
 
 ---
 
+## References
+- **RamBase API:** https://api.rambase.net/ — the upstream API the **Pretec Service API** (#9) wraps for live Price / Query / Cart / Quote. To be reviewed in detail when speccing the Pretec Service API and the live flows.
+
 ## Open questions (to resolve per sub-spec)
 - **Harmony:** sync mechanism — event-driven vs scheduled, frequency, direction (one-way RamBase→ down?), conflict/error handling, initial vs delta loads.
 - **Content/CMS:** what content is authored in Sanity (editorial pages, product editorial content, navigation, etc.) and how it relates to catalog data.

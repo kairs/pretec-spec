@@ -37,7 +37,7 @@ How to read it:
 | ├─ **Mosaik Harmony** | Platform **sync & integration engine** — moves synced data between RamBase, Struct and the Storefront | Mosaik platform; **Geta configures** for Pretec |
 | ├─ **Mosaik Storefront** | The customer-facing web application — a platform **starterkit** | Mosaik platform; **Geta customizes** for Pretec |
 | └─ **Mosaik Maestro** | Backoffice to look into the Storefront — redirects, translations, view users, service versions | **Mosaik SaaS (as-provided)**; Geta/Pretec configure only |
-| **Pretec Service API** | **Custom API built for this project** — talks to RamBase and exposes **live** Query / Cart / Quote (and price) to the Storefront | **Geta builds** |
+| **Pretec Service API** | **Custom API built for this project** — wraps the [RamBase API](https://api.rambase.net/) and exposes **live** Price / Query / Cart / Quote to the Storefront | **Geta builds** |
 
 **Mosaik** is the commerce platform (a SaaS product). For this project it is consumed as a platform:
 **Harmony is configured**, the **Storefront starterkit is customized**, and **Maestro is used as-provided**.

@@ -106,6 +106,68 @@ Note: the output is a **quote/request**, not a directly-confirmed sales order (B
 
 ---
 
+## Sub-spec #9 — Pretec Service API — Q&A
+
+Goal: detailed spec for the Geta-built API that wraps the RamBase API and exposes live Price / Query / Cart / Quote to the Storefront.
+RamBase API modules available: Product, Sales, Finance, Procurement, Logistics, CRM.
+
+### S9-Q1 — Foundations & constraints
+**Q:** Existing standard vs greenfield? Stack/runtime? Consumers? How should the Storefront reach the custom service?
+**A:**
+- **Standard platform API** (contracts to mirror): `https://api-northwind-no.test.geta.mozaikcommerce.ai/platform/swagger/index.html` (Mozaik platform Swagger).
+- **Greenfield service, but contracts are NOT greenfield.** The custom service should **mirror the standard platform API contracts** so the **starterkit can be reused** as much as possible (e.g. custom Cart should resemble the standard Cart). Not a hard requirement — Geta can extend/customize where needed.
+- **Stack:** **.NET** service, deployed to **AWS EKS (Kubernetes)** — the same cluster where all other Mozaik services already run. **Frontend/starterkit = Next.js + React.**
+- **Consumer:** **only the Storefront.**
+- **Routing intent:** the Storefront should "think" it's calling the standard APIs; custom routes sit on top of the standard APIs. Open: route transparently vs point the frontend at a separate URL — **Geta to decide (suggestion requested).**
+
+### S9-Q2 — Routing approach
+**Q:** How should the Storefront reach the custom service (path routing vs separate URL vs full proxy)?
+**A:** **Option A — path-based routing**, implemented with **Istio** in K8S. An Istio `VirtualService` routes specific paths (price/cart/quote/orders) to the custom .NET service; everything else goes to the standard Mozaik platform services. One base URL — the Storefront can't tell the difference, no frontend fork. Custom service mirrors the standard contracts; separate-URL/frontend customization is fallback only where a contract must diverge.
+
+### S9-Q3 — Authentication (two hops) & user→customer mapping
+**Q:** How does the Storefront authenticate to the Service API, how does the service know the caller's RamBase customer, and how does the service authenticate to RamBase?
+**A (mapping):** **Option A — custom claim in the Cognito token.** A **Pre Token Generation Lambda trigger** injects the user's linked RamBase customer ID (e.g. `custom:rambaseCustomerId`) at login/refresh. The Service API validates the JWT and reads the claim — no frontend-passed ID, no extra lookup.
+- **Caveat 1:** claim reflects link state at token issuance; a post-login link requires a token refresh (force refresh on approval or use short token lifetime).
+- **Caveat 2 (decision):** which token does the Service API validate? → **ID token** (simple, any Cognito tier; avoids the v2/v3 trigger + Plus tier).
+**A (Hop 1):** Service API validates the Cognito **ID token** per request and reads `custom:rambaseCustomerId`.
+**A (Hop 2 — Service API → RamBase):** **Single system/integration credential** for the whole integration; the **customer is passed as a parameter** (service asks RamBase "price for product P, customer X"). Assumed RamBase returns **customer-specific B2B prices** when called this way. _Working assumption — verify exact RamBase auth + customer-scoped pricing endpoints against the RamBase API during implementation._
+
+### S9-Q4 — Cart persistence & lifecycle
+**Q:** Where does cart state live? Logged-in only? One quote per checkout?
+**A:** **Option A — the Service API owns cart storage** (its own datastore in EKS). Live per-user prices fetched from RamBase for display; RamBase written only at checkout (create quote).
+- **Cart is NOT login-only.** Anonymous users must be supported: the design anticipates anonymous users later being able to **"ask for offer"** (request a quote without being logged in). So:
+  - **Logged-in cart:** keyed by the RamBase customer (from `custom:rambaseCustomerId`); prices shown.
+  - **Anonymous cart:** keyed by an anonymous cart/session token; **no prices shown**, but the cart can be built and later submitted as an **offer request**.
+  - The anonymous "ask for offer" submission flow may be delivered in a later phase, but the **cart + quote model must accommodate it now** (don't architect cart as login-only).
+- **Checkout:** one **single quote per submission**; the **cart is cleared** after a successful submission. (Confirmed.)
+
+### S9-Q5 — Checkout → Quote
+**Q:** What does the user provide at checkout? What happens after? Is firm online ordering ever in scope?
+**A (5a — checkout payload):**
+- **Customer reference number** (the customer's own PO/reference).
+- **Delivery address** — **select from the RamBase customer's addresses, OR enter a custom address**.
+- **Requested delivery date.**
+- **Quote comment / message.**
+- **Anonymous "ask for offer"** additionally captures **contact details: name, email, company, phone** (no linked customer).
+**A (5b — after submission):** **On-screen confirmation + email.** A **Pretec sales rep follows up in RamBase**. Quotes do **not** need to appear in Min side (Min side stays orders/invoices only).
+**A (5c — scope):** The storefront is **always request-for-quote**. **No firm online ordering, ever.** The customer never places a priced, confirmed order directly — every submission becomes a RamBase quote that a rep converts.
+
+### S9-Q6 — Price operation
+**Q:** Batch vs single? Quantity-break pricing? Response fields? Caching?
+**A (6a):** **Batch** — listing pages request prices for many products at once for the logged-in customer.
+**A (6b — quantity pricing):** _To be confirmed_ — whether RamBase returns quantity-break/tiered prices (per 100/1000/…) and whether the storefront shows tiers / recalculates on quantity change. (Likely relevant for fasteners; verify against RamBase.)
+**A (6c — response fields):** _To be checked_ — exact fields (currency, unit of measure / price unit, discount, VAT/ex-VAT, …) to be confirmed against the RamBase API.
+**A (6d — caching):** **For now, call RamBase directly** (live, no cache). **Note:** a **Redis cache** (per customer+product, short TTL) **may be introduced later** to spare RamBase on listing pages.
+
+### S9-Q7 — Query operation (orders & invoices on Min side)
+**Q:** Scope (orders/invoices/credit notes)? list+detail? document PDFs? filters? scoping?
+**A (7a — scope):** Driven by **what RamBase provides** — to be confirmed against the RamBase API (orders; likely invoices / credit notes; list + detail).
+**A (7b — documents/PDF):** Depends on **whether RamBase exposes documents** (order confirmation / invoice PDFs) — to be confirmed against the RamBase API.
+**A (7c — filters):** Desired: **date range, status, order number** — but constrained by **what RamBase supports**; to be confirmed.
+**A (7d — scoping):** **Always scoped to the customer / company.** **Multiple users may be connected to the same company**, and they all see the **same company orders/invoices** (shared company view). Logged-in only.
+
+> **Action:** audit the RamBase API for Sales order + Finance invoice/credit-note query (list + detail), document/PDF retrieval, and supported filter/query parameters. Records 7a–7c. (See investigation below / to continue during build.)
+
 ## References
 - **RamBase API:** https://api.rambase.net/ — the upstream API the **Pretec Service API** (#9) wraps for live Price / Query / Cart / Quote. To be reviewed in detail when speccing the Pretec Service API and the live flows.
 

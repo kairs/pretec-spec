@@ -103,7 +103,8 @@ Two hops:
 - **Read-only.** Surfaces **orders and invoices** (RamBase document chain: quote → order → shipping advice →
   invoice). **List + detail** for each.
 - **Filtering:** date range, status, order number; **pagination** — using RamBase's `$filter` / `$top` /
-  `$pageno`. Exact filter field names to confirm during build.
+  `$pageKey` (cursor-based; `$inlineCount=allpages` for total count — *not* `$pageno`, see research). Exact
+  `$filter` field names to confirm during build.
 - **Scoping:** always scoped to the **customer / company** (via `$filter` on the customer from the token
   claim). **Multiple users may belong to the same company and share the same orders/invoices view.**
   Logged-in only.
@@ -146,15 +147,46 @@ RamBase is a **hard runtime dependency** for price, cart pricing, and quote subm
 
 ## 8. Open items to verify during build
 
-1. **Standard Mosaik contracts** — capture the exact request/response shapes for Cart, Price, Orders, and
-   Quote from the platform Swagger (`.../platform/swagger/`), which was not machine-readable during
-   brainstorming. These define the contracts this service must match.
-2. **RamBase price** — quantity-break/tiered pricing and the exact price response fields.
-3. **RamBase query** — exact `$filter` field names for date/status/order-number; confirmation of invoice &
-   credit-note resources.
-4. **RamBase documents** — whether order-confirmation / invoice **PDFs** are retrievable.
-5. **RamBase auth** — confirm single-system-credential + customer-by-parameter, and customer-specific pricing.
-6. **Quote submission** — exact RamBase sales-quote creation endpoint and required fields; failure handling.
+> **Discovery status (2026-06-09).** Items below are resolved against the research docs under
+> `docs/superpowers/research/`: [`mosaik-platform-contracts.md`](../research/mosaik-platform-contracts.md),
+> [`rambase-api-audit.md`](../research/rambase-api-audit.md),
+> [`service-api-decisions.md`](../research/service-api-decisions.md). ✅ = answered, ⚠️ = needs a human.
+
+1. ✅ **Standard Mosaik contracts** — **RESOLVED.** Captured as a machine-readable bundle
+   ([`mosaik-platform-swagger.json`](../research/mosaik-platform-swagger.json), 4 specs / 111 paths) and
+   summarized in [`mosaik-platform-contracts.md`](../research/mosaik-platform-contracts.md). Key finding: the
+   platform is **per-service** (cart-public, catalog-public, customer-public, search-catalog-public). Cart **and
+   orders** (`/orders`, `/v2/orders`) live in cart-public; the quote trigger is
+   `POST /carts/{id}/create-order-request`; price is **embedded** in catalog/search reads (no batch endpoint —
+   Pretec must add `/prices`). See the doc's **Gaps** section for what must be extended, not mirrored.
+2. ⚠️ **RamBase price** — **UNRESOLVED (needs RamBase API credentials).** No public customer-price lookup
+   endpoint; price is calculated within a quote/order item context. Whether RamBase exposes a price-suggestion
+   endpoint for `(product, customer, qty)` and returns **quantity-break tiers** must be confirmed with a
+   credentialed integration. Known price field vocabulary captured in
+   [`rambase-api-audit.md` §Price](../research/rambase-api-audit.md). **Blocks the Price build slice.**
+3. ✅/⚠️ **RamBase query** — **MOSTLY RESOLVED.** Sales **Order** list/detail/items endpoints and fields are
+   fully specified from the public OpenAPI sample; pagination is cursor-based **`$top`/`$pageKey`** with
+   `$inlineCount=allpages`. ⚠️ Exact `$filter` field paths/operators for date/status/PO, and the **Sales
+   Invoice (CIN)** resource + **credit notes**, are behind the credentialed portal — see audit §Orders & Invoices.
+4. ⚠️ **RamBase documents** — **UNRESOLVED (needs RamBase contact).** No public REST endpoint for order-confirmation
+   / invoice **PDFs** found; RamBase uses a Document-Messages mechanism + PEPPOL. Confirm API retrievability or
+   drop PDF download. See audit §Documents.
+5. ✅/⚠️ **RamBase auth** — **RESOLVED for the integration model:** OAuth2 **Client-Credentials**
+   (`POST /oauth2/access_token`), Bearer header, short-lived token, `$db` selects the company; customer-scoped
+   **orders** are reachable via `$filter`. ⚠️ One open point: confirm a single system account may read **prices**
+   for any customer by parameter. See audit §Auth.
+6. ⚠️ **Quote submission** — **UNRESOLVED (needs RamBase API credentials).** The CRQ→CQU→COA flow is confirmed,
+   but the create-quote endpoint, required fields, and **anonymous/lead** representation are behind the
+   credentialed portal. See audit §Quote. **Blocks the Quote build slice.**
+
+**Design decisions now fixed** (see [`service-api-decisions.md`](../research/service-api-decisions.md)): MongoDB
+cart schema + keys + TTL + anonymous→offer transition (§1); Cognito ID-token claim injection + refresh-on-approval
++ missing-claim handling (§2); the Istio route list (§3); resilience timeouts/retries/breaker + catalog-price
+handshake (§4).
+
+**Still blocked:** documenting the existing **.NET service conventions** (solution layout, DI, config, Mongo,
+Cognito handler wiring, OTEL, k8s/Istio chart locations) requires access to a service **repository**, which is
+not in this docs-only workspace — see decisions doc §0. This blocks a fully concrete code-level build plan.
 
 ---
 

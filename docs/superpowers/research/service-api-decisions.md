@@ -131,6 +131,7 @@ RamBase is a hard runtime dependency ([sub-spec §6](../specs/2026-06-08-pretec-
 | **RamBase auth token** (`oauth2/access_token`) | **5 s** | **1 retry** | Cache the short-lived token; refresh proactively before expiry and reactively on 401. |
 
 - **Circuit breaker** around the RamBase client: open after **N consecutive failures** (e.g. 5) for a **short cooldown** (e.g. 10 s) so a RamBase outage fast-fails to the degraded state instead of piling up timeouts.
+- **Degraded price state ("price on request"):** a recognized concern. Phase 1 launches with direct RamBase calls and no caching. If latency/availability proves problematic, the planned follow-up is **caching customer pricelists** (Redis, per customer); caching strategy and invalidation to be agreed with RamBase in a follow-up meeting.
 - **Catalog-without-prices handshake (preferred pattern, sub-spec §6):** (1) Storefront renders catalog/search from synced data (no RamBase). (2) After render, Storefront POSTs visible SKUs to `/prices`. (3) Prices fill in progressively; timeouts → "price on request." **Confirm with the Storefront/frontend owner** that the front end performs this post-render batch call and renders the degraded state.
 - **Observability:** OTEL spans on every RamBase call (operation, customer id hashed, latency, outcome), metrics for timeout/retry/breaker events, surfaced in Grafana (sub-spec §7).
 

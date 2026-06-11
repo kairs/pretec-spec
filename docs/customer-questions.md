@@ -19,11 +19,7 @@ Can Pretec provide RamBase API client credentials (OAuth2 Client-Credentials: cl
 ## 2. Pricing
 
 **Q2.1 — Customer-specific price endpoint**
-Does RamBase expose a way to look up the net price for `(product, customer, quantity)` *without* creating a quote or order? (This is what the storefront needs to display prices on listing and product pages.) If not, are you aware of a workaround RamBase recommends for price display?
-
-**Q2.2 — "Price on request" degraded state**
-
-If RamBase is slow or unavailable, the storefront will show "price on request" instead of a number. Is this acceptable messaging to show end users? Do you have a preferred label or copy?
+Does RamBase expose a way to look up the net price for `(product, customer)` *without* creating a quote or order? (This is what the storefront needs to display prices on listing and product pages.) If not, are you aware of a workaround RamBase recommends for price display?
 
 ---
 

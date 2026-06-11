@@ -70,8 +70,7 @@ Two hops:
 ### 4.1 Price
 - **Batch** operation: "prices for these N products, for customer X." Listing pages need many prices at once.
 - **Live** from RamBase. **Logged-in only**; anonymous users see **no prices**.
-- **No caching initially** — calls RamBase directly. *Note:* a **Redis** cache (per customer+product, short
-  TTL) may be added later to spare RamBase on listing pages.
+- **Phase 1 — no caching:** calls RamBase directly. If live calls cause unacceptable latency or availability issues, the follow-up approach is to **cache customer pricelists** from RamBase (Redis, per customer). Caching strategy and invalidation to be agreed with RamBase in a follow-up meeting if needed.
 - **No quantity-break / tiered pricing** — Pretec uses a single price per (product, customer). The price endpoint returns one price per SKU; no tier table is needed.
 - **Prices displayed ex-VAT (net)** — no VAT amounts shown in the storefront.
 - *To confirm against RamBase:* exact response fields (currency, unit of measure / price unit, discount).

@@ -37,18 +37,10 @@ If RamBase is slow or unavailable, the storefront will show "price on request" i
 
 ---
 
-## 3. Cart & anonymous "ask for offer"
+## 3. Cart
 
-**Q3.1 — Anonymous cart phase**
-The cart is designed to support anonymous users (no login required to add items). The "ask for offer" submission flow for anonymous users is planned for a later phase. Is this confirmed, or should anonymous quote submission be part of the initial launch?
-
-**Q3.2 — Cart retention / TTL**
-How long should an abandoned cart persist before it is automatically cleaned up?
-- Anonymous cart: 7 days (proposed) — OK?
-- Logged-in cart: 30 days (proposed) — OK?
-
-**Q3.3 — Cart merge on sign-in**
-If a user builds an anonymous cart and then signs in, should the items be merged into their account cart, or should the anonymous cart be discarded?
+**Q3.1 — Cart retention / TTL**
+How long should an abandoned (logged-in) cart persist before it is automatically cleaned up? Proposed: **30 days** after last activity — OK?
 
 ---
 
@@ -57,17 +49,8 @@ If a user builds an anonymous cart and then signs in, should the items be merged
 **Q4.1 — Delivery addresses**
 At checkout the user can either select one of their existing RamBase delivery addresses or enter a custom address. Are all delivery addresses on the RamBase customer record available for selection, or should there be any filtering?
 
-**Q4.2 — Anonymous contact fields**
-For the anonymous "ask for offer" flow, the form captures: name, email, company, and phone. Is this sufficient, or are additional fields required (e.g. a message/note field beyond the standard quote comment)?
-
-**Q4.3 — Post-submission email**
+**Q4.2 — Post-submission email**
 After a quote is submitted, the customer receives a confirmation email. Who sends this email — the Mosaik platform, or should it come from a Pretec email address? What should the email contain?
-
-**Q4.4 — Anonymous quote in RamBase**
-How should an anonymous "ask for offer" (no linked RamBase customer) be represented in RamBase? Options:
-- a. A generic / walk-in customer record
-- b. A new prospect/lead entity per submission
-- c. A customer created automatically at submission time
 
 ---
 

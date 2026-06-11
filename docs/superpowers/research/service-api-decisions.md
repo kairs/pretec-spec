@@ -26,13 +26,11 @@ The contract the API returns mirrors Mosaik `CartResponse` / `CartOrderLineItemR
   "_id": "ObjectId | string",            // cart id (the {cartId} in the mirrored API)
   "schemaVersion": 1,
 
-  // ---- ownership / keying ----
+  // ---- ownership / keying (logged-in users only) ----
   "owner": {
-    "kind": "customer | anonymous",
-    "rambaseCustomerId": "string|null",   // logged-in key, from custom:rambaseCustomerId claim
+    "rambaseCustomerId": "string",        // key, from custom:rambaseCustomerId claim
     "companyId": "string|null",           // B2B company (mirrors CartResponse.companyId)
-    "userSub": "string|null",             // Cognito sub of the user who owns/created it
-    "sessionToken": "string|null"         // anonymous key (opaque, set when kind=anonymous)
+    "userSub": "string"                   // Cognito sub of the user who owns/created it
   },
 
   // ---- mirror of CartResponse scalars we own ----
@@ -62,12 +60,7 @@ The contract the API returns mirrors Mosaik `CartResponse` / `CartOrderLineItemR
     }
   ],
 
-  // ---- anonymous "ask for offer" capture (sub-spec §4.3) ----
-  "offerContact": {                        // null until an anonymous offer is submitted
-    "name": "string", "email": "string", "company": "string", "phone": "string"
-  },
-
-  // ---- delivery address chosen at checkout (sub-spec §4.3) ----
+  // ---- delivery address chosen at checkout (sub-spec §4.3, logged-in only) ----
   "deliveryAddress": {
     "mode": "rambaseAddressId | custom",
     "rambaseAddressId": "string|null",
@@ -85,11 +78,10 @@ The contract the API returns mirrors Mosaik `CartResponse` / `CartOrderLineItemR
 ```
 
 **Decisions:**
-- **Logged-in key:** `owner.rambaseCustomerId` (+ `companyId`). A signed-in user resolves their active cart via this key — mirrors the platform's `GET /carts/users-last-active-cart`. Because **multiple users share a company** (sub-spec §4.4), decide whether the active cart is **per-user** (`userSub`) or **per-company**; default **per-user** (`userSub` + `rambaseCustomerId`), since carts are personal even when order history is shared.
-- **Anonymous key:** `owner.sessionToken` (opaque, issued to the browser; never a price-bearing cart).
-- **Anonymous → offer / login transition:** an anonymous cart is a first-class document. On **sign-in**, merge the anonymous cart into the user's cart (port `lineItems`, then delete the anonymous doc) — mirrors the platform's `add-signed-in-customer` + wishlist `merge` pattern. On **anonymous offer submit**, fill `offerContact`, set `type=order-request`, `status=submitted`.
-- **TTL / abandoned carts:** MongoDB **TTL index on `expiresAt`**. Suggested: anonymous carts expire **7 days** after `updatedAt`; logged-in carts **30 days**. Refresh `expiresAt` on every mutation. (Confirm retention with Pretec.)
-- **Indexes:** `{ "owner.rambaseCustomerId": 1, "owner.userSub": 1, "status": 1 }`, `{ "owner.sessionToken": 1 }`, TTL `{ "expiresAt": 1 }`.
+- **Cart key:** `owner.rambaseCustomerId` + `owner.userSub`. A signed-in user resolves their active cart via this key — mirrors the platform's `GET /carts/users-last-active-cart`. Because **multiple users share a company** (sub-spec §4.4), the cart is **per-user** (`userSub` + `rambaseCustomerId`), since carts are personal even when order history is shared.
+- **Cart is login-only.** Anonymous users have no cart (sub-spec §4.2).
+- **TTL / abandoned carts:** MongoDB **TTL index on `expiresAt`**. Suggested: logged-in carts expire **30 days** after last update. Refresh `expiresAt` on every mutation. (Confirm retention with Pretec.)
+- **Indexes:** `{ "owner.rambaseCustomerId": 1, "owner.userSub": 1, "status": 1 }`, TTL `{ "expiresAt": 1 }`.
 
 **Read-time price projection:** on `GET /carts/{id}` for a logged-in cart, batch-fetch live prices for the line SKUs (§Resilience) and project `PriceResponse`/`extendedPrice` into the mirrored response. Anonymous carts return lines with **no price** (sub-spec §4.2).
 

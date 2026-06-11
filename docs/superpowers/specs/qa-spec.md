@@ -135,10 +135,10 @@ RamBase API modules available: Product, Sales, Finance, Procurement, Logistics, 
 ### S9-Q4 — Cart persistence & lifecycle
 **Q:** Where does cart state live? Logged-in only? One quote per checkout?
 **A:** **Option A — the Service API owns cart storage** (its own datastore in EKS). Live per-user prices fetched from RamBase for display; RamBase written only at checkout (create quote).
-- **Cart is NOT login-only.** Anonymous users must be supported: the design anticipates anonymous users later being able to **"ask for offer"** (request a quote without being logged in). So:
+- **Cart and quote are login-only.** Anonymous users can browse the catalog but have no access to the cart or checkout.
   - **Logged-in cart:** keyed by the RamBase customer (from `custom:rambaseCustomerId`); prices shown.
-  - **Anonymous cart:** keyed by an anonymous cart/session token; **no prices shown**, but the cart can be built and later submitted as an **offer request**.
-  - The anonymous "ask for offer" submission flow may be delivered in a later phase, but the **cart + quote model must accommodate it now** (don't architect cart as login-only).
+  - ~~Anonymous cart~~ — **out of scope.**
+  - ~~Anonymous "ask for offer"~~ — **out of scope.** Quote submission requires an authenticated, linked user.
 - **Checkout:** one **single quote per submission**; the **cart is cleared** after a successful submission. (Confirmed.)
 
 ### S9-Q5 — Checkout → Quote

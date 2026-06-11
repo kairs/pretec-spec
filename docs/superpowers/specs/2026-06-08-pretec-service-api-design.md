@@ -78,11 +78,8 @@ Two hops:
 
 ### 4.2 Cart
 - The service **owns cart state in MongoDB** (in EKS). Contract **mirrors the standard cart**.
+- **Logged-in only.** Cart is not available to anonymous users — login is required to access the cart or check out.
 - **Logged-in cart:** keyed by the RamBase customer (from the token claim); live prices shown.
-- **Anonymous cart:** keyed by an anonymous cart/session token; **no prices shown**. Built so a future
-  **anonymous "ask for offer"** can submit it as an offer request.
-  - The anonymous offer **submission flow may land in a later phase**, but the cart + quote model must
-    **accommodate it now** — cart is *not* architected as login-only.
 - Prices are **not stored on the cart line as truth**; they are fetched live for display (see §6 resilience).
 
 ### 4.3 Quote (checkout)
@@ -90,12 +87,12 @@ Two hops:
   the cart**.
 - **Always request-for-quote — there is no firm online ordering, ever.** Every submission becomes a RamBase
   quote that a Pretec sales rep converts.
+- **Login required** — only authenticated, linked users may submit a quote.
 - **Checkout payload:**
   - Customer reference number (the customer's own PO/reference).
   - Delivery address — **select from the RamBase customer's addresses** *or* **enter a custom address**.
   - Requested delivery date.
   - Quote comment / message.
-  - **Anonymous "ask for offer"** additionally captures **name, email, company, phone**.
 - **After submission:** on-screen confirmation **+ email**; a Pretec sales rep follows up in RamBase.
 - Quotes do **not** appear in Min side (Min side is orders/invoices only).
 

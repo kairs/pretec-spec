@@ -72,9 +72,8 @@ Two hops:
 - **Live** from RamBase. **Logged-in only**; anonymous users see **no prices**.
 - **No caching initially** — calls RamBase directly. *Note:* a **Redis** cache (per customer+product, short
   TTL) may be added later to spare RamBase on listing pages.
-- *To confirm against RamBase:* quantity-break / tiered pricing (per 100/1000/…) and whether the UI shows
-  tiers / recalculates on quantity change; exact response fields (currency, unit of measure / price unit,
-  discount, VAT handling).
+- **No quantity-break / tiered pricing** — Pretec uses a single price per (product, customer). The price endpoint returns one price per SKU; no tier table is needed.
+- *To confirm against RamBase:* exact response fields (currency, unit of measure / price unit, discount, VAT handling).
 
 ### 4.2 Cart
 - The service **owns cart state in MongoDB** (in EKS). Contract **mirrors the standard cart**.

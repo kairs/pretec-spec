@@ -111,8 +111,8 @@ RamBase concepts relevant to the Pretec customer-price requirement (from help ce
 - `$expand=PriceConverted` expands converted-currency price fields.
 
 > **UNRESOLVED — needs RamBase contact / credentialed portal (BLOCKS the Price operation design):**
-> 1. Is there a **price-calculation / price-suggestion endpoint** that returns the net price for `(product, customer, quantity, date)` *without* creating a quote/order? (Pretec needs this for catalog price display.) If not, the fallback is "create a draft quote item to read the price," which has cost/cleanup implications.
-> 2. Does RamBase return **quantity-break / tiered** prices (a table of qty→price), or only a single resolved price per `(product, customer, quantity)` call? The Mosaik `PriceResponse.minimumQuantity` field implies the Storefront can show tiers.
+> 1. Is there a **price-calculation / price-suggestion endpoint** that returns the net price for `(product, customer)` *without* creating a quote/order? (Pretec needs this for catalog price display.) If not, the fallback is "create a draft quote item to read the price," which has cost/cleanup implications.
+> 2. ~~Quantity-break / tiered pricing~~ — **not in use at Pretec.** A single price per (product, customer) is sufficient; no tier table required.
 > 3. The exact price fields for that endpoint: net, gross, currency, **price unit / unit-of-measure**, discount, **VAT handling**, and validity dates.
 
 ---

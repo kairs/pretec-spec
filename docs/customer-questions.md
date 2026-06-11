@@ -24,10 +24,8 @@ Which RamBase environments exist (test, staging, production)? Are separate integ
 **Q2.1 — Customer-specific price endpoint**
 Does RamBase expose a way to look up the net price for `(product, customer, quantity)` *without* creating a quote or order? (This is what the storefront needs to display prices on listing and product pages.) If not, are you aware of a workaround RamBase recommends for price display?
 
-**Q2.2 — VAT display**
-Should prices shown in the storefront be **ex-VAT** (net) or **inc-VAT** (gross)? Is this market-dependent?
+**Q2.2 — "Price on request" degraded state**
 
-**Q2.3 — "Price on request" degraded state**
 If RamBase is slow or unavailable, the storefront will show "price on request" instead of a number. Is this acceptable messaging to show end users? Do you have a preferred label or copy?
 
 ---

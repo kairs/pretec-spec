@@ -113,7 +113,7 @@ RamBase concepts relevant to the Pretec customer-price requirement (from help ce
 > **UNRESOLVED — needs RamBase contact / credentialed portal (BLOCKS the Price operation design):**
 > 1. Is there a **price-calculation / price-suggestion endpoint** that returns the net price for `(product, customer)` *without* creating a quote/order? (Pretec needs this for catalog price display.) If not, the fallback is "create a draft quote item to read the price," which has cost/cleanup implications.
 > 2. ~~Quantity-break / tiered pricing~~ — **not in use at Pretec.** A single price per (product, customer) is sufficient; no tier table required.
-> 3. The exact price fields for that endpoint: net, gross, currency, **price unit / unit-of-measure**, discount, **VAT handling**, and validity dates.
+> 3. The exact price fields for that endpoint: **net price**, currency, **price unit / unit-of-measure**, discount, and validity dates. (VAT not needed — Pretec displays ex-VAT prices only.)
 
 ---
 

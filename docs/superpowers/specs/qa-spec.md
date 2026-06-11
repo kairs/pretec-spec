@@ -156,7 +156,7 @@ RamBase API modules available: Product, Sales, Finance, Procurement, Logistics, 
 **Q:** Batch vs single? Quantity-break pricing? Response fields? Caching?
 **A (6a):** **Batch** — listing pages request prices for many products at once for the logged-in customer.
 **A (6b — quantity pricing):** **Not in use at Pretec.** Single price per (product, customer) — no tier table, no quantity-based recalculation.
-**A (6c — response fields):** _To be checked_ — exact fields (currency, unit of measure / price unit, discount, VAT/ex-VAT, …) to be confirmed against the RamBase API.
+**A (6c — response fields):** Prices are **ex-VAT (net) only** — no VAT amounts shown in the storefront. Remaining fields (currency, unit of measure / price unit, discount) to be confirmed against the RamBase API.
 **A (6d — caching):** **For now, call RamBase directly** (live, no cache). **Note:** a **Redis cache** (per customer+product, short TTL) **may be introduced later** to spare RamBase on listing pages.
 
 ### S9-Q7 — Query operation (orders & invoices on Min side)

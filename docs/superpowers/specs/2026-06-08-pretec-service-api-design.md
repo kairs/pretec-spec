@@ -90,7 +90,7 @@ Two hops:
 - **Login required** — only authenticated, linked users may submit a quote.
 - **Checkout payload:**
   - Customer reference number (the customer's own PO/reference).
-  - Delivery address — **select from the RamBase customer's addresses** *or* **enter a custom address**.
+  - Delivery address — **select from all RamBase customer addresses** *or* **enter a custom address**.
   - Requested delivery date.
   - Quote comment / message.
 - **After submission:** on-screen confirmation **+ email**; a Pretec sales rep follows up in RamBase.

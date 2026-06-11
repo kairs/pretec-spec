@@ -39,10 +39,7 @@ How long should an abandoned (logged-in) cart persist before it is automatically
 
 ## 4. Checkout & quote
 
-**Q4.1 — Delivery addresses**
-At checkout the user can either select one of their existing RamBase delivery addresses or enter a custom address. Are all delivery addresses on the RamBase customer record available for selection, or should there be any filtering?
-
-**Q4.2 — Post-submission email**
+**Q4.1 — Post-submission email**
 After a quote is submitted, the customer receives a confirmation email. Who sends this email — the Mosaik platform, or should it come from a Pretec email address? What should the email contain?
 
 ---

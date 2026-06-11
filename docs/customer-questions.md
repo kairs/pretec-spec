@@ -14,9 +14,6 @@ These items block the Price and Quote build slices entirely. All other items can
 **Q1.1 — API credentials**
 Can Pretec provide RamBase API client credentials (OAuth2 Client-Credentials: client id + secret) for the Geta integration account? The credentials should be scoped to at minimum: Sales Orders, Sales Customers, Product/Price, Sales Quote (CQU/CRQ), Sales Invoice (CIN), and any document/output resources.
 
-**Q1.2 — RamBase environments**
-Which RamBase environments exist (test, staging, production)? Are separate integration credentials needed per environment, or is one set sufficient for all?
-
 ---
 
 ## 2. Pricing

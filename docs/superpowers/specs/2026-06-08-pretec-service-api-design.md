@@ -136,7 +136,7 @@ RamBase is a **hard runtime dependency** for price, cart pricing, and quote subm
 
 - **Runtime:** .NET service on **AWS EKS**, in the Istio service mesh with the other Mosaik services.
 - **Storage:** MongoDB.
-- **Environments:** **test, staging, production.**
+- **Environments:** Mosaik has **test, staging, production**. RamBase has **test and production**. Mosaik **test and staging both connect to RamBase test**; Mosaik production connects to RamBase production. Two sets of RamBase credentials are needed (one per RamBase environment).
 - **Observability:** **OpenTelemetry (OTEL)** for traces/metrics/logs, visualized in **Grafana**.
 - **Caching:** none initially; **Redis** an option later for price.
 

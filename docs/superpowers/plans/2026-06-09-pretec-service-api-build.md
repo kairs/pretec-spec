@@ -31,7 +31,7 @@ Written during a docs-only discovery phase. Each item is a **known unknown**, no
 | A7 | RamBase order `$filter` field paths/operators (customer, date range, status, PO). | Confirm on RamBase "Filtering and sorting" page (audit §Orders). |
 | A8 | RamBase numeric `status`/`type` → Storefront strings via `$showDomainValues` + a code map. | Pull real domain values with credentials (Task 8). |
 | A9 | Quote create is **not** idempotent → no auto-retry. | Confirm; enable one retry if idempotent (decisions §4). |
-| A10 | Config/secrets: `appsettings.json` + env overrides; RamBase + Cognito + OTLP from env/secret store; Istio gateway/host/namespace per env. | Match existing services' config + the real cluster. |
+| A10 | Config/secrets: `appsettings.json` + env overrides; RamBase + Cognito + OTLP from env/secret store; Istio gateway/host/namespace per env. RamBase environments: **test** (used by Mosaik test + staging) and **production** — two credential sets. | Match existing services' config + the real cluster. |
 | A11 | **Sales Invoice + document/PDF endpoints unknown → out of scope.** Query covers **orders only**. | RamBase credentials → add an Invoice slice later (audit §Orders/§Documents). |
 
 > **Buildability:** Tasks 0–4, 6, 8, 9 do **not** depend on A5/A6 and are fully buildable once the repo conventions (A1–A4, A10) are confirmed. Tasks 5 (Price) and 7 (Quote) are blocked on A5/A6 for production-correctness — build them against the assumed contract behind their interface, but treat them as provisional until RamBase access lands.

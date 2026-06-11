@@ -111,8 +111,8 @@ Two hops:
 
 ## 5. Data & storage
 
-- **MongoDB** (in EKS) holds service-owned state — primarily **cart** documents (logged-in keyed by RamBase
-  customer; anonymous keyed by session token).
+- **MongoDB** (in EKS) holds service-owned state — primarily **cart** documents (logged-in, keyed by RamBase customer).
+- **Cart TTL: 90 days, sliding** — `expiresAt` is reset to 90 days from now on every cart read or write.
 - RamBase remains the **source of truth** for price, orders, invoices, and quotes. The service holds no
   durable copy of those beyond the in-progress cart.
 

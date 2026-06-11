@@ -80,7 +80,7 @@ The contract the API returns mirrors Mosaik `CartResponse` / `CartOrderLineItemR
 **Decisions:**
 - **Cart key:** `owner.rambaseCustomerId` + `owner.userSub`. A signed-in user resolves their active cart via this key — mirrors the platform's `GET /carts/users-last-active-cart`. Because **multiple users share a company** (sub-spec §4.4), the cart is **per-user** (`userSub` + `rambaseCustomerId`), since carts are personal even when order history is shared.
 - **Cart is login-only.** Anonymous users have no cart (sub-spec §4.2).
-- **TTL / abandoned carts:** MongoDB **TTL index on `expiresAt`**. Suggested: logged-in carts expire **30 days** after last update. Refresh `expiresAt` on every mutation. (Confirm retention with Pretec.)
+- **TTL / abandoned carts:** MongoDB **TTL index on `expiresAt`**. Logged-in carts expire **90 days** after last activity. **Sliding TTL** — `expiresAt` is pushed forward 90 days on every cart read or write, not just mutations.
 - **Indexes:** `{ "owner.rambaseCustomerId": 1, "owner.userSub": 1, "status": 1 }`, TTL `{ "expiresAt": 1 }`.
 
 **Read-time price projection:** on `GET /carts/{id}` for a logged-in cart, batch-fetch live prices for the line SKUs (§Resilience) and project `PriceResponse`/`extendedPrice` into the mirrored response. Anonymous carts return lines with **no price** (sub-spec §4.2).

@@ -16,17 +16,14 @@ Can Pretec provide RamBase API client credentials (OAuth2 Client-Credentials: cl
 
 ---
 
-## 2. Pricing
+## 2. Questions for RamBase
+
+> These require a RamBase contact or credentialed API access to answer. Pretec to facilitate the conversation.
 
 **Q2.1 — Customer-specific price endpoint**
-Does RamBase expose a way to look up the net price for `(product, customer)` *without* creating a quote or order? (This is what the storefront needs to display prices on listing and product pages.) If not, are you aware of a workaround RamBase recommends for price display?
+Does RamBase expose an endpoint to look up the net price for `(product, customer)` *without* creating a quote or order? (Needed for displaying prices on catalog and product listing pages.) If not, what is the recommended approach for catalog price display?
 
 ---
-
-## 3. Cart
-
-**Q3.1 — Cart retention / TTL**
-How long should an abandoned (logged-in) cart persist before it is automatically cleaned up? Proposed: **30 days** after last activity — OK?
 
 ---
 

@@ -51,7 +51,7 @@ Phase 1 covers the full initial build: Catalog & Product, Customer & Authenticat
   - Cognito ID-token JWT validation; `custom:rambaseCustomerId` claim extraction
   - Polly resilience pipelines (read: retries + circuit-breaker; write: no retry)
   - Price endpoint: `POST /prices` — batch live price lookup from RamBase
-  - Cart endpoints: MongoDB-backed cart with TTL, anonymous/logged-in merge on sign-in, live-price projection on read
+  - Cart endpoints: MongoDB-backed logged-in cart with TTL and live-price projection on read
   - Quote endpoint: `POST /carts/{id}/create-order-request` — translate cart to RamBase sales quote
   - Query endpoints: `GET /orders` / `GET /orders/{id}` — read-only order history scoped to customer
   - OpenTelemetry instrumentation (OTLP → Grafana)

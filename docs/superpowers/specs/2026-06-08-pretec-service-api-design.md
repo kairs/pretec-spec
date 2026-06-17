@@ -172,11 +172,11 @@ RamBase is a **hard runtime dependency** for price, cart pricing, and quote subm
    **orders** are reachable via `$filter`. ⚠️ One open point: confirm a single system account may read **prices**
    for any customer by parameter. See audit §Auth.
 6. ⚠️ **Quote submission** — **UNRESOLVED (needs RamBase API credentials).** The CRQ→CQU→COA flow is confirmed,
-   but the create-quote endpoint, required fields, and **anonymous/lead** representation are behind the
+   but the create-quote endpoint and required fields are behind the
    credentialed portal. See audit §Quote. **Blocks the Quote build slice.**
 
 **Design decisions now fixed** (see [`service-api-decisions.md`](../research/service-api-decisions.md)): MongoDB
-cart schema + keys + TTL + anonymous→offer transition (§1); Cognito ID-token claim injection + refresh-on-approval
+cart schema + keys + TTL + login-only access (§1); Cognito ID-token claim injection + refresh-on-approval
 + missing-claim handling (§2); the Istio route list (§3); resilience timeouts/retries/breaker + catalog-price
 handshake (§4).
 

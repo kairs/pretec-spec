@@ -126,7 +126,7 @@ What maps from the Mosaik side (see [`mosaik-platform-contracts.md` §Quote](./m
 > **UNRESOLVED — needs RamBase contact / credentialed portal:**
 > 1. The **create-quote** endpoint (likely `POST /sales/quotes` for CQU, or the CRQ resource) — path + method.
 > 2. **Required vs optional** fields to create a quote: customer reference (`customerId`), delivery address (select existing `addressId` vs. supply a custom address), `requestedDeliveryDate`, header/line `note`/comment, and line items (`product`, `quantity`, `unit`, `customersReferenceNumber`).
-> 3. How an **anonymous / lead** quote (no existing RamBase customer) is represented — a generic/"walk-in" customer id, a lead/prospect entity, or a customer created on submit. *(This is the "ask for offer" flow in the Pretec design; the standard Mosaik platform has no native anonymous-quote concept either — see Gaps in the contracts doc.)*
+> 3. Exact authenticated-customer quote payload fields, including delivery address selection vs custom address, requested delivery date, comments, and line items.
 
 ---
 
@@ -149,7 +149,7 @@ What maps from the Mosaik side (see [`mosaik-platform-contracts.md` §Quote](./m
 | Order `$filter` field paths/operators for date/status/PO | UNRESOLVED (fields exist; exact operators behind portal) |
 | Sales **Invoice** resource & fields, credit notes | UNRESOLVED |
 | **Price** lookup endpoint (customer+qty, tiers) | UNRESOLVED (blocks Price operation design) |
-| **Quote** create endpoint, required fields, anonymous/lead | UNRESOLVED |
+| **Quote** create endpoint and required authenticated-customer fields | UNRESOLVED |
 | **Document/PDF** retrieval | UNRESOLVED |
 
 **Recommended next action (for the user):** request RamBase API client credentials (Client-Credentials flow) scoped to: Sales Order, Sales Customer, **Product/Price**, **Sales Quote (CQU/CRQ)**, **Sales Invoice (CIN)**, and document/output resources. With credentials, the full operation-level field specs become enumerable from the portal and every UNRESOLVED item above can be closed. Until then, the **Price** and **Quote** build slices cannot be made concrete.

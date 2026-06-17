@@ -83,7 +83,7 @@ The contract the API returns mirrors Mosaik `CartResponse` / `CartOrderLineItemR
 - **TTL / abandoned carts:** MongoDB **TTL index on `expiresAt`**. Logged-in carts expire **90 days** after last activity. **Sliding TTL** — `expiresAt` is pushed forward 90 days on every cart read or write, not just mutations.
 - **Indexes:** `{ "owner.rambaseCustomerId": 1, "owner.userSub": 1, "status": 1 }`, TTL `{ "expiresAt": 1 }`.
 
-**Read-time price projection:** on `GET /carts/{id}` for a logged-in cart, batch-fetch live prices for the line SKUs (§Resilience) and project `PriceResponse`/`extendedPrice` into the mirrored response. Anonymous carts return lines with **no price** (sub-spec §4.2).
+**Read-time price projection:** on `GET /carts/{id}` for a logged-in cart, batch-fetch live prices for the line SKUs (§Resilience) and project `PriceResponse`/`extendedPrice` into the mirrored response. Anonymous callers cannot access cart endpoints; they receive an auth-required response.
 
 ---
 
@@ -141,7 +141,7 @@ RamBase is a hard runtime dependency ([sub-spec §6](../specs/2026-06-08-pretec-
 
 | Decision | Status |
 |---|---|
-| Cart Mongo schema, keys, TTL, anonymous→offer transition | **Decided** (design-level) |
+| Cart Mongo schema, keys, TTL, login-only access | **Decided** (design-level) |
 | Cognito claim injection approach + refresh-on-approval + missing-claim handling | **Decided** (design); wiring/link-store **blocked on Task 3** |
 | Istio route list (cart/quote/orders to Pretec; new `/prices`; rest to standard) | **Decided**; `/prices` path to confirm with frontend |
 | Resilience timeouts/retries/breaker + catalog-price handshake | **Decided** (starting values); confirm frontend does post-render batch; tune in staging |

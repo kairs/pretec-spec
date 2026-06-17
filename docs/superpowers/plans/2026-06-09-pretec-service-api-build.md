@@ -100,16 +100,16 @@ Each task lists **intent · grounding · key decisions · dependencies · done-w
 - **Done when:** logged-in batch returns prices; anonymous/no-token → 401; degraded paths covered. *(RamBase mapping provisional until A5.)*
 
 ### Task 6 — Cart: MongoDB repository + `/carts` endpoints
-- **Intent:** `CartDocument` + `MongoCartRepository` (TTL + owner indexes); mirrored cart paths (`POST /carts`, `GET/PATCH/DELETE /carts/{id}`, order-line add/update/remove, `users-last-active-cart`). Read-time live-price projection for logged-in carts (reuses Task 5); anonymous carts return no prices.
-- **Grounding:** decisions §1, §4.2, contracts §Cart. **Decisions:** prices never persisted; logged-in key = `rambaseCustomerId`(+`userSub`); anonymous key = `sessionToken`; anonymous→customer **merge on sign-in**; TTL 7d anon / 30d logged-in.
+- **Intent:** `CartDocument` + `MongoCartRepository` (TTL + owner indexes); mirrored cart paths (`POST /carts`, `GET/PATCH/DELETE /carts/{id}`, order-line add/update/remove, `users-last-active-cart`). Cart endpoints are logged-in only; read-time live-price projection reuses Task 5.
+- **Grounding:** decisions §1, §4.2, contracts §Cart. **Decisions:** prices never persisted; logged-in key = `rambaseCustomerId`(+`userSub`); anonymous users have no cart; TTL 90d logged-in with sliding expiry.
 - **Depends on:** Tasks 2, 4; Task 5 for projection; A3.
-- **Done when:** create/get round-trips without stored prices; logged-in GET projects prices; anonymous GET priceless; line lifecycle works.
+- **Done when:** create/get round-trips without stored prices; logged-in GET projects prices; anonymous/no-token cart calls return 401; line lifecycle works.
 
 ### Task 7 — Quote: `POST /carts/{id}/create-order-request` → RamBase quote ⚠️ A6
 - **Intent:** Translate the cart into a RamBase sales quote; **clear/mark the cart only on success**; return `{ orderId }`.
-- **Grounding:** contracts §Quote, §4.3. **Decisions (A6/A9):** customer id from claim or anonymous contact (name/email/company/phone required); delivery address = selected RamBase address or custom; no auto-retry; RamBase failure → clear retryable error, **cart left intact**.
+- **Grounding:** contracts §Quote, §4.3. **Decisions (A6/A9):** customer id from claim; delivery address = selected RamBase address or custom; no auto-retry; RamBase failure → clear retryable error, **cart left intact**.
 - **Depends on:** Tasks 3 (write pipeline), 6; **A6 (blocks production-correctness)**.
-- **Done when:** success clears cart + returns id; failure keeps cart + retryable error; anonymous missing-contact → 400. *(RamBase mapping provisional until A6.)*
+- **Done when:** success clears cart + returns id; failure keeps cart + retryable error; anonymous/no-token submit returns 401. *(RamBase mapping provisional until A6.)*
 
 ### Task 8 — Query: `GET /orders`, `GET /orders/{id}` ⚠️ A7/A8
 - **Intent:** Read-only order list + detail from RamBase Sales Orders, scoped to the authenticated customer, mapped to Mosaik `OrderSearchResponse`/`OrderResponse`.

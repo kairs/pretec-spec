@@ -165,7 +165,7 @@ The standard platform has **no `quote` service**. The closest native mechanism i
 
 This is the platform's "submit cart for processing without going through a PSP checkout" path — effectively the **request-for-offer / quote-submission** primitive. A cart's `type` field (`CartResponse.type`) distinguishes a normal cart from an order-request.
 
-For the Pretec flow this maps to **RamBase sales-quote creation** (Task 2 §Quote): the service receives `create-order-request` (or an equivalent quote submit), creates a RamBase quote, and returns an id in the `CreateOrderFromCartResponse` shape. The richer quote fields (delivery address selection, requested date, line comments, anonymous/lead handling) are **not** in the standard contract and must be added by Pretec — see Gaps.
+For the Pretec flow this maps to **RamBase sales-quote creation** (Task 2 §Quote): the service receives `create-order-request` (or an equivalent quote submit), creates a RamBase quote, and returns an id in the `CreateOrderFromCartResponse` shape. The richer quote fields (delivery address selection, requested date, line comments) are **not** in the standard contract and must be added by Pretec — see Gaps.
 
 ---
 
@@ -187,7 +187,7 @@ For the Pretec flow this maps to **RamBase sales-quote creation** (Task 2 §Quot
 
 1. **Customer-contract pricing.** The standard `PriceResponse` is scoped only by `marketId/storeId/companyId` query params and returns a **single** price row. It has no concept of per-RamBase-customer contract prices or a full **quantity-break tier table**. Pretec must return RamBase customer prices within the same `PriceResponse` shape, scoped by the **authenticated** customer. *(Confirm RamBase tier-price fields in Task 2 §Price.)*
 2. **No price batch endpoint.** Price rides on product/search reads. A catalog page renders products first, then needs customer prices — the standard contract offers no bulk "prices for these N SKUs" call. Pretec likely needs a **batch price endpoint** the Storefront calls after render (resilience handshake → Task 4 `## Resilience policy`).
-3. **No quote service.** Only `create-order-request` (returns just `{orderId}`). Missing: quote line comments, delivery-address selection vs custom address, requested delivery date at submission, **anonymous/lead** quote (no existing customer). Pretec adds these, mapping to RamBase quote creation (Task 2 §Quote).
+3. **No quote service.** Only `create-order-request` (returns just `{orderId}`). Missing: quote line comments, delivery-address selection vs custom address, requested delivery date at submission. Pretec adds these, mapping to RamBase quote creation (Task 2 §Quote). Pretec quote submission is authenticated-only.
 4. **No order/invoice query filters.** Public `/orders` has no date-range/status/PO-number `$filter`. If the Storefront needs filtered history, Pretec must add query params (mapping to RamBase `$filter` — Task 2 §Orders & Invoices).
 5. **No document/PDF retrieval.** Nothing in the four specs returns order-confirmation or invoice PDFs. If required, Pretec adds it from RamBase documents (Task 2 §Documents).
-6. **Anonymous cart → offer linkage.** `CartResponse` carries `companyId/customerId` for signed-in carts and `type` to mark an order-request, but there is no native "anonymous cart becomes a lead/offer on sign-up" flow. Pretec's Mongo cart schema must model the anonymous→customer transition (Task 4 `## Cart document schema`).
+6. **Login-only cart behavior.** `CartResponse` carries `companyId/customerId` for signed-in carts and `type` to mark an order-request. Pretec does not support anonymous carts or anonymous quote submission; cart endpoints require an authenticated, linked user.

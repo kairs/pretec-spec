@@ -148,7 +148,7 @@ RamBase API modules available: Product, Sales, Finance, Procurement, Logistics, 
 - **Delivery address** — **select from the RamBase customer's addresses, OR enter a custom address**.
 - **Requested delivery date.**
 - **Quote comment / message.**
-- **Anonymous "ask for offer"** additionally captures **contact details: name, email, company, phone** (no linked customer).
+- Checkout is only available to authenticated, linked users; anonymous "ask for offer" is out of scope.
 **A (5b — after submission):** **On-screen confirmation + email.** A **Pretec sales rep follows up in RamBase**. Quotes do **not** need to appear in Min side (Min side stays orders/invoices only).
 **A (5c — scope):** The storefront is **always request-for-quote**. **No firm online ordering, ever.** The customer never places a priced, confirmed order directly — every submission becomes a RamBase quote that a rep converts.
 

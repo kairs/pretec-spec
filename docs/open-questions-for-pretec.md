@@ -34,10 +34,10 @@
 ## 3. Cart & Checkout
 
 **3.1** How long should a cart be saved before it expires?
-- Suggested: 7 days for anonymous carts, 30 days for logged-in carts.
+- Suggested: 90 days for logged-in carts, with sliding expiry reset on each cart read or write.
 - Does this match your expectations?
 
-**3.2** Should the "ask for offer" flow (anonymous users building a cart and submitting a quote request without logging in) be in scope for **Phase 1**, or deferred to a later phase?
+**3.2** ✅ Cart, checkout, and quote submission are logged-in only. Anonymous users can browse the catalog, but cannot create or use a cart.
 
 **3.3** At checkout, the user selects a delivery address. Will every RamBase customer always have at least one saved address in RamBase? Or is it common for a customer to have no saved addresses (meaning custom address entry is the primary path)?
 

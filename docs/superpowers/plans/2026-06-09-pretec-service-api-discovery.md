@@ -101,7 +101,7 @@ Record in section `## Price` with exact endpoint path(s), query params, and a sa
 
 - [ ] **Step 2: Audit sales-quote creation**
 
-WebFetch the RamBase Sales **Quote** resource docs. Record the **create-quote** endpoint (path + method), the **required and optional fields** (customer reference, delivery address selection vs custom address, requested delivery date, comment, line items), and how an **anonymous/lead** quote (no existing customer) is represented.
+WebFetch the RamBase Sales **Quote** resource docs. Record the **create-quote** endpoint (path + method), and the **required and optional fields** for authenticated customers (customer reference, delivery address selection vs custom address, requested delivery date, comment, line items).
 
 Record in section `## Quote (create)`.
 
@@ -184,7 +184,7 @@ Turn discovery findings into the concrete decisions the build plan will assume.
 
 - [ ] **Step 1: Decide the MongoDB cart schema**
 
-Using the standard cart contract (Task 1) and the cart lifecycle (spec §4.2), write the concrete Mongo document shape for a cart: fields, the **logged-in key** (RamBase customer ID), the **anonymous key** (session token), line-item fields, timestamps/TTL for abandoned carts. Include how an anonymous cart maps to a future "ask for offer."
+Using the standard cart contract (Task 1) and the cart lifecycle (spec §4.2), write the concrete Mongo document shape for a cart: fields, the **logged-in key** (RamBase customer ID + user), line-item fields, timestamps/TTL for abandoned carts, and the auth behavior for anonymous callers.
 
 Record in section `## Cart document schema`.
 

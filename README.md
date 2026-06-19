@@ -12,6 +12,7 @@ This repository contains the design specifications, build plans, research, and o
 |---|---|
 | [Commerce Platform Overview](docs/superpowers/specs/2026-06-08-pretec-commerce-overview-design.md) | Top-level spec: systems, responsibilities, data flows, all capabilities |
 | [Pretec Service API](docs/superpowers/specs/2026-06-08-pretec-service-api-design.md) | Sub-spec for the Geta-built .NET service (Price, Cart, Quote, Orders) |
+| [Customer Overview Specification](docs/customer-overview-spec.md) | Customer-facing Phase 1 overview: scope, user experience, systems, responsibilities, open decisions |
 
 ### Build plans
 

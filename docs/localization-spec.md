@@ -116,7 +116,6 @@ Phase 1 localization is largely settled. Remaining item to confirm with Pretec:
 - Final source-of-truth for **product display name** when RamBase and Struct differ (cross-ref
   [product spec §6](product-rambase-struct-harmony-spec.md)).
 
-*(Resolved: legal/footer text is managed in Sanity — see §4.)*
 
 ---
 

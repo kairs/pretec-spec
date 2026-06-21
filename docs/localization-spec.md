@@ -63,6 +63,7 @@ Localization responsibility is split by content type. Each system owns the local
 |---|---|---|
 | **Storefront UI strings** (buttons, navigation labels, system & error messages) | **Maestro** translations | Static interface text managed via Mosaik's translation tooling ([C-2 Maestro](maestro-usage-spec.md)) |
 | **Editorial content** (pages, banners, category/product editorial) | **Sanity** | Authored and localized by Pretec ([I-5 Content](content-sanity-spec.md)) |
+| **Legal / footer text** (terms, privacy, footer copy) | **Sanity** | Managed as editorial content alongside the above |
 | **Product data** (display name, descriptions, attributes) | **Struct** | Product enrichment; localized in the PIM ([I-1 Product spec](product-rambase-struct-harmony-spec.md)) |
 | **ERP-owned text** (ERP product name, unit of measure, ERP-controlled fields) | **RamBase** (as-is) | **Not localized** — used in RamBase's own language; out of localization scope |
 
@@ -110,11 +111,12 @@ URLs + redirects, multi-currency pricing, and incl-VAT display rules for any B2C
 
 ## 8. Open decisions
 
-Phase 1 localization is largely settled. Remaining items to confirm with Pretec:
+Phase 1 localization is largely settled. Remaining item to confirm with Pretec:
 
 - Final source-of-truth for **product display name** when RamBase and Struct differ (cross-ref
   [product spec §6](product-rambase-struct-harmony-spec.md)).
-- Whether any **legal/footer text** (terms, privacy) is managed in Sanity or Maestro.
+
+*(Resolved: legal/footer text is managed in Sanity — see §4.)*
 
 ---
 

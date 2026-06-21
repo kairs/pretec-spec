@@ -47,14 +47,16 @@ diverges from the standard.
 Two hops:
 
 ### Hop 1 — Storefront → Pretec Service API
-- The service validates the user's **Cognito ID token** on each request.
-- A **Cognito Pre-Token-Generation Lambda** injects the user's linked RamBase customer ID as a custom
-  claim (`custom:rambaseCustomerId`) at login and token refresh. The service reads this claim — no
-  customer ID is passed from the frontend, no extra lookup is needed.
-- **Caveat:** the claim reflects the link state at token issuance. A user linked/approved *after* login
-  picks up the claim only on token refresh (force a refresh on approval, or use short token lifetimes).
-- The **ID token** (not the access token) is validated — avoids the Pre-Token-Generation v2/v3 trigger and
-  the Cognito Plus tier.
+- The service validates the user's **Cognito ID token** on each request for **identity** (the authenticated
+  subject).
+- The **RamBase customer id is resolved from the Mosaik platform's existing user↔customer mapping**, keyed
+  by the authenticated subject — **not** carried as a token claim. No customer id is passed from the
+  frontend (prevents spoofing).
+- **No Pre-Token-Generation Lambda / no `custom:rambaseCustomerId` claim** — Mosaik already holds the
+  mapping, so it is looked up rather than injected. This **removes the refresh-on-approval gap**: a link
+  change takes effect on the next request.
+- The **ID token** (not the access token) is validated — avoids the Cognito Plus tier.
+- An authenticated user with **no mapping** → clear "not onboarded" state, never a 500.
 
 ### Hop 2 — Pretec Service API → RamBase
 - The service authenticates to RamBase with a **single system/integration credential** for the whole
@@ -78,7 +80,7 @@ Two hops:
 ### 4.2 Cart
 - The service **owns cart state in MongoDB** (in EKS). Contract **mirrors the standard cart**.
 - **Logged-in only.** Cart is not available to anonymous users — login is required to access the cart or check out.
-- **Logged-in cart:** keyed by the RamBase customer (from the token claim); live prices shown.
+- **Logged-in cart:** keyed by the RamBase customer (resolved from the Mosaik mapping); live prices shown.
 - Prices are **not stored on the cart line as truth**; they are fetched live for display (see §6 resilience).
 
 ### 4.3 Quote (checkout)
@@ -101,8 +103,8 @@ Two hops:
 - **Filtering:** date range, status, order number; **pagination** — using RamBase's `$filter` / `$top` /
   `$pageKey` (cursor-based; `$inlineCount=allpages` for total count — *not* `$pageno`, see research). Exact
   `$filter` field names to confirm during build.
-- **Scoping:** always scoped to the **customer / company** (via `$filter` on the customer from the token
-  claim). **Multiple users may belong to the same company and share the same orders/invoices view.**
+- **Scoping:** always scoped to the **customer / company** (via `$filter` on the customer resolved from the
+  Mosaik mapping). **Multiple users may belong to the same company and share the same orders/invoices view.**
   Logged-in only.
 - *To confirm against RamBase:* retrieval of **document PDFs** (order confirmation / invoice). Data-only on
   screen if PDFs are not exposed.
@@ -176,8 +178,9 @@ RamBase is a **hard runtime dependency** for price, cart pricing, and quote subm
    credentialed portal. See audit §Quote. **Blocks the Quote build slice.**
 
 **Design decisions now fixed** (see [`service-api-decisions.md`](../research/service-api-decisions.md)): MongoDB
-cart schema + keys + TTL + login-only access (§1); Cognito ID-token claim injection + refresh-on-approval
-+ missing-claim handling (§2); the Istio route list (§3); resilience timeouts/retries/breaker + catalog-price
+cart schema + keys + TTL + login-only access (§1); Cognito ID-token validation for identity + **RamBase
+customer resolved from the Mosaik user↔customer mapping (no token claim, no Pre-Token-Generation Lambda)** +
+no-mapping handling (§2); the Istio route list (§3); resilience timeouts/retries/breaker + catalog-price
 handshake (§4).
 
 **Still blocked:** documenting the existing **.NET service conventions** (solution layout, DI, config, Mongo,

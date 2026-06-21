@@ -20,7 +20,7 @@ handled, how access is scoped, where data lives, and how PII is treated.
 
 ### Authentication & tokens
 - [ ] Cognito ID-token validation on the Service API (see [Service API §3](superpowers/specs/2026-06-08-pretec-service-api-design.md))
-- [ ] `custom:rambaseCustomerId` claim issuance, refresh-on-approval, missing-claim handling
+- [ ] User↔RamBase-customer mapping held in Mosaik; resolved server-side (no token claim); no-mapping handling
 - [ ] RamBase system/integration credential storage & rotation (per environment)
 - [ ] Session / token lifetime policy
 

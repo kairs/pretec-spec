@@ -24,7 +24,7 @@ Documents created by this phase:
 - `docs/superpowers/research/mosaik-platform-swagger.json` — the saved OpenAPI spec (raw artifact, source of truth for the above).
 - `docs/superpowers/research/rambase-api-audit.md` — exact RamBase endpoints/params/fields for price, quote creation, order/invoice query, documents, and auth.
 - `docs/superpowers/research/service-template-conventions.md` — the existing .NET/Mozaik service conventions (solution layout, test framework, DI, config, Mongo, Cognito validation, OTEL, k8s/Istio manifests).
-- `docs/superpowers/research/service-api-decisions.md` — design decisions that depend on the above (Mongo cart schema, Cognito claim injection, Istio path list, resilience policy values).
+- `docs/superpowers/research/service-api-decisions.md` — design decisions that depend on the above (Mongo cart schema, Cognito identity + customer resolution from the Mosaik mapping, Istio path list, resilience policy values).
 
 Each is a focused, single-responsibility reference. The build plan (Task 5) cites them by path.
 
@@ -188,11 +188,13 @@ Using the standard cart contract (Task 1) and the cart lifecycle (spec §4.2), w
 
 Record in section `## Cart document schema`.
 
-- [ ] **Step 2: Decide the Cognito claim-injection approach**
+- [ ] **Step 2: Decide the identity + customer-resolution approach**
 
-Using Task 3's Cognito findings, write the concrete plan for the **Pre-Token-Generation Lambda** that injects `custom:rambaseCustomerId` into the **ID token**, including the **token-refresh-on-approval** handling.
+Using Task 3's Cognito findings, write the concrete plan for **ID-token validation (identity)** and
+**resolving the RamBase customer from the Mosaik user↔customer mapping** (mapping source/endpoint, caching,
+no-mapping handling). **No Pre-Token-Generation Lambda / no token claim** — Mosaik already holds the mapping.
 
-Record in section `## Cognito claim injection`.
+Record in section `## Cognito identity + customer resolution`.
 
 - [ ] **Step 3: Decide the Istio route list**
 
@@ -243,8 +245,8 @@ Report the build plan to the user. Do not commit.
 
 **1. Spec coverage** — Discovery maps to spec §8 open items: Task 1 → §8.1 (Mosaik contracts); Task 2 → §8.2–§8.6 (RamBase price, query, documents, auth, quote); Task 3 → the implicit "fit the existing .NET conventions" need; Task 4 → cart schema/§4.2, Cognito/§3, Istio/§2, resilience/§6; Task 5 → the build itself. No discovery-relevant spec area is unaddressed.
 
-**2. Placeholder scan** — No "TBD/implement later" in the *actions*. Tasks explicitly require concrete endpoint/field names and mark genuine unknowns as `UNRESOLVED — needs <human>` rather than hiding them. The `<YYYY-MM-DD>` in Task 5's filename is an intentional date stamp, not a content gap.
+**2. Placeholder scan** — No "TBD/implement later" in the *actions*. Tasks explicitly require concrete endpoint/field names and mark genuine unknowns as `UNRESOLVED — needs <human>` rather than hiding them. The `<YYYY-MM-DD>` in Task 5's filename is an intentional date stamp, not a content gap. *(Auth note: customer identity is resolved from the Mosaik mapping via `GET /customers/current`, not a token claim — see decisions §2.)*
 
-**3. Type consistency** — The artifact names (`mosaik-platform-contracts.md`, `mosaik-platform-swagger.json`, `rambase-api-audit.md`, `service-template-conventions.md`, `service-api-decisions.md`) are used consistently across the File Structure, tasks, and Task 5 inputs. The claim name `custom:rambaseCustomerId` matches the sub-spec.
+**3. Type consistency** — The artifact names (`mosaik-platform-contracts.md`, `mosaik-platform-swagger.json`, `rambase-api-audit.md`, `service-template-conventions.md`, `service-api-decisions.md`) are used consistently across the File Structure, tasks, and Task 5 inputs. Customer identity is resolved from the Mosaik mapping (`GET /customers/current`), not a token claim — consistent with the sub-spec.
 
 **Note:** Task 3 is gated on repository access, which is not present in this workspace — called out explicitly in its prerequisite and in Task 5's blocker check.

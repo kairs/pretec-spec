@@ -179,7 +179,7 @@ For the Pretec flow this maps to **RamBase sales-quote creation** (Task 2 §Quot
   - `POST /external-identity/sync-customer` — sync external identity to a platform customer.
 - **Customer context** for B2B: customer-public exposes `/companies/*`, `/customers/*`, `GET /customers/current`. A signed-in principal resolves to a customer/company; that identity (not a query param) is what scopes orders.
 
-> **Alignment with the Pretec design:** the platform already treats the **`idToken` as the bearer**, and supports **external-identity exchange**. The Pretec design's AWS Cognito ID token with an injected `custom:rambaseCustomerId` claim fits this model directly — the service reads the customer id from the validated JWT, exactly as the standard customer-context endpoints do. (Decision detail → Task 4 `## Cognito claim injection`.)
+> **Alignment with the Pretec design:** the platform already treats the **`idToken` as the bearer**, supports **external-identity exchange**, and exposes the **user↔customer mapping** via customer-public (`GET /customers/current`). The Pretec design validates the AWS Cognito ID token for **identity** and resolves the RamBase customer from that **Mosaik mapping** (no token claim) — exactly as the standard customer-context endpoints resolve the principal. (Decision detail → Task 4 `## Cognito identity + customer resolution`.)
 
 ---
 

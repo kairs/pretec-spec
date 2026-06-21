@@ -125,18 +125,26 @@ RamBase API modules available: Product, Sales, Finance, Procurement, Logistics, 
 **A:** **Option A — path-based routing**, implemented with **Istio** in K8S. An Istio `VirtualService` routes specific paths (price/cart/quote/orders) to the custom .NET service; everything else goes to the standard Mozaik platform services. One base URL — the Storefront can't tell the difference, no frontend fork. Custom service mirrors the standard contracts; separate-URL/frontend customization is fallback only where a contract must diverge.
 
 ### S9-Q3 — Authentication (two hops) & user→customer mapping
+
+> **SUPERSEDED (2026-06-21):** the token-claim mapping below is no longer used. **Mosaik already holds the
+> user↔RamBase-customer mapping**, so the Service API resolves the customer from the platform mapping
+> (customer-public `GET /customers/current`) — **no Pre-Token-Generation Lambda, no token claim, no
+> refresh-on-approval gap.** See [authentication-spec.md](../../authentication-spec.md) and
+> [service-api-decisions.md §2](../research/service-api-decisions.md). The original answer is retained below
+> as a record.
+
 **Q:** How does the Storefront authenticate to the Service API, how does the service know the caller's RamBase customer, and how does the service authenticate to RamBase?
-**A (mapping):** **Option A — custom claim in the Cognito token.** A **Pre Token Generation Lambda trigger** injects the user's linked RamBase customer ID (e.g. `custom:rambaseCustomerId`) at login/refresh. The Service API validates the JWT and reads the claim — no frontend-passed ID, no extra lookup.
-- **Caveat 1:** claim reflects link state at token issuance; a post-login link requires a token refresh (force refresh on approval or use short token lifetime).
-- **Caveat 2 (decision):** which token does the Service API validate? → **ID token** (simple, any Cognito tier; avoids the v2/v3 trigger + Plus tier).
-**A (Hop 1):** Service API validates the Cognito **ID token** per request and reads `custom:rambaseCustomerId`.
+**A (mapping):** ~~**Option A — custom claim in the Cognito token.** A **Pre Token Generation Lambda trigger** injects the user's linked RamBase customer ID (e.g. `custom:rambaseCustomerId`) at login/refresh. The Service API validates the JWT and reads the claim — no frontend-passed ID, no extra lookup.~~
+- ~~**Caveat 1:** claim reflects link state at token issuance; a post-login link requires a token refresh (force refresh on approval or use short token lifetime).~~
+- **Caveat 2 (decision):** which token does the Service API validate? → **ID token** (simple, any Cognito tier; avoids the v2/v3 trigger + Plus tier). *(Still applies — the ID token is validated for identity.)*
+**A (Hop 1):** Service API validates the Cognito **ID token** per request for identity, then resolves the RamBase customer from the Mosaik mapping (`GET /customers/current`).
 **A (Hop 2 — Service API → RamBase):** **Single system/integration credential** for the whole integration; the **customer is passed as a parameter** (service asks RamBase "price for product P, customer X"). Assumed RamBase returns **customer-specific B2B prices** when called this way. _Working assumption — verify exact RamBase auth + customer-scoped pricing endpoints against the RamBase API during implementation._
 
 ### S9-Q4 — Cart persistence & lifecycle
 **Q:** Where does cart state live? Logged-in only? One quote per checkout?
 **A:** **Option A — the Service API owns cart storage** (its own datastore in EKS). Live per-user prices fetched from RamBase for display; RamBase written only at checkout (create quote).
 - **Cart and quote are login-only.** Anonymous users can browse the catalog but have no access to the cart or checkout.
-  - **Logged-in cart:** keyed by the RamBase customer (from `custom:rambaseCustomerId`); prices shown.
+  - **Logged-in cart:** keyed by the RamBase customer (resolved from the Mosaik mapping); prices shown.
   - ~~Anonymous cart~~ — **out of scope.**
   - ~~Anonymous "ask for offer"~~ — **out of scope.** Quote submission requires an authenticated, linked user.
 - **Checkout:** one **single quote per submission**; the **cart is cleared** after a successful submission. (Confirmed.)
@@ -176,7 +184,7 @@ RamBase API modules available: Product, Sales, Finance, Procurement, Logistics, 
 - **7b documents/PDF:** **not confirmed** on the Sales Order resource page — RamBase likely has separate document/print endpoints but this is **still to verify**.
 - **Source:** https://api.rambase.net/documentation , https://api.rambase.net/gettingstarted/operations
 
-**Resolved:** 7a = orders + invoices, list + detail ✔ · 7c = filtering/pagination supported ✔ · 7b PDF = still to verify · scoping via `$filter` on the customer from the token claim ✔
+**Resolved:** 7a = orders + invoices, list + detail ✔ · 7c = filtering/pagination supported ✔ · 7b PDF = still to verify · scoping via `$filter` on the customer resolved from the Mosaik mapping ✔
 
 ### S9-Q8 — Resilience & infrastructure
 **Q:** Behavior when RamBase is slow/down? Cart datastore standard? Environments/observability?

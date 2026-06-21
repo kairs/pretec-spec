@@ -52,15 +52,16 @@ RamBase orders carry a numeric status code. What status labels should the storef
 
 ## 6. Authentication & user provisioning
 
-**Q6.1 — Token lifetime**
-The architecture injects a RamBase customer ID claim into the Cognito ID token at login. A user linked/approved *after* logging in will only receive the claim on their next token refresh. The proposed mitigations are:
-- Force a token refresh when a user account is approved.
-- Use a short ID-token lifetime (e.g. 15 minutes).
+**Q6.1 — Token lifetime** *(no longer applicable — 2026-06-21)*
+~~The architecture injects a RamBase customer ID claim into the Cognito ID token at login...~~ This question
+is moot: the RamBase customer is now resolved from the **Mosaik user↔customer mapping** (`GET /customers/current`),
+not injected as a token claim, so there is no refresh-on-approval gap. Standard Cognito token-lifetime
+defaults apply. See [authentication-spec.md](authentication-spec.md).
 
-Is there a preference, or any constraint on token lifetime from Pretec's side?
-
-**Q6.2 — Self-registration approval flow**
-When a new user self-registers on the storefront, they go through a linking/approval flow to be connected to a RamBase customer. Who approves the link — a Pretec admin, a Geta admin, or is it automatic? What system or interface is used for the approval step?
+**Q6.2 — Onboarding / approval flow**
+Onboarding is invitation-based: a registration raises a **company application**; on approval the company is
+created in RamBase and the user is invited; the account is created on invitation acceptance (see [`sign-up.png`](sign-up.png)).
+Who approves the application and sends the invitation — a Pretec admin, a Geta admin, or is it automatic? What system or interface is used for the approval step?
 
 ---
 

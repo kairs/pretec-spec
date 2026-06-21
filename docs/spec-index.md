@@ -83,7 +83,7 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 
 | # | Area | Type | Status | Spec |
 |---|---|---|---|---|
-| A-1 | **Authentication & identity** — AWS Cognito, Pre-Token-Generation Lambda, `rambaseCustomerId` claim, RamBase linking | INT/XC | 🟡 Partial | [authentication-spec.md](authentication-spec.md) (consolidating [flows-customer-sync.md](flows-customer-sync.md) + Service API §3) |
+| A-1 | **Authentication & identity** — AWS Cognito (identity); RamBase customer resolved from the Mosaik mapping (no token claim) | INT/XC | 🟡 Partial | [authentication-spec.md](authentication-spec.md) (consolidating [flows-customer-sync.md](flows-customer-sync.md) + Service API §3) |
 
 ### 3.5 Platform configuration
 

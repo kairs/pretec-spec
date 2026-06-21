@@ -28,7 +28,7 @@ Maestro approval           --Create Customer (Harmony)->  RamBase (new company) 
 
 - Signup → approval → sync sequence — [flows-customer-sync.md Diagram 1](flows-customer-sync.md)
 - Two-way sync flowchart + direction summary — [flows-customer-sync.md Diagram 2](flows-customer-sync.md)
-- Claim injection at token issuance — [Service API §3](superpowers/specs/2026-06-08-pretec-service-api-design.md)
+- RamBase customer resolved from the Mosaik mapping (no token claim) — [Service API §3](superpowers/specs/2026-06-08-pretec-service-api-design.md) / [authentication-spec.md](authentication-spec.md)
 
 ## 3. To specify / consolidate
 

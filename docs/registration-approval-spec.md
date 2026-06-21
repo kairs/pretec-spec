@@ -26,8 +26,8 @@ only when the invitation is accepted**. The sync/company-creation mechanics live
   Pretec Sales reviews and fills in extra needed information.
 - **Approved / invited** — application approved, company created in RamBase, invitation sent; **account not
   yet created**.
-- **Completed / active** — user accepted the invitation; **account created** with the RamBase id claim;
-  full B2B access (live price/cart/quote/orders).
+- **Completed / active** — user accepted the invitation; **account created** and the user↔RamBase-customer
+  mapping recorded in Mosaik; full B2B access (live price/cart/quote/orders).
 
 > Note: because the account is created at invitation acceptance, there is **no logged-in "pending" user
 > browsing with an account**. Pre-account browsing is plain anonymous browsing.
@@ -35,7 +35,7 @@ only when the invitation is accepted**. The sync/company-creation mechanics live
 ## 3. Already documented (pull in / don't duplicate)
 
 - Signup → company application → approval → invitation → account sequence — [flows-customer-sync.md Diagram 1](flows-customer-sync.md) / [`sign-up.png`](sign-up.png)
-- Claim set from the new RamBase id at account creation — [Service API §3](superpowers/specs/2026-06-08-pretec-service-api-design.md)
+- Mapping recorded from the new RamBase id at account creation — [Service API §3](superpowers/specs/2026-06-08-pretec-service-api-design.md)
 
 ## 4. To specify
 
@@ -43,7 +43,7 @@ only when the invitation is accepted**. The sync/company-creation mechanics live
 - [ ] Company-application review screen in Maestro — what "extra needed information" Pretec Sales fills in
 - [ ] Approval → company creation in RamBase (ties to [I-4 Customer sync](customer-sync-spec.md))
 - [ ] Invitation mechanism — email content, token/link, expiry, resend
-- [ ] Invitation acceptance → account (Cognito user) creation + claim set
+- [ ] Invitation acceptance → account (Cognito user) creation + user↔customer mapping recorded in Mosaik
 - [ ] Who invites (Pretec Sales per diagram) and who approves
 - [ ] De-duplication when the company already exists in RamBase
 - [ ] Customer deactivation handling

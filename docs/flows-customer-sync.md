@@ -36,7 +36,7 @@ sequenceDiagram
 
     User->>SF: Accept invitation
     SF->>BE: Create user — application set to completed
-    Note over BE: Cognito user created; custom:rambaseCustomerId claim set from the new RamBase id
+    Note over BE: Cognito user created; user↔RamBase-customer mapping recorded in Mosaik
     SF-->>User: Full B2B access — live prices, cart, quote, order history
 ```
 
@@ -45,8 +45,8 @@ sequenceDiagram
   storefront), and RamBase returns the unique id used to link the account.
 - The **user account (Cognito user) is created at invitation acceptance**, not at registration — there is
   no "browse while pending as a logged-in user" window in this model.
-- The `custom:rambaseCustomerId` claim is injected at **token issuance** (Pre-Token-Generation Lambda) from
-  the stored RamBase id, so live price/cart/quote/orders work once the account is created.
+- The **user↔RamBase-customer mapping is recorded in Mosaik** at account creation. Live
+  price/cart/quote/orders resolve the RamBase customer from that mapping server-side — **no token claim**.
 
 ---
 
@@ -77,7 +77,7 @@ flowchart LR
     end
 
     subgraph AWS["AWS Cognito"]
-        cognito["User Pool\ncustom:rambaseCustomerId"]
+        cognito["User Pool\n(identity only)"]
     end
 
     %% ── Direction 1: RamBase → Mosaik (scheduled inbound sync) ─────────
@@ -89,7 +89,7 @@ flowchart LR
     maestro -->|"approve company application"| h_create
     h_create -->|"create company"| rb_cust
     h_create -.->|"returns RamBase id"| sf_db
-    sf_db -.->|"claim set on account creation"| cognito
+    sf_db -.->|"user↔customer mapping (no token claim)"| cognito
 ```
 
 ### Sync direction summary
@@ -100,5 +100,6 @@ flowchart LR
 | Mosaik → RamBase | Company application approved in Maestro | Create Customer (via Harmony) | **New company created** in RamBase; returns the RamBase unique id |
 
 The dotted lines indicate that the **RamBase id is returned to the Storefront DB on company creation**, and
-the `custom:rambaseCustomerId` claim is **resolved at token issuance** (Pre-Token-Generation Lambda) once
-the user account is created at invitation acceptance — not written directly into Cognito by the sync.
+the **user↔RamBase-customer mapping is held in Mosaik**. The Service API resolves the RamBase customer from
+that mapping server-side per request — there is **no `rambaseCustomerId` token claim** and **no
+Pre-Token-Generation Lambda**.

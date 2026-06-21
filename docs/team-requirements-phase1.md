@@ -48,7 +48,7 @@ Phase 1 covers the full initial build: Catalog & Product, Customer & Authenticat
 ### Responsibilities
 - Build the **Pretec Service API** (.NET 10, ASP.NET Core minimal APIs) end-to-end:
   - RamBase OAuth2 client-credentials token client (with cache and refresh)
-  - Cognito ID-token JWT validation; `custom:rambaseCustomerId` claim extraction
+  - Cognito ID-token JWT validation (identity); RamBase customer resolution from the Mosaik user↔customer mapping
   - Polly resilience pipelines (read: retries + circuit-breaker; write: no retry)
   - Price endpoint: `POST /prices` — batch live price lookup from RamBase
   - Cart endpoints: MongoDB-backed logged-in cart with TTL and live-price projection on read
@@ -82,9 +82,9 @@ Phase 1 covers the full initial build: Catalog & Product, Customer & Authenticat
 
 ### Responsibilities
 - Operate and configure **AWS EKS** cluster for the Pretec Service API alongside existing Mosaik services
-- Set up and configure **AWS Cognito** user pool:
+- Set up and configure **AWS Cognito** user pool (identity only):
   - App client, hosted UI or custom UI integration
-  - **Pre-Token-Generation Lambda** that injects `custom:rambaseCustomerId` into the ID token
+  - *(No Pre-Token-Generation Lambda — the RamBase customer is resolved from the Mosaik user↔customer mapping, not injected as a token claim.)*
 - Configure **Istio** service mesh and `VirtualService` for path-based routing
 - Provision **MongoDB** (Atlas or self-managed on EKS) with correct indexes, TTL, and access controls
 - Manage **three environments** (test, staging/UAT, production) with correct RamBase `$db` targeting per environment

@@ -28,7 +28,7 @@ The contract the API returns mirrors Mosaik `CartResponse` / `CartOrderLineItemR
 
   // ---- ownership / keying (logged-in users only) ----
   "owner": {
-    "rambaseCustomerId": "string",        // key, from custom:rambaseCustomerId claim
+    "rambaseCustomerId": "string",        // key, resolved from the Mosaik user↔customer mapping
     "companyId": "string|null",           // B2B company (mirrors CartResponse.companyId)
     "userSub": "string"                   // Cognito sub of the user who owns/created it
   },
@@ -87,17 +87,23 @@ The contract the API returns mirrors Mosaik `CartResponse` / `CartOrderLineItemR
 
 ---
 
-## 2. Cognito claim injection
+## 2. Cognito identity + customer resolution from the Mosaik mapping
 
-Confirmed alignment from discovery: the Mosaik platform already uses a **bearer JWT `idToken`** as the credential on every public endpoint, and even exposes **external-identity token exchange** ([contracts §Auth](./mosaik-platform-contracts.md#auth)). The Pretec design (Cognito ID token + injected `custom:rambaseCustomerId`) fits this model directly — the service reads the customer id from the **validated ID token**, exactly as standard customer-context endpoints resolve the principal.
+> **Design change (2026-06-21): no token claim.** The earlier design injected `custom:rambaseCustomerId`
+> into the Cognito ID token via a Pre-Token-Generation Lambda. **This is dropped** — the **Mosaik platform
+> already holds the user↔RamBase-customer mapping**, so the service resolves the customer id from that
+> mapping rather than from a token claim. **No Lambda, no `custom:rambaseCustomerId` claim, no
+> refresh-on-approval gap.**
+
+Confirmed alignment from discovery: the Mosaik platform already uses a **bearer JWT `idToken`** as the credential on every public endpoint, and exposes **external-identity token exchange** ([contracts §Auth](./mosaik-platform-contracts.md#auth)). The Pretec service validates that ID token for **identity** and resolves the customer from the platform mapping — exactly as standard customer-context endpoints resolve the principal.
 
 **Decision (design-level; concrete wiring pending Task 3):**
-- **Pre-Token-Generation Lambda** (Cognito, **V1** trigger — keeps off the Pre-Token-Gen v2/v3 + Cognito Plus tier per sub-spec §3) injects `custom:rambaseCustomerId` (and optionally `custom:rambaseCompanyId`) into the **ID token** at login and refresh, sourced from the user↔customer link store.
-- **Service validation:** validate the **ID token** (issuer = the Cognito user-pool, audience = the app client id), read `custom:rambaseCustomerId`. No customer id from the frontend; no per-request lookup.
-- **Refresh-on-approval:** a user linked/approved *after* login gets the claim only on token refresh. Handle by **forcing a token refresh on approval** (preferred) and/or **short ID-token lifetime** (e.g. 15 min). The service must treat a **missing claim** as "not yet linked" → return prices/orders disabled with a clear "account pending approval" state, not a 500.
-- **Open reconciliation (non-blocking):** confirm whether the standard Storefront authenticates via **Cognito directly** or via the platform's `customer-public /auth/sign-in` (which also issues an `idToken`). If the platform fronts customer auth with Cognito, the platform `idToken` *is* the Cognito ID token and the claim flows through unchanged; if not, confirm the Storefront sends the Cognito ID token to Pretec paths. → reconcile during Task 3.
+- **Service validation:** validate the **ID token** (issuer = the Cognito user-pool, audience = the app client id) for the authenticated subject. No customer id from the frontend (prevents spoofing).
+- **Customer resolution:** obtain the RamBase customer from the **Mosaik user↔customer mapping** via customer-public **`GET /customers/current`** ([contracts §Customer context](./mosaik-platform-contracts.md)), keyed by the subject. May be cached per request/short window.
+- **No-mapping handling:** an authenticated user with **no mapping** → prices/orders disabled with a clear "not onboarded" state, never a 500. A link change takes effect on the **next request** (no token refresh needed).
+- **Open reconciliation (non-blocking):** confirm the exact Mosaik mapping source/endpoint the service should call, and whether the Storefront authenticates via **Cognito directly** or via `customer-public /auth/sign-in`. → reconcile during Task 3.
 
-> **Blocked detail (needs Task 3):** Lambda repo/deploy location, the user↔RamBase-customer link store (DynamoDB? the Mongo of an existing service?), and the JWT auth-handler wiring (authority/audience config keys, claims-reading idiom) in the existing services.
+> **Blocked detail (needs Task 3):** the Mosaik mapping source (platform API vs. shared store), and the JWT auth-handler wiring (authority/audience config keys) in the existing services.
 
 ---
 
@@ -142,7 +148,7 @@ RamBase is a hard runtime dependency ([sub-spec §6](../specs/2026-06-08-pretec-
 | Decision | Status |
 |---|---|
 | Cart Mongo schema, keys, TTL, login-only access | **Decided** (design-level) |
-| Cognito claim injection approach + refresh-on-approval + missing-claim handling | **Decided** (design); wiring/link-store **blocked on Task 3** |
+| Cognito identity + customer resolution from the Mosaik mapping (no token claim) + no-mapping handling | **Decided** (design); mapping source/wiring **blocked on Task 3** |
 | Istio route list (cart/quote/orders to Pretec; new `/prices`; rest to standard) | **Decided**; `/prices` path to confirm with frontend |
 | Resilience timeouts/retries/breaker + catalog-price handshake | **Decided** (starting values); confirm frontend does post-render batch; tune in staging |
 | **.NET conventions / concrete file paths** | **BLOCKED — needs repo (§0)** |

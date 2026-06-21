@@ -25,7 +25,7 @@ Written during a docs-only discovery phase. Each item is a **known unknown**, no
 | A1 | Solution layout/naming: `src/Pretec.ServiceApi` (web), `src/Pretec.ServiceApi.Core`, `tests/Pretec.ServiceApi.Tests`; .NET 8 minimal APIs. | Inspect a real Mozaik service repo; match its layout/framework. |
 | A2 | Test stack: xUnit + FluentAssertions + NSubstitute + Testcontainers.MongoDb + WireMock.Net. | Match existing services' test framework. |
 | A3 | Mongo access: `MongoDB.Driver` + thin repository. | Match existing repository/driver pattern. |
-| A4 | Cognito JWT: validate the **ID token** (authority = pool issuer, audience = app client id); claim `custom:rambaseCustomerId`. | Confirm issuer/audience config + that the Storefront sends the Cognito ID token to these paths (decisions §2). |
+| A4 | Cognito JWT: validate the **ID token** (authority = pool issuer, audience = app client id) for **identity**; resolve the RamBase customer from the **Mosaik user↔customer mapping** (no token claim). | Confirm issuer/audience config, that the Storefront sends the Cognito ID token to these paths, and the exact Mosaik mapping source (decisions §2). |
 | A5 | **RamBase price lookup endpoint shape is INVENTED** — no public price-lookup endpoint exists; one row per `(product, customer, qty)`. | RamBase credentials → portal. Isolated to `RamBasePriceClient` (Task 5). |
 | A6 | **RamBase quote-create endpoint/fields INVENTED** (customer/lead, address, date, comment, lines). | RamBase credentials. Isolated to `RamBaseQuoteClient` (Task 7). |
 | A7 | RamBase order `$filter` field paths/operators (customer, date range, status, PO). | Confirm on RamBase "Filtering and sorting" page (audit §Orders). |
@@ -45,7 +45,7 @@ src/Pretec.ServiceApi/                 # ASP.NET Core host (A1)
   Program.cs                            # DI, auth, OTEL, endpoint maps
   appsettings.json                      # config + env overrides (A10)
   Endpoints/  PriceEndpoints, CartEndpoints, QuoteEndpoints, OrderEndpoints
-  Auth/       CognitoClaims
+  Auth/       CognitoIdentity, CustomerResolver  # validate ID token; resolve RamBase customer from Mosaik mapping
 src/Pretec.ServiceApi.Core/
   RamBase/    RamBaseTokenClient + IRamBase{Price,Quote,Order}Client (+ impls), RamBaseOptions
   Carts/      CartDocument, ICartRepository, MongoCartRepository
@@ -75,11 +75,11 @@ Each task lists **intent · grounding · key decisions · dependencies · done-w
 - **Depends on:** Task 0.
 - **Done when:** test (WireMock) shows token fetched once and reused.
 
-### Task 2 — Cognito ID-token auth + claim reading
-- **Intent:** Wire `JwtBearer` to validate the ID token; `CognitoClaims.RamBaseCustomerIdOrNull(principal)`; a protected probe endpoint.
-- **Grounding:** decisions §2, contracts §Auth. **Decisions (A4):** validate ID token (issuer/audience); **missing claim = "not yet linked/approved"**, surfaced as a clear pending state, never a 500.
+### Task 2 — Cognito ID-token auth + customer resolution
+- **Intent:** Wire `JwtBearer` to validate the ID token (identity); `CustomerResolver.RamBaseCustomerIdOrNull(principal)` resolving from the **Mosaik user↔customer mapping**; a protected probe endpoint.
+- **Grounding:** decisions §2, contracts §Auth. **Decisions (A4):** validate ID token (issuer/audience); **no mapping = "not onboarded"**, surfaced as a clear state, never a 500.
 - **Depends on:** Task 0; A4.
-- **Done when:** no-token → 401; valid test token → claim is read.
+- **Done when:** no-token → 401; valid test token → identity resolved and customer looked up from the mapping.
 
 ### Task 3 — RamBase resilience pipelines (Polly)
 - **Intent:** Named `rambase-read` and `rambase-write` HttpClients with resilience handlers.
@@ -95,7 +95,7 @@ Each task lists **intent · grounding · key decisions · dependencies · done-w
 
 ### Task 5 — Price: `POST /prices` (batch) ⚠️ A5
 - **Intent:** New batch endpoint (logged-in only) → per-SKU customer prices from RamBase, projected into Mosaik `PriceResponse`.
-- **Grounding:** Gaps #1/#2 (no standard batch price), §4.1. **Decisions:** no caching initially; missing claim → "pending-approval"; per-SKU failure/timeout → "price on request" (never fail the page).
+- **Grounding:** Gaps #1/#2 (no standard batch price), §4.1. **Decisions:** no caching initially; no customer mapping → "not onboarded"; per-SKU failure/timeout → "price on request" (never fail the page).
 - **Depends on:** Tasks 1–4; **A5 (blocks production-correctness)**.
 - **Done when:** logged-in batch returns prices; anonymous/no-token → 401; degraded paths covered. *(RamBase mapping provisional until A5.)*
 
@@ -107,7 +107,7 @@ Each task lists **intent · grounding · key decisions · dependencies · done-w
 
 ### Task 7 — Quote: `POST /carts/{id}/create-order-request` → RamBase quote ⚠️ A6
 - **Intent:** Translate the cart into a RamBase sales quote; **clear/mark the cart only on success**; return `{ orderId }`.
-- **Grounding:** contracts §Quote, §4.3. **Decisions (A6/A9):** customer id from claim; delivery address = selected RamBase address or custom; no auto-retry; RamBase failure → clear retryable error, **cart left intact**.
+- **Grounding:** contracts §Quote, §4.3. **Decisions (A6/A9):** customer id resolved from the Mosaik mapping; delivery address = selected RamBase address or custom; no auto-retry; RamBase failure → clear retryable error, **cart left intact**.
 - **Depends on:** Tasks 3 (write pipeline), 6; **A6 (blocks production-correctness)**.
 - **Done when:** success clears cart + returns id; failure keeps cart + retryable error; anonymous/no-token submit returns 401. *(RamBase mapping provisional until A6.)*
 
@@ -148,6 +148,6 @@ Each task lists **intent · grounding · key decisions · dependencies · done-w
 
 **2. Altitude / placeholder note** — Per the user's choice, this is a deliberately high-level plan: code and test bodies are omitted because they would be premature against an unknown repo (A1–A4, A10) and undocumented RamBase contracts (A5–A9). The unknowns are concentrated in the Assumptions Register and tagged per task — known unknowns, not lazy TODOs. Promote to per-step TDD only after resolving the Register.
 
-**3. Type/boundary consistency** — `IRamBaseTokenProvider`, `IRamBasePriceClient`, `IRamBaseQuoteClient`, `IRamBaseOrderClient`, `CognitoClaims`, `ICartRepository`/`CartDocument`, and the `rambase-read`/`rambase-write` clients are referenced consistently. The RamBase boundary is isolated so A5/A6 changes touch one class each. Contract DTO names match the captured Mosaik shapes.
+**3. Type/boundary consistency** — `IRamBaseTokenProvider`, `IRamBasePriceClient`, `IRamBaseQuoteClient`, `IRamBaseOrderClient`, `CognitoIdentity`/`CustomerResolver`, `ICartRepository`/`CartDocument`, and the `rambase-read`/`rambase-write` clients are referenced consistently. The RamBase boundary is isolated so A5/A6 changes touch one class each. Contract DTO names match the captured Mosaik shapes.
 
 **Remaining blockers (from discovery):** A1–A4/A10 (real .NET conventions — needs the repo); A5–A9/A11 (RamBase Price/Quote/Invoice/document contracts — needs API credentials).

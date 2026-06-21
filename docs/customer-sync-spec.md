@@ -11,15 +11,15 @@
 
 ## 1. Purpose
 
-Promote the existing flow diagrams in [flows-customer-sync.md](flows-customer-sync.md) into a complete
-customer-sync specification. Two independent directions exist:
+Promote the existing flow diagrams in [flows-customer-sync.md](flows-customer-sync.md) (authoritative:
+[`sign-up.png`](sign-up.png)) into a complete customer-sync specification. Two independent directions exist:
 
-- **RamBase → Mosaik** (Harmony, scheduled) — company master data + existing contact persons. Source-of-truth flow.
-- **Mosaik → RamBase** (on approval) — a newly approved storefront user is written back as a contact person.
+- **RamBase → Mosaik** (Harmony, scheduled) — **existing** company master data + contact persons. Source-of-truth flow.
+- **Mosaik → RamBase** (on company-application approval) — a **new company is created in RamBase** (via Harmony), which returns the RamBase unique id linked to the account.
 
 ```text
-RamBase Customer/Contacts  --Harmony (scheduled)-->  Storefront User DB
-Maestro approval           --direct API call------>  RamBase (new contact person)
+RamBase Customer/Contacts  --Harmony (scheduled)----->  Storefront User DB   (existing companies)
+Maestro approval           --Create Customer (Harmony)->  RamBase (new company) --returns id--> account
 ```
 
 ---
@@ -32,18 +32,21 @@ Maestro approval           --direct API call------>  RamBase (new contact person
 
 ## 3. To specify / consolidate
 
-- [ ] Field mapping: RamBase customer/contact → Storefront User DB
-- [ ] Sync frequency & delta strategy (ties to [C-1 Harmony](harmony-sync-spec.md))
-- [ ] Write-back payload: exact RamBase contact-person fields created on approval
-- [ ] Conflict handling — RamBase is source of truth for company data
-- [ ] De-duplication — matching a self-registered user to an existing RamBase contact
+- [ ] Field mapping: RamBase customer/contact → Storefront User DB (inbound)
+- [ ] **Create-company payload**: exact RamBase customer fields set when a new company is created on approval (incl. the "extra needed information" Pretec Sales fills in)
+- [ ] How the returned **RamBase unique id** is stored and linked to the account
+- [ ] Sync frequency & delta strategy for the inbound sync (ties to [C-1 Harmony](harmony-sync-spec.md))
+- [ ] Whether the approving user also becomes a RamBase **contact person** on the new company
+- [ ] De-duplication — application names an existing RamBase company vs. genuinely new (avoid duplicate companies)
+- [ ] Conflict handling — RamBase is source of truth for existing company data
 - [ ] Customer deactivation handling (ties to [F-7](registration-approval-spec.md) / [X-5 Security](security-privacy-spec.md))
-- [ ] Error handling & retry
+- [ ] Error handling & retry (esp. create-company failure mid-approval)
 
 ## 4. Open decisions
 
+- **De-duplication rule** when an application's company already exists in RamBase — link vs. create new.
+- Whether company creation truly runs **through Harmony** (per diagram) vs. a direct API call — confirm with the platform team.
 - What happens if a RamBase customer account is deactivated.
-- Whether existing RamBase contacts can self-claim a storefront account.
 
 ## 5. Responsibilities
 
@@ -54,6 +57,6 @@ Maestro approval           --direct API call------>  RamBase (new contact person
 
 ## 6. Success criteria
 
-- RamBase company/contact data appears in the Storefront on schedule.
-- Approved users are created as RamBase contact persons on the correct customer.
-- Source-of-truth direction holds; failures are visible and retryable.
+- Existing RamBase company/contact data appears in the Storefront on schedule.
+- Approving a new company application creates the company in RamBase and links the returned id to the account.
+- De-duplication prevents duplicate companies; failures are visible and retryable.

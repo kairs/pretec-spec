@@ -158,9 +158,11 @@ Catalog via Harmony; product assets from Struct; inventory display from RamBase.
 **R:** Geta (config + customization). **A:** Pretec (product/category data in RamBase, enrichment in Struct).
 
 ### 5.2 Customer & Authentication
-**Scope:** Self-registration on the Storefront, identity in **AWS Cognito + Storefront database**, and
-**linking/approval against a RamBase customer**. Customer data synced from RamBase via Harmony.
-**R:** Geta. **A:** Pretec (customer master data, the approval/linking process).
+**Scope:** **Invitation-based onboarding** — a registration raises a **company application**; on approval the
+**company is created in RamBase** (via Harmony) and the **user account (AWS Cognito + Storefront database) is
+created when the invitation is accepted**, already linked to the RamBase company. Existing customer data syncs
+inbound from RamBase via Harmony. See [`sign-up.png`](../../sign-up.png).
+**R:** Geta. **A:** Pretec (customer master data, application review, approvals, invitations).
 
 ### 5.3 Pricing
 **Scope:** **Live** per-user B2B price lookup via the **Pretec Service API** for logged-in, linked users; no
@@ -202,9 +204,10 @@ API access, scopes, data).
 ## 6. Cross-cutting concerns
 
 - **Authentication:** All user-specific features (price, cart, quote, Min side) require a logged-in user.
-  Identity = Cognito + Storefront DB; users self-register and are linked/approved to a RamBase customer.
-- **Anonymous vs logged-in:** Anonymous users may browse the catalog but see **no prices** and cannot use
-  cart/checkout/Min side.
+  Identity = Cognito + Storefront DB; onboarding is invitation-based — the account is created (already linked
+  to a RamBase company) when the invitation is accepted. See §5.2.
+- **Anonymous vs logged-in:** Anonymous users — including applicants whose invitation is not yet accepted (no
+  account exists) — may browse the catalog but see **no prices** and cannot use cart/checkout/Min side.
 - **Localization:** Translations are managed via Maestro — implies multi-language support in the Storefront
   (scope of languages/markets is an open question).
 - **Hosting / operations:** Geta operates the Storefront on AWS (Cognito implies AWS). Mosaik platform

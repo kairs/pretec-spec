@@ -23,7 +23,7 @@ In scope:
 
 - Product and category browsing
 - Anonymous catalog browsing without prices
-- Customer self-registration and approval/linking to a RamBase customer
+- Customer onboarding via company application → approval → invitation (a new company is created in RamBase on approval; the user account is created when the invitation is accepted)
 - Logged-in B2B price display
 - Logged-in cart
 - Checkout as quote request, not direct online ordering
@@ -64,7 +64,7 @@ Anonymous visitors cannot:
 
 ### Registered / Approved Customer User
 
-Logged-in users who have been approved and linked to a RamBase customer can:
+Logged-in users whose company application has been approved and who have accepted their invitation (account created and linked to a RamBase customer) can:
 
 - See their customer-specific B2B prices
 - Add products to a cart
@@ -74,9 +74,9 @@ Logged-in users who have been approved and linked to a RamBase customer can:
 - Add customer reference / PO information and comments
 - View relevant order and invoice history in My Page / Min side
 
-### Pending Approval User
+### Applicant (Pending Onboarding)
 
-A user who has registered but is not yet linked to a RamBase customer can browse the catalog, but should not see prices or use cart/checkout until approval is complete.
+Someone who has submitted a company application but has **not yet accepted an invitation has no user account**. Until the account is created, they browse exactly as an anonymous visitor — catalog and content only, no prices, no cart, no checkout. There is no separate logged-in "pending" state.
 
 ---
 
@@ -148,14 +148,22 @@ Content types still need confirmation, for example:
 
 ### 4.7 Customer Registration & Approval
 
-Customers self-register in the storefront. Before they can see prices or use cart/checkout, the user must be linked and approved against a RamBase customer.
+Onboarding is **invitation-based** (see [`sign-up.png`](sign-up.png)):
+
+1. A visitor registers, raising a **company application** (no user account is created yet).
+2. Pretec Sales reviews the application and fills in any extra needed information.
+3. On approval, the **company is created in RamBase** (via Harmony), which returns the RamBase id.
+4. Pretec Sales **invites** the user; the **user account is created only when the invitation is accepted**, already linked to the RamBase company.
 
 Pretec still needs to confirm:
 
-- Who approves new users
-- How approval is triggered
-- What the pending approval user sees
+- Who approves applications and who sends invitations
+- De-duplication when the company already exists in RamBase
+- Invitation expiry / resend rules and whether `phone` is captured at registration
+- Adding further users to an already-onboarded company
 - What happens if a RamBase customer account is deactivated
+
+See the detailed [Registration & Approval spec](registration-approval-spec.md) and [Customer Sync spec](customer-sync-spec.md).
 
 ---
 
@@ -223,7 +231,7 @@ RamBase database / company values for each environment still need confirmation f
 | Product and customer data sync | Configures Harmony | Provides RamBase and Struct access, validates data |
 | Pretec Service API | Builds and operates | Provides RamBase access and validates business behavior |
 | Sanity CMS | Sets up model/integration | Authors and maintains content |
-| Customer approval process | Implements agreed flow | Defines approvers and operating process |
+| Customer onboarding (application → approval → invitation) | Implements agreed flow; creates company in RamBase on approval | Defines approvers, reviews applications, sends invitations |
 | Quote handling | Sends quote request to RamBase | Handles quote follow-up in RamBase |
 | Environments | Sets up test/staging/production | Provides environment-specific RamBase details |
 
@@ -238,7 +246,7 @@ The most important open decisions are:
 - Whether 90-day cart expiry is accepted
 - Delivery address rules at checkout
 - Whether customer reference / PO number is required
-- Who approves new customer users
+- Who approves company applications and sends invitations (and de-duplication against existing RamBase companies)
 - Whether My Page should include invoices, credit notes, and PDF downloads
 - Which content types Pretec wants in Sanity
 - Harmony sync frequency and error handling expectations

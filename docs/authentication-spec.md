@@ -15,28 +15,36 @@ Promote the authentication mechanics — currently split between the Service API
 flows — into a single identity spec. Identity = **AWS Cognito + Storefront DB**, linked to a **RamBase
 customer**.
 
+Onboarding is **invitation-based** (see authoritative [`sign-up.png`](sign-up.png)): the **Cognito user is
+created when the invitation is accepted**, *after* the company exists in RamBase. So the account is **born
+already linked** — the `custom:rambaseCustomerId` is known at creation, not retrofitted after a separate
+approval step.
+
 ---
 
 ## 2. Already documented (pull in / don't duplicate)
 
 - Cognito ID-token validation; `custom:rambaseCustomerId` claim — [Service API §3](superpowers/specs/2026-06-08-pretec-service-api-design.md)
 - Pre-Token-Generation Lambda injects the claim at login/refresh — [flows-customer-sync.md](flows-customer-sync.md)
-- Refresh-on-approval & missing-claim handling — [Service API §3](superpowers/specs/2026-06-08-pretec-service-api-design.md)
+- Account + claim created at invitation acceptance — [flows-customer-sync.md Diagram 1](flows-customer-sync.md) / [`sign-up.png`](sign-up.png)
 
 ## 3. To specify / consolidate
 
 - [ ] Cognito user pool config (attributes, custom claims, token lifetimes)
+- [ ] **Account creation at invitation acceptance** — create the Cognito user and persist `rambaseCustomerId` from the company-creation step
 - [ ] Pre-Token-Generation Lambda behavior (claim source = Storefront DB `rambaseCustomerId`)
 - [ ] ID-token (not access-token) validation rationale — avoids Cognito Plus tier
 - [ ] Login / refresh / logout flows
-- [ ] Forcing token refresh on approval
-- [ ] Missing-claim / pending-approval handling
+- [ ] Missing-claim handling (defensive — should not occur for invitation-created accounts)
 - [ ] Session management
 - [ ] Security details cross-ref → [X-5 Security & privacy](security-privacy-spec.md)
 
 ## 4. Caveats (from Service API §3)
 
-- The claim reflects link state **at token issuance**; a user linked after login picks it up only on refresh.
+- The claim is resolved **at token issuance**. In the invitation model the id is known before the account
+  exists, so a newly created user carries the claim from first login — no refresh-on-approval gap. The
+  caveat still applies if a customer link **changes** after the account exists (force a refresh, or use
+  short token lifetimes).
 
 ## 5. Responsibilities
 
@@ -46,5 +54,6 @@ customer**.
 
 ## 6. Success criteria
 
-- Users authenticate via Cognito; approved users carry a valid `rambaseCustomerId` claim.
-- Pending/anonymous users are correctly scoped; claim refreshes on approval.
+- Users authenticate via Cognito; invitation-created users carry a valid `rambaseCustomerId` claim from
+  first login.
+- Pre-account (anonymous) users are correctly scoped; claim is reliably present for active accounts.

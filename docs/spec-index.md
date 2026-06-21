@@ -97,7 +97,7 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 
 | # | Area | Type | Status | Spec |
 |---|---|---|---|---|
-| X-1 | **Localization & markets** — languages (NO only Phase 1), currency (NOK), translations | XC | ⬜ To write (stub) | [localization-spec.md](localization-spec.md) |
+| X-1 | **Localization & markets** — languages (NO only Phase 1), currency (NOK), translations | XC | ✅ Written | [localization-spec.md](localization-spec.md) |
 | X-2 | **Environments & deployment** — test / staging-UAT / production, RamBase env mapping | XC | 🟡 Partial | [environments-spec.md](environments-spec.md) (consolidating Service API §7) |
 | X-3 | **Observability & monitoring** — OTEL, Grafana, alerting, operational ownership | XC | 🟡 Partial | [observability-spec.md](observability-spec.md) (consolidating Service API §7) |
 | X-4 | **Resilience & error handling** — RamBase dependency, timeouts/retries, graceful degradation | XC | 🟡 Partial | Service API §6 — applies platform-wide |
@@ -116,7 +116,7 @@ Specs that **still need to be written** (⬜), in suggested priority order:
 5. **I-5 / F-8 Content (Sanity)** — content types unconfirmed; whole flow unspecified.
 6. **F-2 Search & filtering** — open question with no home yet.
 7. **C-2 Maestro usage**, **C-3 Storefront customization** — config-only but undocumented.
-8. **X-1 Localization**, **X-5 Security & privacy** — cross-cutting, no spec yet.
+8. **X-5 Security & privacy** — cross-cutting, no spec yet. *(X-1 Localization — ✅ written.)*
 
 Items marked 🟡 **Partial** now have **consolidation stubs** (I-4, I-6, F-1, F-7, A-1, X-2, X-3) — each
 points at where the partial content currently lives (overview / Service API / flows / research) and lists

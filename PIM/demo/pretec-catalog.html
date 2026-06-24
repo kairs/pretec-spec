@@ -1,0 +1,902 @@
+<title>Pretec — Produktkatalog</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1D2B3A;--navy2:#253545;--dust:#EDEAE3;--white:#fff;
+  --border:#CCC7BB;--text:#1D2B3A;--mid:#455060;--muted:#78838F;
+  --c1:#688059;--c2:#3D6EA0;--c3:#8A5E38;--c4:#A88C1A;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--dust);color:var(--text);font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.shell{display:flex;flex-direction:column;height:100vh}
+
+/* Header */
+.hdr{flex-shrink:0;height:48px;background:var(--navy);display:flex;align-items:center;padding:0 20px;gap:0;border-bottom:1px solid rgba(0,0,0,.2);z-index:20}
+.hdr-logo{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.92)}
+.hdr-sep{width:1px;height:16px;background:rgba(255,255,255,.14);margin:0 16px}
+.hdr-title{font-size:12.5px;color:rgba(255,255,255,.42)}
+.hdr-right{margin-left:auto;position:relative}
+.hdr-right svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:rgba(255,255,255,.28)}
+.search-inp{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);border-radius:2px;color:#fff;padding:6px 10px 6px 29px;font-size:12.5px;font-family:inherit;width:230px;outline:none;transition:background .15s,border-color .15s}
+.search-inp::placeholder{color:rgba(255,255,255,.26)}
+.search-inp:focus{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.2)}
+
+/* Body */
+.body{flex:1;display:flex;overflow:hidden}
+
+/* Sidebar */
+.sidebar{width:210px;flex-shrink:0;background:var(--navy);border-right:1px solid rgba(255,255,255,.04);display:flex;flex-direction:column;overflow-y:auto;padding-bottom:24px}
+.sb-label{padding:18px 16px 8px;font-size:9.5px;text-transform:uppercase;letter-spacing:.13em;font-weight:700;color:rgba(255,255,255,.17)}
+.cat-btn{display:flex;align-items:flex-start;gap:10px;padding:11px 16px;width:100%;text-align:left;background:none;border:none;border-left:3px solid transparent;cursor:pointer;color:rgba(255,255,255,.42);font-family:inherit;transition:color .13s,background .13s,border-color .13s}
+.cat-btn:hover{color:rgba(255,255,255,.75);background:rgba(255,255,255,.04)}
+.cat-btn.active{color:#fff;background:rgba(255,255,255,.07)}
+.cat-btn.active[data-id=prefab]{border-left-color:var(--c1)}
+.cat-btn.active[data-id=stal]{border-left-color:var(--c2)}
+.cat-btn.active[data-id=tunnel]{border-left-color:var(--c3)}
+.cat-btn.active[data-id=veilys]{border-left-color:var(--c4)}
+.cat-swatch{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px;opacity:.35;transition:opacity .13s}
+.cat-btn.active .cat-swatch{opacity:1}
+.cat-txt{display:flex;flex-direction:column;gap:2px}
+.cat-name{font-size:12.5px;font-weight:500;line-height:1.35}
+.cat-sub{font-size:10.5px;color:rgba(255,255,255,.22);transition:color .13s}
+.cat-btn.active .cat-sub{color:rgba(255,255,255,.38)}
+
+/* Tree */
+.tree-list{margin:0;padding:0}
+.tree-node{border-bottom:1px solid rgba(255,255,255,.04)}
+.tree-node:last-child{border-bottom:none}
+.tree-row{display:flex;align-items:center;cursor:pointer;min-height:32px;border-left:2px solid transparent;transition:background .09s}
+.tree-row.has-ch{cursor:pointer}
+.tree-row.leaf-row{cursor:pointer}
+.tree-row:hover{background:rgba(255,255,255,.04)}
+.tree-row.active-leaf{background:rgba(255,255,255,.1);color:#fff}
+.tree-row-inner{display:flex;align-items:center;gap:6px;padding:6px 14px;flex:1}
+.tree-tog{width:14px;height:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid rgba(255,255,255,.18);font-size:11px;font-weight:700;color:rgba(255,255,255,.35);border-radius:1px;transition:border-color .1s,color .1s;line-height:1}
+.tree-row:hover .tree-tog{border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.65)}
+.tree-sp{width:14px;flex-shrink:0}
+.tree-lbl{font-size:12px;color:rgba(255,255,255,.55);flex:1;line-height:1.3}
+.tree-row.active-leaf .tree-lbl{color:#fff;font-weight:500}
+.d0>.tree-row .tree-lbl{font-weight:600;font-size:12.5px;color:rgba(255,255,255,.75)}
+.d1>.tree-row .tree-row-inner{padding-left:28px}
+.d2>.tree-row .tree-row-inner{padding-left:42px}
+.d3>.tree-row .tree-row-inner{padding-left:56px}
+.tree-ch{display:grid;grid-template-rows:0fr;transition:grid-template-rows .2s ease}
+.tree-ch.open{grid-template-rows:1fr}
+.tree-ch-inner{overflow:hidden;min-height:0}
+
+/* Main */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.crumb{flex-shrink:0;padding:12px 24px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);background:var(--dust);position:sticky;top:0;z-index:10}
+.crumb-seg{display:flex;align-items:center;gap:6px}
+.crumb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.crumb-item{font-size:12px;color:var(--muted);cursor:pointer;transition:color .1s}
+.crumb-item:hover{color:var(--text)}
+.crumb-item.last{color:var(--text);font-weight:500;cursor:default}
+.crumb-sep{font-size:11px;color:var(--border)}
+.content{flex:1;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+
+/* Category cards */
+.cat-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.cat-card{background:var(--white);border:1px solid var(--border);border-radius:2px;padding:16px;cursor:pointer;transition:border-color .15s,box-shadow .15s;display:flex;flex-direction:column;gap:8px}
+.cat-card:hover{border-color:#AAA4999;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.cat-card-name{font-size:13px;font-weight:600;color:var(--text)}
+.cat-card-count{font-size:11px;color:var(--muted)}
+.cat-card-bar{height:3px;border-radius:1px;margin-top:4px}
+
+/* Section heading */
+.section-hd{display:flex;align-items:center;justify-content:space-between}
+.section-hd-title{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.section-hd-count{font-size:11.5px;color:var(--muted);font-weight:400}
+
+/* Product grid */
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.prod-card{background:var(--white);border:1px solid var(--border);border-radius:2px;cursor:pointer;overflow:hidden;transition:border-color .15s,box-shadow .15s;display:flex;flex-direction:column}
+.prod-card:hover{border-color:#9A9590;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.prod-card-img{width:100%;aspect-ratio:4/3;overflow:hidden;background:#F5F3EF}
+.prod-card-img canvas{width:100%;height:100%;display:block}
+.prod-card-body{padding:12px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.prod-art{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;font-variant-numeric:tabular-nums}
+.prod-name{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3}
+.prod-specs{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.spec-pill{font-size:10.5px;background:#F0EDE7;color:var(--mid);padding:2px 7px;border-radius:1px;white-space:nowrap}
+.example-badge{font-size:9.5px;color:rgba(0,0,0,.3);margin-top:auto;padding-top:6px;letter-spacing:.04em}
+
+/* Product detail */
+.detail{position:fixed;right:0;top:48px;bottom:0;width:400px;background:var(--white);border-left:1px solid var(--border);overflow-y:auto;transform:translateX(100%);transition:transform .25s ease;z-index:15;display:flex;flex-direction:column}
+.detail.open{transform:translateX(0)}
+.detail-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;background:var(--white);z-index:1}
+.detail-close{background:none;border:1px solid var(--border);border-radius:2px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted);transition:background .1s,color .1s}
+.detail-close:hover{background:var(--dust);color:var(--text)}
+.detail-art{font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--muted);text-transform:uppercase}
+.detail-img{width:100%;aspect-ratio:4/3;overflow:hidden;background:#F5F3EF;flex-shrink:0}
+.detail-img canvas{width:100%;height:100%;display:block}
+.detail-body{padding:20px;display:flex;flex-direction:column;gap:16px}
+.detail-name{font-size:15px;font-weight:700;color:var(--text);line-height:1.3}
+.detail-family{font-size:12px;color:var(--muted);margin-top:2px}
+.spec-table{width:100%;border-collapse:collapse}
+.spec-table td{padding:6px 0;font-size:12.5px;border-bottom:1px solid var(--border);vertical-align:top}
+.spec-table td:first-child{color:var(--muted);width:45%;padding-right:12px}
+.spec-table td:last-child{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+.spec-table tr:last-child td{border-bottom:none}
+.detail-tag{font-size:9.5px;background:#F0EDE7;color:var(--mid);padding:2px 8px;border-radius:1px;display:inline-block}
+.detail-section-title{font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border)}
+</style>
+
+<div class="shell">
+<header class="hdr">
+  <span class="hdr-logo">Pretec</span>
+  <div class="hdr-sep"></div>
+  <span class="hdr-title">Produktkatalog</span>
+  <div class="hdr-right">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.4"/><path d="M7.8 7.8L10.5 10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    <input class="search-inp" type="search" id="search" placeholder="Søk produkter…" autocomplete="off">
+  </div>
+</header>
+<div class="body">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main" id="main">
+    <div class="crumb" id="crumb"></div>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+<aside class="detail" id="detail">
+  <div class="detail-hdr">
+    <span class="detail-art" id="d-art"></span>
+    <button class="detail-close" id="d-close">×</button>
+  </div>
+  <div class="detail-img"><canvas id="d-canvas"></canvas></div>
+  <div class="detail-body" id="d-body"></div>
+</aside>
+</div>
+
+<script>
+/* ── DATA ─────────────────────────────────────────── */
+
+var SEGS = [
+  {id:'prefab',label:'Prefab og betong',color:'#688059',children:[
+    {label:'Prefab',children:[
+      {label:'Armering',children:[
+        {label:'Alligatorkoblinger',img:'sleeve',products:[
+          {id:'#103520',name:'Alligator kopling ALC-12',nameEN:'ALC-12',family:'Alligatorkoplinger ALC',unit:'stk',vismaId:'3430002',specs:{Armering:'Ø12 mm',Materiale:'Stål',Overflate:'Varmforsinket'}},
+          {id:'#103521',name:'Alligator kopling ALC-16',nameEN:'ALC-16',family:'Alligatorkoplinger ALC',unit:'stk',vismaId:'3430003',specs:{Armering:'Ø16 mm',Materiale:'Stål',Overflate:'Varmforsinket'}},
+          {id:'#103522',name:'Alligator kopling ALC-20',nameEN:'ALC20/22',family:'Alligatorkoplinger ALC',unit:'stk',vismaId:'3430004',specs:{Armering:'Ø20/22 mm',Materiale:'Stål',Overflate:'Varmforsinket'}},
+          {id:'#103523',name:'Alligator kopling ALC-25',nameEN:'ALC-25',family:'Alligatorkoplinger ALC',unit:'stk',vismaId:'3430005',specs:{Armering:'Ø25 mm',Materiale:'Stål',Overflate:'Varmforsinket'}}
+        ]}
+      ]},
+      {label:'Betongforbindelser',children:[
+        {label:'Fundamentbolt',img:'bolt',products:[
+          {id:'#104001',name:'Fundamentbolt M16x200 VF',unit:'stk',specs:{Gjenge:'M16',Lengde:'200 mm',Materiale:'8.8',Overflate:'VF'}},
+          {id:'#104002',name:'Fundamentbolt M20x250 VF',unit:'stk',specs:{Gjenge:'M20',Lengde:'250 mm',Materiale:'8.8',Overflate:'VF'}},
+          {id:'#104003',name:'Fundamentbolt M24x300 VF',unit:'stk',specs:{Gjenge:'M24',Lengde:'300 mm',Materiale:'8.8',Overflate:'VF'}}
+        ]}
+      ]},
+      {label:'Distanser',children:[
+        {label:'Plastdistanser',img:'plate',products:[
+          {id:'#105010',name:'Plastdistanse 20 mm rund Ø60',unit:'stk',specs:{Tykkelse:'20 mm',Diameter:'Ø60 mm',Materiale:'Plast'}},
+          {id:'#105011',name:'Plastdistanse 30 mm rund Ø60',unit:'stk',specs:{Tykkelse:'30 mm',Diameter:'Ø60 mm',Materiale:'Plast'}},
+          {id:'#105012',name:'Plastdistanse 40 mm rund Ø60',unit:'stk',specs:{Tykkelse:'40 mm',Diameter:'Ø60 mm',Materiale:'Plast'}}
+        ]},
+        {label:'Ståldistanser',img:'plate',products:[
+          {id:'#105020',name:'Ståldistanse 10 mm M12 VF',unit:'stk',specs:{Tykkelse:'10 mm',Gjenge:'M12',Materiale:'Stål',Overflate:'VF'}},
+          {id:'#105021',name:'Ståldistanse 20 mm M16 VF',unit:'stk',specs:{Tykkelse:'20 mm',Gjenge:'M16',Materiale:'Stål',Overflate:'VF'}},
+          {id:'#105022',name:'Ståldistanse 30 mm M20 VF',unit:'stk',specs:{Tykkelse:'30 mm',Gjenge:'M20',Materiale:'Stål',Overflate:'VF'}}
+        ]}
+      ]},
+      {label:'Formtilbehør',img:'bracket',products:[
+        {id:'#106100',name:'Formklemme FK-1 150 mm',unit:'stk',specs:{Bredde:'150 mm',Materiale:'Stål'}},
+        {id:'#106101',name:'Formklemme FK-1 200 mm',unit:'stk',specs:{Bredde:'200 mm',Materiale:'Stål'}},
+        {id:'#106102',name:'Formhake FH-20',unit:'stk',specs:{Gjenge:'M20',Materiale:'Stål',Overflate:'VF'}}
+      ]},
+      {label:'Forskaling',img:'plate',products:[
+        {id:'#106200',name:'Forskalingsplate 18 mm 1220x2440',unit:'stk',specs:{Tykkelse:'18 mm',Dimensjon:'1220×2440 mm',Materiale:'Finer'}},
+        {id:'#106201',name:'Forskalingstrekant 45x45 mm',unit:'m',specs:{Dimensjon:'45×45 mm',Materiale:'Gran'}},
+        {id:'#106202',name:'Forskalingstre 50x100 mm',unit:'m',specs:{Dimensjon:'50×100 mm',Materiale:'Gran'}}
+      ]},
+      {label:'Innstøpningsgods',children:[
+        {label:'Innstøpningshylser',children:[
+          {label:'Tilbehør',img:'sleeve',products:[
+            {id:'#107050',name:'Prop for innstøpningshylse M16',unit:'stk',specs:{Gjenge:'M16',Materiale:'Plast'}},
+            {id:'#107051',name:'Prop for innstøpningshylse M20',unit:'stk',specs:{Gjenge:'M20',Materiale:'Plast'}},
+            {id:'#107052',name:'Forlenger for innstøpningshylse 50 mm',unit:'stk',specs:{Lengde:'50 mm',Materiale:'Stål'}}
+          ]}
+        ]},
+        {label:'Rørhylser',img:'sleeve',products:[
+          {id:'#107060',name:'Rørhylse Ø32/M16 L=100 mm',unit:'stk',specs:{Utv_Ø:'32 mm',Gjenge:'M16',Lengde:'100 mm',Materiale:'Stål'}},
+          {id:'#107061',name:'Rørhylse Ø42/M20 L=120 mm',unit:'stk',specs:{Utv_Ø:'42 mm',Gjenge:'M20',Lengde:'120 mm',Materiale:'Stål'}},
+          {id:'#107062',name:'Rørhylse Ø54/M24 L=150 mm',unit:'stk',specs:{Utv_Ø:'54 mm',Gjenge:'M24',Lengde:'150 mm',Materiale:'Stål'}}
+        ]}
+      ]},
+      {label:'Kjemi',children:[
+        {label:'Tilbehør',img:'cartridge',products:[
+          {id:'#108010',name:'Statisk mikser 380 ml lang',unit:'stk',specs:{Volum:'380 ml',Type:'Statisk mikser',Lengde:'Lang'}},
+          {id:'#108011',name:'Statisk mikser 150 ml',unit:'stk',specs:{Volum:'150 ml',Type:'Statisk mikser'}},
+          {id:'#108012',name:'Forlengelsesslange for injeksjon',unit:'stk',specs:{Materiale:'Plast',Bruk:'Injeksjon'}}
+        ]}
+      ]},
+      {label:'Kroker i sjakttopp',img:'bolt',products:[
+        {id:'#108100',name:'Krok i sjakttopp M16 L=200',unit:'stk',specs:{Gjenge:'M16',Lengde:'200 mm',Materiale:'B500NC',Overflate:'VF'}},
+        {id:'#108101',name:'Krok i sjakttopp M20 L=250',unit:'stk',specs:{Gjenge:'M20',Lengde:'250 mm',Materiale:'B500NC',Overflate:'VF'}},
+        {id:'#108102',name:'Krok i sjakttopp M24 L=300',unit:'stk',specs:{Gjenge:'M24',Lengde:'300 mm',Materiale:'B500NC',Overflate:'VF'}}
+      ]},
+      {label:'Løftesystemer',children:[
+        {label:'Flatanker',children:[
+          {label:'Utsparring og tilbehør',img:'plate',products:[
+            {id:'#109010',name:'Utsparringsboks for flatanker 2,5t',unit:'stk',specs:{Kapasitet:'2,5 t',Materiale:'Plast'}},
+            {id:'#109011',name:'Utsparringsboks for flatanker 5t',unit:'stk',specs:{Kapasitet:'5 t',Materiale:'Plast'}},
+            {id:'#109012',name:'Utsparringsboks for flatanker 10t',unit:'stk',specs:{Kapasitet:'10 t',Materiale:'Plast'}}
+          ]}
+        ]},
+        {label:'Kuleanker',img:'wedge',products:[
+          {id:'#109020',name:'Kuleanker 1,3t BBB-13',unit:'stk',specs:{Kapasitet:'1,3 t',Type:'Kuleanker',Materiale:'Stål'}},
+          {id:'#109021',name:'Kuleanker 2,5t BBB-25',unit:'stk',specs:{Kapasitet:'2,5 t',Type:'Kuleanker',Materiale:'Stål'}},
+          {id:'#109022',name:'Kuleanker 5,0t BBB-50',unit:'stk',specs:{Kapasitet:'5,0 t',Type:'Kuleanker',Materiale:'Stål'}}
+        ]}
+      ]},
+      {label:'Monteringsdetaljer',children:[
+        {label:'Tilbehør og spesial',img:'bracket',products:[
+          {id:'#109100',name:'Monteringsplate MP-150 VF',unit:'stk',specs:{Dimensjon:'150×150 mm',Materiale:'Stål S235',Overflate:'VF'}},
+          {id:'#109101',name:'Tilpassingsplate TP-200 VF',unit:'stk',specs:{Dimensjon:'200×200 mm',Materiale:'Stål S235',Overflate:'VF'}},
+          {id:'#109102',name:'Spesialbeslag SB-300',unit:'stk',specs:{Type:'Spesialbeslag',Materiale:'Stål S355'}}
+        ]}
+      ]},
+      {label:'Sandwichelementer',children:[
+        {label:'PDM-stiger',img:'rod',products:[
+          {id:'#110010',name:'PDM-stige 120 mm lang',unit:'stk',specs:{Lengde:'120 mm',Type:'PDM',Materiale:'Polyamid'}},
+          {id:'#110011',name:'PDM-stige 180 mm lang',unit:'stk',specs:{Lengde:'180 mm',Type:'PDM',Materiale:'Polyamid'}},
+          {id:'#110012',name:'PDM-stige 240 mm lang',unit:'stk',specs:{Lengde:'240 mm',Type:'PDM',Materiale:'Polyamid'}}
+        ]},
+        {label:'PD-stiger',img:'rod',products:[
+          {id:'#110020',name:'PD-stige 80 mm lang',unit:'stk',specs:{Lengde:'80 mm',Type:'PD',Materiale:'Rustfritt A4'}},
+          {id:'#110021',name:'PD-stige 120 mm lang',unit:'stk',specs:{Lengde:'120 mm',Type:'PD',Materiale:'Rustfritt A4'}},
+          {id:'#110022',name:'PD-stige 160 mm lang',unit:'stk',specs:{Lengde:'160 mm',Type:'PD',Materiale:'Rustfritt A4'}}
+        ]}
+      ]}
+    ]},
+    {label:'Bru & kulvert',children:[
+      {label:'Dybler',img:'bolt',products:[
+        {id:'#111010',name:'Brubolt HV M27x100 10.9 VF',unit:'stk',specs:{Gjenge:'M27',Lengde:'100 mm',Fasthetsklasse:'10.9',Overflate:'VF'}},
+        {id:'#111011',name:'Brubolt HV M30x110 10.9 VF',unit:'stk',specs:{Gjenge:'M30',Lengde:'110 mm',Fasthetsklasse:'10.9',Overflate:'VF'}},
+        {id:'#111012',name:'Brubolt HV M36x130 10.9 VF',unit:'stk',specs:{Gjenge:'M36',Lengde:'130 mm',Fasthetsklasse:'10.9',Overflate:'VF'}}
+      ]},
+      {label:'Hylse- og boltegrupper',img:'sleeve',products:[
+        {id:'#111020',name:'Boltegruppe bru M24 i boks',unit:'sett',specs:{Gjenge:'M24',Innhold:'Bolt+mutter+skiver',Overflate:'VF'}},
+        {id:'#111021',name:'Boltegruppe bru M27 i boks',unit:'sett',specs:{Gjenge:'M27',Innhold:'Bolt+mutter+skiver',Overflate:'VF'}},
+        {id:'#111022',name:'Ekspansjonshylse bru EH-30',unit:'stk',specs:{Dimensjon:'Ø30 mm',Materiale:'Stål',Overflate:'VF'}}
+      ]}
+    ]},
+    {label:'Kjemi',img:'cartridge',products:[
+      {id:'#112010',name:'Betongmørtel BM-300 ml',unit:'stk',specs:{Volum:'300 ml',Type:'Hybridmørtel',Herdetid:'30 min'}},
+      {id:'#112011',name:'Betongmørtel BM-500 ml',unit:'stk',specs:{Volum:'500 ml',Type:'Hybridmørtel',Herdetid:'30 min'}},
+      {id:'#112012',name:'Injeksjonsmasse IM-410 ml',unit:'stk',specs:{Volum:'410 ml',Type:'Epoxybasert',Herdetid:'45 min'}}
+    ]}
+  ]},
+  {id:'stal',label:'Stål- og trekonstruksjoner',color:'#3D6EA0',children:[
+    {label:'Stålkonstruksjoner',children:[
+      {label:'Bolter og skruer',img:'bolt',products:[
+        {id:'#200010',name:'HV-bolt M20x80 10.9 VF komplett',unit:'sett',specs:{Gjenge:'M20',Lengde:'80 mm',Fasthetsklasse:'10.9',Overflate:'VF'}},
+        {id:'#200011',name:'HV-bolt M24x90 10.9 VF komplett',unit:'sett',specs:{Gjenge:'M24',Lengde:'90 mm',Fasthetsklasse:'10.9',Overflate:'VF'}},
+        {id:'#200012',name:'HV-bolt M27x100 10.9 VF komplett',unit:'sett',specs:{Gjenge:'M27',Lengde:'100 mm',Fasthetsklasse:'10.9',Overflate:'VF'}}
+      ]},
+      {label:'Gjengestenger',children:[
+        {label:'Gjengestenger 4.8',img:'rod',products:[
+          {id:'#201010',name:'Gjengestang 4.8 M10x1000 VF',unit:'stk',specs:{Gjenge:'M10',Lengde:'1000 mm',Fasthetsklasse:'4.8',Overflate:'VF'}},
+          {id:'#201011',name:'Gjengestang 4.8 M12x1000 VF',unit:'stk',specs:{Gjenge:'M12',Lengde:'1000 mm',Fasthetsklasse:'4.8',Overflate:'VF'}},
+          {id:'#201012',name:'Gjengestang 4.8 M16x1000 VF',unit:'stk',specs:{Gjenge:'M16',Lengde:'1000 mm',Fasthetsklasse:'4.8',Overflate:'VF'}}
+        ]},
+        {label:'Gjengestenger 8.8',img:'rod',products:[
+          {id:'#201020',name:'Gjengestang 8.8 M12x1000 VF',unit:'stk',specs:{Gjenge:'M12',Lengde:'1000 mm',Fasthetsklasse:'8.8',Overflate:'VF'}},
+          {id:'#201021',name:'Gjengestang 8.8 M16x1000 VF',unit:'stk',specs:{Gjenge:'M16',Lengde:'1000 mm',Fasthetsklasse:'8.8',Overflate:'VF'}},
+          {id:'#201022',name:'Gjengestang 8.8 M20x1000 VF',unit:'stk',specs:{Gjenge:'M20',Lengde:'1000 mm',Fasthetsklasse:'8.8',Overflate:'VF'}},
+          {id:'#201023',name:'Gjengestang 8.8 M24x1000 VF',unit:'stk',specs:{Gjenge:'M24',Lengde:'1000 mm',Fasthetsklasse:'8.8',Overflate:'VF'}}
+        ]},
+        {label:'Gjengestenger 10.9',img:'rod',products:[
+          {id:'#201030',name:'Gjengestang 10.9 M16x1000 VF',unit:'stk',specs:{Gjenge:'M16',Lengde:'1000 mm',Fasthetsklasse:'10.9',Overflate:'VF'}},
+          {id:'#201031',name:'Gjengestang 10.9 M20x1000 VF',unit:'stk',specs:{Gjenge:'M20',Lengde:'1000 mm',Fasthetsklasse:'10.9',Overflate:'VF'}},
+          {id:'#201032',name:'Gjengestang 10.9 M24x1000 VF',unit:'stk',specs:{Gjenge:'M24',Lengde:'1000 mm',Fasthetsklasse:'10.9',Overflate:'VF'}}
+        ]},
+        {label:'Gjengestenger 12.9',img:'rod',products:[
+          {id:'#201040',name:'Gjengestang 12.9 M20x1000',unit:'stk',specs:{Gjenge:'M20',Lengde:'1000 mm',Fasthetsklasse:'12.9',Overflate:'Ubehandlet'}},
+          {id:'#201041',name:'Gjengestang 12.9 M24x1000',unit:'stk',specs:{Gjenge:'M24',Lengde:'1000 mm',Fasthetsklasse:'12.9',Overflate:'Ubehandlet'}},
+          {id:'#201042',name:'Gjengestang 12.9 M30x1000',unit:'stk',specs:{Gjenge:'M30',Lengde:'1000 mm',Fasthetsklasse:'12.9',Overflate:'Ubehandlet'}}
+        ]},
+        {label:'Rustfritt og syrefast',img:'rod',products:[
+          {id:'#201050',name:'Gjengestang A2 M10x1000',unit:'stk',specs:{Gjenge:'M10',Lengde:'1000 mm',Materiale:'A2-70',Korrosjon:'Rustfritt'}},
+          {id:'#201051',name:'Gjengestang A4 M12x1000',unit:'stk',specs:{Gjenge:'M12',Lengde:'1000 mm',Materiale:'A4-80',Korrosjon:'Syrefast'}},
+          {id:'#201052',name:'Gjengestang A4 M16x1000',unit:'stk',specs:{Gjenge:'M16',Lengde:'1000 mm',Materiale:'A4-80',Korrosjon:'Syrefast'}}
+        ]},
+        {label:'Stålmateriell for trestolpe',img:'bolt',products:[
+          {id:'#201060',name:'Stålstag M16x400 for trestolpe',unit:'stk',specs:{Gjenge:'M16',Lengde:'400 mm',Overflate:'VF'}},
+          {id:'#201061',name:'Stålstag M20x500 for trestolpe',unit:'stk',specs:{Gjenge:'M20',Lengde:'500 mm',Overflate:'VF'}},
+          {id:'#201062',name:'Kroneskive for trestolpe Ø100',unit:'stk',specs:{Diameter:'Ø100 mm',Materiale:'Stål',Overflate:'VF'}}
+        ]},
+        {label:'Øvrig gjengestenger',children:[
+          {label:'UNC',img:'rod',products:[
+            {id:'#201070',name:'Gjengestang UNC 1/2"-13 x1000',unit:'stk',specs:{Gjenge:'1/2"-13 UNC',Lengde:'1000 mm',Materiale:'8.8'}},
+            {id:'#201071',name:'Gjengestang UNC 5/8"-11 x1000',unit:'stk',specs:{Gjenge:'5/8"-11 UNC',Lengde:'1000 mm',Materiale:'8.8'}},
+            {id:'#201072',name:'Gjengestang UNC 3/4"-10 x1000',unit:'stk',specs:{Gjenge:'3/4"-10 UNC',Lengde:'1000 mm',Materiale:'8.8'}}
+          ]},
+          {label:'Venstregjenget',img:'rod',products:[
+            {id:'#201080',name:'Gjengestang venstre M12x1000 VF',unit:'stk',specs:{Gjenge:'M12 LH',Lengde:'1000 mm',Overflate:'VF'}},
+            {id:'#201081',name:'Gjengestang venstre M16x1000 VF',unit:'stk',specs:{Gjenge:'M16 LH',Lengde:'1000 mm',Overflate:'VF'}},
+            {id:'#201082',name:'Gjengestang venstre M20x1000 VF',unit:'stk',specs:{Gjenge:'M20 LH',Lengde:'1000 mm',Overflate:'VF'}}
+          ]}
+        ]}
+      ]},
+      {label:'Hollo-Bolt®',img:'bolt',products:[
+        {id:'#202010',name:'Hollo-Bolt M8 t=3-13mm VF',unit:'stk',specs:{Gjenge:'M8',Tykkelse:'3–13 mm',Overflate:'VF',Bruk:'Hulprofilstål'}},
+        {id:'#202011',name:'Hollo-Bolt M10 t=3-18mm VF',unit:'stk',specs:{Gjenge:'M10',Tykkelse:'3–18 mm',Overflate:'VF',Bruk:'Hulprofilstål'}},
+        {id:'#202012',name:'Hollo-Bolt M12 t=3-22mm VF',unit:'stk',specs:{Gjenge:'M12',Tykkelse:'3–22 mm',Overflate:'VF',Bruk:'Hulprofilstål'}}
+      ]},
+      {label:'Montasjegods',img:'bracket',products:[
+        {id:'#203010',name:'Kileplate KP-5 mm VF',unit:'stk',specs:{Tykkelse:'5 mm',Materiale:'S235',Overflate:'VF'}},
+        {id:'#203011',name:'Kileplate KP-10 mm VF',unit:'stk',specs:{Tykkelse:'10 mm',Materiale:'S235',Overflate:'VF'}},
+        {id:'#203012',name:'Stålshim 1 mm 100x100',unit:'stk',specs:{Tykkelse:'1 mm',Dimensjon:'100×100 mm',Materiale:'Rustfritt'}}
+      ]},
+      {label:'Muttere',img:'plate',products:[
+        {id:'#204010',name:'Mutter M16 10 VF',unit:'stk',specs:{Gjenge:'M16',Fasthetsklasse:'10',Overflate:'VF',Form:'Sekskant'}},
+        {id:'#204011',name:'Mutter M20 10 VF',unit:'stk',specs:{Gjenge:'M20',Fasthetsklasse:'10',Overflate:'VF',Form:'Sekskant'}},
+        {id:'#204012',name:'Mutter M24 10 VF',unit:'stk',specs:{Gjenge:'M24',Fasthetsklasse:'10',Overflate:'VF',Form:'Sekskant'}}
+      ]},
+      {label:'Skinner og hakebolter',img:'bracket',products:[
+        {id:'#205010',name:'Hakebolt HB M16x60 VF',unit:'stk',specs:{Gjenge:'M16',Lengde:'60 mm',Overflate:'VF'}},
+        {id:'#205011',name:'Hakebolt HB M20x80 VF',unit:'stk',specs:{Gjenge:'M20',Lengde:'80 mm',Overflate:'VF'}},
+        {id:'#205012',name:'Montageskinnebolt MSB-37 M12',unit:'stk',specs:{Gjenge:'M12',Skinneprofil:'37 mm',Overflate:'VF'}}
+      ]},
+      {label:'Skiver',img:'plate',products:[
+        {id:'#206010',name:'Skive M16 DIN125 VF',unit:'stk',specs:{Gjenge:'M16',Norm:'DIN 125',Overflate:'VF',Materiale:'140 HV'}},
+        {id:'#206011',name:'Skive M20 DIN125 VF',unit:'stk',specs:{Gjenge:'M20',Norm:'DIN 125',Overflate:'VF',Materiale:'140 HV'}},
+        {id:'#206012',name:'Skive M24 DIN125 VF',unit:'stk',specs:{Gjenge:'M24',Norm:'DIN 125',Overflate:'VF',Materiale:'140 HV'}}
+      ]},
+      {label:'Skjøtehylser',img:'sleeve',products:[
+        {id:'#207010',name:'Skjøtehylse M16 lang VF',unit:'stk',specs:{Gjenge:'M16',Lengde:'80 mm',Overflate:'VF',Type:'DIN 6334'}},
+        {id:'#207011',name:'Skjøtehylse M20 lang VF',unit:'stk',specs:{Gjenge:'M20',Lengde:'100 mm',Overflate:'VF',Type:'DIN 6334'}},
+        {id:'#207012',name:'Skjøtehylse M24 lang VF',unit:'stk',specs:{Gjenge:'M24',Lengde:'120 mm',Overflate:'VF',Type:'DIN 6334'}}
+      ]},
+      {label:'Strekkstag',children:[
+        {label:'ASDO strekkstagsystem',img:'rod',products:[
+          {id:'#208010',name:'ASDO Strekkstag Ø26 L=1000 VF',unit:'stk',specs:{Diameter:'Ø26 mm',Lengde:'1000 mm',Overflate:'VF',System:'ASDO'}},
+          {id:'#208011',name:'ASDO Strekkstag Ø32 L=1000 VF',unit:'stk',specs:{Diameter:'Ø32 mm',Lengde:'1000 mm',Overflate:'VF',System:'ASDO'}},
+          {id:'#208012',name:'ASDO Gaffelhode GH-26 VF',unit:'stk',specs:{Diameter:'Ø26 mm',Type:'Gaffelende',System:'ASDO',Overflate:'VF'}}
+        ]},
+        {label:'PDS strekkstagsystem',img:'rod',products:[
+          {id:'#208020',name:'PDS Strekkstag Ø20 L=1000 VF',unit:'stk',specs:{Diameter:'Ø20 mm',Lengde:'1000 mm',Overflate:'VF',System:'PDS'}},
+          {id:'#208021',name:'PDS Strekkstag Ø26 L=1500 VF',unit:'stk',specs:{Diameter:'Ø26 mm',Lengde:'1500 mm',Overflate:'VF',System:'PDS'}},
+          {id:'#208022',name:'PDS Endeledd EL-20 VF',unit:'stk',specs:{Diameter:'Ø20 mm',Type:'Endeledd',System:'PDS',Overflate:'VF'}}
+        ]}
+      ]}
+    ]},
+    {label:'Trekonstruksjoner',children:[
+      {label:'Dybel for trekonstruksjon',img:'bolt',products:[
+        {id:'#210010',name:'Hardwood-dybel HD Ø16x70',unit:'stk',specs:{Diameter:'Ø16 mm',Lengde:'70 mm',Materiale:'Rustfritt A4'}},
+        {id:'#210011',name:'Hardwood-dybel HD Ø20x85',unit:'stk',specs:{Diameter:'Ø20 mm',Lengde:'85 mm',Materiale:'Rustfritt A4'}},
+        {id:'#210012',name:'Hardwood-dybel HD Ø24x100',unit:'stk',specs:{Diameter:'Ø24 mm',Lengde:'100 mm',Materiale:'Rustfritt A4'}}
+      ]},
+      {label:'Kjemisk innfestning til betong',children:[
+        {label:'Ankermasse VMU plus',img:'cartridge',products:[
+          {id:'#211010',name:'Ankermasse VMU plus 150 ml',unit:'stk',specs:{Volum:'150 ml',Type:'Polyesterbasert',Min_temp:'+5 °C'}},
+          {id:'#211011',name:'Ankermasse VMU plus 300 ml',unit:'stk',specs:{Volum:'300 ml',Type:'Polyesterbasert',Min_temp:'+5 °C'}},
+          {id:'#211012',name:'Ankermasse VMU plus 410 ml',unit:'stk',specs:{Volum:'410 ml',Type:'Polyesterbasert',Min_temp:'+5 °C'}}
+        ]},
+        {label:'Ankermasse VMU plus Polar',img:'cartridge',products:[
+          {id:'#211020',name:'Ankermasse VMU plus Polar 150 ml',unit:'stk',specs:{Volum:'150 ml',Type:'Polyesterbasert',Min_temp:'-10 °C',Variant:'Polar'}},
+          {id:'#211021',name:'Ankermasse VMU plus Polar 300 ml',unit:'stk',specs:{Volum:'300 ml',Type:'Polyesterbasert',Min_temp:'-10 °C',Variant:'Polar'}},
+          {id:'#211022',name:'Ankermasse VMU plus Polar 410 ml',unit:'stk',specs:{Volum:'410 ml',Type:'Polyesterbasert',Min_temp:'-10 °C',Variant:'Polar'}}
+        ]}
+      ]},
+      {label:'Mekanisk innfestning til betong',children:[
+        {label:'Betongskruer',img:'bolt',products:[
+          {id:'#212010',name:'Betongskrue HUS-A 6x50 VF',unit:'stk',specs:{Gjenge:'Ø6 mm',Lengde:'50 mm',Overflate:'VF',Borehull:'Ø5 mm'}},
+          {id:'#212011',name:'Betongskrue HUS-A 8x80 VF',unit:'stk',specs:{Gjenge:'Ø8 mm',Lengde:'80 mm',Overflate:'VF',Borehull:'Ø6,5 mm'}},
+          {id:'#212012',name:'Betongskrue HUS-A 10x100 VF',unit:'stk',specs:{Gjenge:'Ø10 mm',Lengde:'100 mm',Overflate:'VF',Borehull:'Ø8 mm'}}
+        ]},
+        {label:'Ekspansjonsbolter',img:'wedge',products:[
+          {id:'#212020',name:'Ekspansjonsbolt EXA M10x75 VF',unit:'stk',specs:{Gjenge:'M10',Lengde:'75 mm',Borehull:'Ø10 mm',Overflate:'VF'}},
+          {id:'#212021',name:'Ekspansjonsbolt EXA M12x90 VF',unit:'stk',specs:{Gjenge:'M12',Lengde:'90 mm',Borehull:'Ø12 mm',Overflate:'VF'}},
+          {id:'#212022',name:'Ekspansjonsbolt EXA M16x125 VF',unit:'stk',specs:{Gjenge:'M16',Lengde:'125 mm',Borehull:'Ø16 mm',Overflate:'VF'}}
+        ]}
+      ]},
+      {label:'Vinkler og beslag',img:'bracket',products:[
+        {id:'#213010',name:'Bjelkesko BSF-310 VF',unit:'stk',specs:{Type:'Bjelkesko',Dimensjon:'310 mm',Overflate:'VF',Materiale:'S350GD'}},
+        {id:'#213011',name:'Vinkelbein VB-190 VF',unit:'stk',specs:{Type:'Vinkelbein',Dimensjon:'190 mm',Overflate:'VF',Materiale:'S350GD'}},
+        {id:'#213012',name:'Hjørnebånd HB-120 VF',unit:'stk',specs:{Type:'Hjørnebånd',Dimensjon:'120 mm',Overflate:'VF',Materiale:'S350GD'}}
+      ]}
+    ]}
+  ]},
+  {id:'tunnel',label:'Tunnel og fjellsikring',color:'#8A5E38',children:[
+    {label:'Fjellsikring',children:[
+      {label:'Nett og tilbehør',children:[
+        {label:'Tilbehør',img:'mesh',products:[
+          {id:'#300010',name:'Nettbolt NB-20x150 VF',unit:'stk',specs:{Gjenge:'M20',Lengde:'150 mm',Overflate:'VF',Bruk:'Nettfesting'}},
+          {id:'#300011',name:'Nettplate NP-150x150 VF',unit:'stk',specs:{Dimensjon:'150×150 mm',Overflate:'VF',Materiale:'Stål S235'}},
+          {id:'#300012',name:'Nettskjøte NK-20 rustfritt',unit:'stk',specs:{Type:'Skjøte',Gjenge:'M20',Materiale:'Rustfritt A4'}}
+        ]}
+      ]},
+      {label:'Polyesterpatroner og boltemørtel',img:'cartridge',products:[
+        {id:'#301010',name:'Polyesterpatron 25x300 mm',unit:'stk',specs:{Diameter:'Ø25 mm',Lengde:'300 mm',Type:'Polyester',Herdetid:'5 min'}},
+        {id:'#301011',name:'Polyesterpatron 28x500 mm',unit:'stk',specs:{Diameter:'Ø28 mm',Lengde:'500 mm',Type:'Polyester',Herdetid:'5 min'}},
+        {id:'#301012',name:'Boltemørtel BM-410 ml',unit:'stk',specs:{Volum:'410 ml',Type:'Epoxybasert',Herdetid:'45 min'}}
+      ]},
+      {label:'Pretec drillpipe PD55',img:'drill',products:[
+        {id:'#302010',name:'Drillpipe PD55 L=1000 mm',unit:'stk',specs:{Type:'PD55',Lengde:'1000 mm',Materiale:'Stål',Bruk:'Fjellboring'}},
+        {id:'#302011',name:'Drillpipe PD55 L=1500 mm',unit:'stk',specs:{Type:'PD55',Lengde:'1500 mm',Materiale:'Stål',Bruk:'Fjellboring'}},
+        {id:'#302012',name:'Drillpipe PD55 L=2000 mm',unit:'stk',specs:{Type:'PD55',Lengde:'2000 mm',Materiale:'Stål',Bruk:'Fjellboring'}}
+      ]},
+      {label:'Ras, flom & erosjonssikring',img:'mesh',products:[
+        {id:'#303010',name:'Steingardin SG-3x6 m VF',unit:'stk',specs:{Dimensjon:'3×6 m',Maskevidde:'80 mm',Overflate:'VF',Materiale:'Ståltråd'}},
+        {id:'#303011',name:'Erosjonsnett EN-50 2x50 m',unit:'rull',specs:{Dimensjon:'2×50 m',Maskevidde:'50 mm',Materiale:'Galvanisert ståltråd'}},
+        {id:'#303012',name:'Rockfall beskyttelsesnett RFN-4x6',unit:'stk',specs:{Dimensjon:'4×6 m',Type:'Rockfall',Overflate:'VF'}}
+      ]},
+      {label:'Selvborende stag',children:[
+        {label:'Borkroner og kroneadapter',img:'drill',products:[
+          {id:'#304010',name:'Borkrone T45 Ø51 mm for selvborende stag',unit:'stk',specs:{Diameter:'Ø51 mm',Type:'T45',Bruk:'Selvborende stag'}},
+          {id:'#304011',name:'Borkrone T45 Ø64 mm for selvborende stag',unit:'stk',specs:{Diameter:'Ø64 mm',Type:'T45',Bruk:'Selvborende stag'}},
+          {id:'#304012',name:'Kroneadapter T45/T51',unit:'stk',specs:{Fra:'T45',Til:'T51',Type:'Adapter'}}
+        ]}
+      ]},
+      {label:'Sikringsbolter',img:'bolt',products:[
+        {id:'#305010',name:'FinBolt-R 25x3000 mm VF',unit:'stk',specs:{Diameter:'Ø25 mm',Lengde:'3000 mm',Type:'FinBolt-R',Overflate:'VF'}},
+        {id:'#305011',name:'PC-Bolt Ø25x2700 Pc-Coat',unit:'stk',specs:{Diameter:'Ø25 mm',Lengde:'2700 mm',Type:'PC-Bolt',Overflate:'Pc-Coat'}},
+        {id:'#305012',name:'CT-Bolt Ø20x2400 VF',unit:'stk',specs:{Diameter:'Ø20 mm',Lengde:'2400 mm',Type:'CT-Bolt',Overflate:'VF'}}
+      ]},
+      {label:'Sprøytebetongbuer',img:'bracket',products:[
+        {id:'#306010',name:'Sprøytebetongbue SB-4m ark',unit:'stk',specs:{Spennevidde:'4 m',Type:'Ark',Materiale:'S355',Overflate:'VF'}},
+        {id:'#306011',name:'Sprøytebetongbue SB-5m ark',unit:'stk',specs:{Spennevidde:'5 m',Type:'Ark',Materiale:'S355',Overflate:'VF'}},
+        {id:'#306012',name:'Sprøytebetongbue SB-6m ark',unit:'stk',specs:{Spennevidde:'6 m',Type:'Ark',Materiale:'S355',Overflate:'VF'}}
+      ]},
+      {label:'Tilbehør bolter',img:'plate',products:[
+        {id:'#307010',name:'Halvkuleskive HS-130 VF',unit:'stk',specs:{Ytre_Ø:'130 mm',Type:'Halvkule',Overflate:'VF',Materiale:'Stål'}},
+        {id:'#307011',name:'Halvkuleskive HS-150 VF',unit:'stk',specs:{Ytre_Ø:'150 mm',Type:'Halvkule',Overflate:'VF',Materiale:'Stål'}},
+        {id:'#307012',name:'Firkantplate FP-150 VF',unit:'stk',specs:{Dimensjon:'150×150 mm',Overflate:'VF',Materiale:'S235'}}
+      ]},
+      {label:'Tilbehør sikringsbolter',img:'plate',products:[
+        {id:'#307020',name:'Klemskive KS-M25 VF',unit:'stk',specs:{Gjenge:'M25',Type:'Klemskive',Overflate:'VF'}},
+        {id:'#307021',name:'Spesialmutter SM-25 VF',unit:'stk',specs:{Gjenge:'M25',Type:'Dommutter',Overflate:'VF'}},
+        {id:'#307022',name:'Fordelingsskive FS-200 VF',unit:'stk',specs:{Dimensjon:'200×200 mm',Overflate:'VF',Materiale:'S355'}}
+      ]},
+      {label:'Verktøy for fjellsikring',img:'tool',products:[
+        {id:'#308010',name:'Momentnøkkel 1/2" 20-200 Nm',unit:'stk',specs:{Momentrekke:'20–200 Nm',Feste:'1/2"',Type:'Justerbar'}},
+        {id:'#308011',name:'Boltestrekker hydraulisk 15t',unit:'stk',specs:{Kapasitet:'15 t',Type:'Hydraulisk',Gjenge:'M25–M36'}},
+        {id:'#308012',name:'Momentmultiplikator 1:5 1/2"',unit:'stk',specs:{Ratio:'1:5',Inngang:'1/2"',Utgang:'3/4"'}}
+      ]},
+      {label:'Øvrig og forbruksmateriell',img:'cartridge',products:[
+        {id:'#309010',name:'Smøremiddel for gjengebolt 500 ml',unit:'stk',specs:{Volum:'500 ml',Type:'Smøremiddel',Bruk:'Gjenger'}},
+        {id:'#309011',name:'Korrosjonsbeskyttelse spray 400 ml',unit:'stk',specs:{Volum:'400 ml',Type:'Spray',Bruk:'Korrosjonsbeskyttelse'}},
+        {id:'#309012',name:'Injeksjonspumpe manuell',unit:'stk',specs:{Type:'Manuell',Volum:'850 ml',Bruk:'Injeksjonsmasse'}}
+      ]}
+    ]},
+    {label:'Tunnelinnredning',children:[
+      {label:'Betonginnfesting',children:[
+        {label:'Mekanisk innfesting',children:[
+          {label:'Slaganker',img:'wedge',products:[
+            {id:'#310010',name:'Slaganker SA-6x40 VF',unit:'stk',specs:{Gjenge:'M6',Lengde:'40 mm',Type:'Slaganker',Overflate:'VF'}},
+            {id:'#310011',name:'Slaganker SA-8x50 VF',unit:'stk',specs:{Gjenge:'M8',Lengde:'50 mm',Type:'Slaganker',Overflate:'VF'}},
+            {id:'#310012',name:'Slaganker SA-10x60 VF',unit:'stk',specs:{Gjenge:'M10',Lengde:'60 mm',Type:'Slaganker',Overflate:'VF'}}
+          ]}
+        ]}
+      ]},
+      {label:'Plast og gummidetaljer',children:[
+        {label:'Distanseprodukter',img:'plate',products:[
+          {id:'#311010',name:'Plastdistanse rund Ø40 t=5 mm',unit:'stk',specs:{Diameter:'Ø40 mm',Tykkelse:'5 mm',Materiale:'Nylon'}},
+          {id:'#311011',name:'Plastdistanse rund Ø60 t=10 mm',unit:'stk',specs:{Diameter:'Ø60 mm',Tykkelse:'10 mm',Materiale:'Nylon'}},
+          {id:'#311012',name:'Gummipute GP-80x80x5',unit:'stk',specs:{Dimensjon:'80×80 mm',Tykkelse:'5 mm',Materiale:'EPDM-gummi'}}
+        ]},
+        {label:'Plast og gummidetaljer',img:'plate',products:[
+          {id:'#311020',name:'Vandtett pakking TP-50 EPDM',unit:'stk',specs:{Diameter:'Ø50 mm',Materiale:'EPDM',Type:'Pakking'}},
+          {id:'#311021',name:'Gummimuffe GM-32 EPDM',unit:'stk',specs:{Diameter:'Ø32 mm',Materiale:'EPDM',Type:'Muffe'}},
+          {id:'#311022',name:'Plastprofil PP-30 PVC L=3m',unit:'m',specs:{Bredde:'30 mm',Materiale:'PVC',Lengde:'3 m'}}
+        ]}
+      ]},
+      {label:'Tilbehør bolter',children:[
+        {label:'Avstivning',img:'bracket',products:[
+          {id:'#312010',name:'Avstivningsplate AS-120x120 VF',unit:'stk',specs:{Dimensjon:'120×120 mm',Overflate:'VF',Materiale:'S235'}},
+          {id:'#312011',name:'Spreder S-100 VF',unit:'stk',specs:{Lengde:'100 mm',Type:'Spreder',Overflate:'VF'}},
+          {id:'#312012',name:'Tvinge T-80 VF',unit:'stk',specs:{Bredde:'80 mm',Type:'Tvinge',Overflate:'VF'}}
+        ]},
+        {label:'Bakskive / Vanntett gjennomføring',img:'plate',products:[
+          {id:'#312020',name:'Bakskive BK-130 M20 VF',unit:'stk',specs:{Dimensjon:'130×130 mm',Gjenge:'M20',Overflate:'VF'}},
+          {id:'#312021',name:'Vanntett gjennomføring VG-25 EPDM',unit:'stk',specs:{Gjenge:'M25',Materiale:'EPDM',Type:'Gjennomføring'}},
+          {id:'#312022',name:'Kombinasjonsskive KS-M20 VF',unit:'stk',specs:{Gjenge:'M20',Type:'Kombiskive',Overflate:'VF'}}
+        ]},
+        {label:'Hylser',img:'sleeve',products:[
+          {id:'#312030',name:'Beskyttelseshylse BH-M20 L=50',unit:'stk',specs:{Gjenge:'M20',Lengde:'50 mm',Materiale:'Polyetylen'}},
+          {id:'#312031',name:'Beskyttelseshylse BH-M25 L=60',unit:'stk',specs:{Gjenge:'M25',Lengde:'60 mm',Materiale:'Polyetylen'}},
+          {id:'#312032',name:'Isolasjonshylse IH-M20 L=80',unit:'stk',specs:{Gjenge:'M20',Lengde:'80 mm',Materiale:'Nylon'}}
+        ]},
+        {label:'Skiver, plater og halvkuler',img:'plate',products:[
+          {id:'#313010',name:'Halvkule HK-130 VF',unit:'stk',specs:{Ytre_Ø:'130 mm',Type:'Halvkule',Overflate:'VF'}},
+          {id:'#313011',name:'Halvkule HK-150 VF',unit:'stk',specs:{Ytre_Ø:'150 mm',Type:'Halvkule',Overflate:'VF'}},
+          {id:'#313012',name:'Firkantskive FS-150x12 VF',unit:'stk',specs:{Dimensjon:'150×150×12 mm',Overflate:'VF',Materiale:'S235'}}
+        ]},
+        {label:'Stigeband og armeringsbeslag',img:'bracket',products:[
+          {id:'#313020',name:'Stigeband ST-M16 L=200 VF',unit:'stk',specs:{Gjenge:'M16',Lengde:'200 mm',Type:'Stigeband',Overflate:'VF'}},
+          {id:'#313021',name:'Armeringsbeslag AB-12 VF',unit:'stk',specs:{Armering:'Ø12 mm',Type:'Beslag',Overflate:'VF'}},
+          {id:'#313022',name:'Armeringsbeslag AB-16 VF',unit:'stk',specs:{Armering:'Ø16 mm',Type:'Beslag',Overflate:'VF'}}
+        ]}
+      ]},
+      {label:'Verktøy',img:'tool',products:[
+        {id:'#314010',name:'Momentnøkkel 3/8" 5-25 Nm',unit:'stk',specs:{Momentrekke:'5–25 Nm',Feste:'3/8"',Type:'Justerbar'}},
+        {id:'#314011',name:'Slagtrekker elektrisk 1/2"',unit:'stk',specs:{Feste:'1/2"',Type:'Elektrisk',Max_moment:'400 Nm'}},
+        {id:'#314012',name:'Boring og meiselsett 8 deler',unit:'sett',specs:{Deler:'8',Type:'SDS-plus',Materiell:'Tungsten karbid'}}
+      ]}
+    ]},
+    {label:'Verktøy & testutstyr',children:[
+      {label:'Verktøy',img:'tool',products:[
+        {id:'#315010',name:'Trekkraft-tester PT-50 kN',unit:'stk',specs:{Kapasitet:'50 kN',Type:'Trekkraft',Nøyaktighet:'±2%'}},
+        {id:'#315011',name:'Hydraulisk boltestrekker 100 kN',unit:'stk',specs:{Kapasitet:'100 kN',Type:'Boltestrekker',Gjenge:'M24–M52'}},
+        {id:'#315012',name:'Spenninglogger SL-200',unit:'stk',specs:{Type:'Logger',Kapasitet:'200 kN',Utdata:'Bluetooth'}}
+      ]}
+    ]}
+  ]},
+  {id:'veilys',label:'Veilys og energi',color:'#A88C1A',children:[
+    {label:'Energi',children:[
+      {label:'Forankring og fundamentering',children:[
+        {label:'Bardunforankring',img:'bolt',products:[
+          {id:'#400010',name:'Bardunforankring BA-16 L=600 VF',unit:'stk',specs:{Gjenge:'M16',Lengde:'600 mm',Type:'Bardun',Overflate:'VF'}},
+          {id:'#400011',name:'Bardunforankring BA-20 L=800 VF',unit:'stk',specs:{Gjenge:'M20',Lengde:'800 mm',Type:'Bardun',Overflate:'VF'}},
+          {id:'#400012',name:'Bardunforankring BA-24 L=1000 VF',unit:'stk',specs:{Gjenge:'M24',Lengde:'1000 mm',Type:'Bardun',Overflate:'VF'}}
+        ]},
+        {label:'Lokset og boltemørtel',img:'cartridge',products:[
+          {id:'#400020',name:'Lokset LS-20 m/boltemørtel',unit:'sett',specs:{Gjenge:'M20',Innhold:'Lokset + mørtel',Overflate:'VF'}},
+          {id:'#400021',name:'Lokset LS-24 m/boltemørtel',unit:'sett',specs:{Gjenge:'M24',Innhold:'Lokset + mørtel',Overflate:'VF'}},
+          {id:'#400022',name:'Boltemørtel BM-150 ml',unit:'stk',specs:{Volum:'150 ml',Type:'Epoxybasert',Herdetid:'30 min'}}
+        ]}
+      ]},
+      {label:'Linjemateriell',children:[
+        {label:'Fotbolter',img:'bolt',products:[
+          {id:'#107668',name:'Fotbolt m/bøy og kile Ø25x600 Pc-Coat',nameEN:'Foot bolt with bend and wedge 25x600 Pc-Coat',unit:'stk',specs:{Diameter:'Ø25 mm',Lengde:'600 mm',Vekt:'2,415 kg',Materiale:'S335J2',Overflate:'Pc-Coat'}},
+          {id:'#107673',name:'Fotbolt m/bøy og kile Ø25x800 Pc-Coat',nameEN:'Foot bolt with bend and wedge 25x800 Pc-Coat',unit:'stk',specs:{Diameter:'Ø25 mm',Lengde:'800 mm',Vekt:'3,179 kg',Materiale:'S335J2',Overflate:'Pc-Coat'}},
+          {id:'#106360',name:'Fotbolt m/bøy og kile Ø25x980 Pc-Coat',nameEN:'Foot bolt with bend and wedge 25x980 Pc-Coat',unit:'stk',specs:{Diameter:'Ø25 mm',Lengde:'980 mm',Vekt:'3,887 kg',Materiale:'S335J2',Overflate:'Pc-Coat'}}
+        ]},
+        {label:'Muttere og skiver',img:'plate',products:[
+          {id:'#106279',name:'Bulldog dobbel kvadrat 100x100 VF',nameEN:'Bulldog double square 100x100 HDG',unit:'stk',specs:{Dimensjon:'100×100 mm',Type:'Dobbel kvadrat',Vekt:'0,114 kg',Materiale:'HC340LA',Overflate:'VF'}},
+          {id:'#106276',name:'Bulldog dobbel rektangulær 73x130 Ø26 VF',nameEN:'Bulldog double rectangular 73x130 Ø26 HDG',unit:'stk',specs:{Dimensjon:'73×130 mm',Innv_Ø:'Ø26 mm',Vekt:'0,113 kg',Materiale:'HC340LA',Overflate:'VF'}},
+          {id:'#106270',name:'Bulldog dobbel Ø75 Ø26 VF',nameEN:'Bulldog double Ø75 Ø26 VF',unit:'stk',specs:{Ytre_Ø:'Ø75 mm',Innv_Ø:'Ø26 mm',Vekt:'0,054 kg',Materiale:'HC340LA',Overflate:'VF'}},
+          {id:'#106278',name:'Bulldog ensidig rektangulær 73X130 M24 VF',nameEN:'Bulldog one-sided rectangular 73x130 M24 HDG',unit:'stk',specs:{Dimensjon:'73×130 mm',Gjenge:'M24',Vekt:'0,11 kg',Materiale:'HC340LA',Overflate:'VF'}}
+        ]},
+        {label:'Stålmateriell for trestolpe',img:'bolt',products:[
+          {id:'#105121',name:'A-Mastbolt M20x200 8.8 VF m/muttere og skiver',nameEN:'A-Mastbolt M20X200 8.8 HDG w/nuts and plates',unit:'stk',specs:{Gjenge:'M20',Lengde:'200 mm',Vekt:'0,836 kg',Fasthetsklasse:'8.8',Overflate:'VF'}},
+          {id:'#105123',name:'A-Mastbolt M20x300 8.8 VF m/muttere og skiver',nameEN:'A-Mastbolt M20X300 8.8 HDG w/nuts and plates',unit:'stk',specs:{Gjenge:'M20',Lengde:'300 mm',Vekt:'1,083 kg',Fasthetsklasse:'8.8',Overflate:'VF'}},
+          {id:'#105124',name:'A-Mastbolt M20x350 8.8 VF m/muttere og skiver',nameEN:'A-Mastbolt M20X350 8.8 HDG w/nuts and plates',unit:'stk',specs:{Gjenge:'M20',Lengde:'350 mm',Vekt:'1,206 kg',Fasthetsklasse:'8.8',Overflate:'VF'}},
+          {id:'#105133',name:'A-Mastbolt M20x1000 8.8 VF m/muttere og skiver',nameEN:'A-Mastbolt M20X1000 8.8 HDG w/nuts and plates',unit:'stk',specs:{Gjenge:'M20',Lengde:'1000 mm',Vekt:'2,811 kg',Fasthetsklasse:'8.8',Overflate:'VF'}}
+        ]},
+        {label:'Tilbehør Elverktøy',img:'drill',products:[
+          {id:'#102390',name:'Hammerbor 4C-Plus 10x215mm',nameEN:'Hammerbor 4C-Plus 10X215mm',unit:'stk',specs:{Diameter:'Ø10 mm',Lengde:'215 mm',Vekt:'0,09 kg',Type:'SDS-plus 4C'}},
+          {id:'#102391',name:'Hammerbor 4C-Plus 12x215mm',nameEN:'Hammerbor 4C-Plus 12X215mm',unit:'stk',specs:{Diameter:'Ø12 mm',Lengde:'215 mm',Vekt:'0,12 kg',Type:'SDS-plus 4C'}},
+          {id:'#102392',name:'Hammerbor 4C-Plus 16x265mm',nameEN:'Hammerbor 4C-Plus 16X265mm',unit:'stk',specs:{Diameter:'Ø16 mm',Lengde:'265 mm',Vekt:'0,2 kg',Type:'SDS-plus 4C'}},
+          {id:'#102393',name:'Hammerbor 4C-Plus 22x250mm',nameEN:'Hammerbor 4C-Plus 22X250mm',unit:'stk',specs:{Diameter:'Ø22 mm',Lengde:'250 mm',Vekt:'0,38 kg',Type:'SDS-plus 4C'}}
+        ]}
+      ]}
+    ]},
+    {label:'Lysmaster og fundamenter',children:[
+      {label:'Fundamentering lysmast',img:'wedge',products:[
+        {id:'#104975',name:'Boltegruppe M20x430mm 8.8 Pc-Coat C-C-C: 160',nameEN:'M20x430mm 8.8 Pc-Coat C-C-C: 160',unit:'sett',specs:{Gjenge:'M20',Lengde:'430 mm',Vekt:'5,64 kg',Fasthetsklasse:'8.8',CCC:'160 mm',Overflate:'Pc-Coat'}},
+        {id:'#104976',name:'Boltegruppe M20x430mm 8.8 Pc-Coat C-C-C: 200/240',nameEN:'M20x430mm 8.8 Pc-Coat C-C-C: 200/240',unit:'sett',specs:{Gjenge:'M20',Lengde:'430 mm',Vekt:'5,74 kg',Fasthetsklasse:'8.8',CCC:'200/240 mm',Overflate:'Pc-Coat'}},
+        {id:'#104947',name:'Dampsperre 16x16cm',unit:'stk',specs:{Dimensjon:'160×160 mm',Type:'Dampsperre',Lengde:'160 mm'}},
+        {id:'#107392',name:'Betongfundament Lysmast cc160 900mm',unit:'stk',specs:{CC:'160 mm',Høyde:'900 mm',Type:'Betongfundament'}}
+      ]},
+      {label:'Veilysmaster',img:'mast',products:[
+        {id:'#107535',name:'Aluminium mast 3m ø60 cc160 anodisert',nameEN:'Aluminium Column SAL3 PP224x160x15 anodized',unit:'stk',specs:{Høyde:'3 m',Diameter:'Ø60 mm',Vekt:'12,5 kg',CC:'160 mm',Materiale:'Aluminium',Overflate:'Anodisert 25 µm'}},
+        {id:'#107537',name:'Aluminium mast 4m ø60 cc160 anodisert',nameEN:'Aluminium Column SAL4 PP224x160x15 anodized',unit:'stk',specs:{Høyde:'4 m',Diameter:'Ø60 mm',Vekt:'13,5 kg',CC:'160 mm',Materiale:'Aluminium',Overflate:'Anodisert 25 µm'}},
+        {id:'#107538',name:'Aluminium mast 5m ø60 cc160 anodisert',nameEN:'Aluminium Column SAL5 PP224x160x15 anodized',unit:'stk',specs:{Høyde:'5 m',Diameter:'Ø60 mm',Vekt:'17,9 kg',CC:'160 mm',Materiale:'Aluminium',Overflate:'Anodisert 25 µm'}},
+        {id:'#107539',name:'Aluminium mast 6m ø60 cc160 anodisert',nameEN:'Aluminium Column SAL6 PP224x160x15 anodized',unit:'stk',specs:{Høyde:'6 m',Diameter:'Ø60 mm',Vekt:'20,9 kg',CC:'160 mm',Materiale:'Aluminium',Overflate:'Anodisert 25 µm'}}
+      ]}
+    ]}
+  ]}
+];
+
+/* ── CANVAS DRAWING ── */
+function ha(hex,a){var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return'rgba('+r+','+g+','+b+','+a+')'}
+
+function makeImg(type,color){
+  var W=280,H=210,c=document.createElement('canvas');
+  c.width=W;c.height=H;
+  var ctx=c.getContext('2d');
+  // bg
+  var gd=ctx.createLinearGradient(0,0,W,H);
+  gd.addColorStop(0,'#F6F4EF');gd.addColorStop(1,'#EDEAE3');
+  ctx.fillStyle=gd;ctx.fillRect(0,0,W,H);
+  // subtle grid
+  ctx.strokeStyle='rgba(0,0,0,0.04)';ctx.lineWidth=1;
+  for(var x=0;x<=W;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+  for(var y=0;y<=H;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+  var fn={bolt:drawBolt,rod:drawRod,mast:drawMast,drill:drawDrill,plate:drawPlate,sleeve:drawSleeve,mesh:drawMesh,bracket:drawBracket,wedge:drawWedge,cartridge:drawCartridge,tool:drawTool}[type]||drawBolt;
+  fn(ctx,W,H,color);
+  return c;
+}
+
+function drawBolt(ctx,W,H,col){
+  var cx=W/2,ty=H*0.3;
+  ctx.save();ctx.translate(cx,ty);
+  ctx.fillStyle=ha(col,0.18);ctx.strokeStyle='#3A4550';ctx.lineWidth=1.8;
+  ctx.beginPath();
+  for(var i=0;i<6;i++){var a=i*Math.PI/3-Math.PI/6;ctx.lineTo(28*Math.cos(a),14*Math.sin(a))}
+  ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.restore();
+  var sx=cx-8,sy=H*0.3+15,sw=16,sh=H*0.42;
+  ctx.fillStyle='#D8D4CE';ctx.strokeStyle='#3A4550';ctx.lineWidth=1.5;
+  ctx.fillRect(sx,sy,sw,sh);ctx.strokeRect(sx,sy,sw,sh);
+  ctx.strokeStyle=ha(col,0.55);ctx.lineWidth=1;
+  for(var yi=4;yi<sh;yi+=6){ctx.beginPath();ctx.moveTo(sx-3,sy+yi);ctx.lineTo(sx+sw+3,sy+yi);ctx.stroke()}
+  ctx.fillStyle=ha(col,0.5);ctx.fillRect(sx-7,sy+sh-18,sw+14,14);
+  ctx.strokeStyle='#3A4550';ctx.lineWidth=1.5;ctx.strokeRect(sx-7,sy+sh-18,sw+14,14);
+}
+
+function drawRod(ctx,W,H,col){
+  var cx=W/2,rW=14,rH=H*0.72,ry=(H-rH)/2;
+  ctx.fillStyle='#DEDAD3';ctx.strokeStyle='#3A4550';ctx.lineWidth=1.5;
+  ctx.fillRect(cx-rW/2,ry,rW,rH);ctx.strokeRect(cx-rW/2,ry,rW,rH);
+  ctx.strokeStyle=ha(col,0.45);ctx.lineWidth=1;
+  for(var y=4;y<rH;y+=7){ctx.beginPath();ctx.moveTo(cx-rW/2-3,ry+y);ctx.lineTo(cx+rW/2+3,ry+y);ctx.stroke()}
+  ctx.fillStyle=ha(col,0.6);
+  [[cx-rW/2-4,ry,rW+8,10],[cx-rW/2-4,ry+rH-10,rW+8,10]].forEach(function(r){ctx.fillRect(r[0],r[1],r[2],r[3])});
+  ctx.strokeStyle='#3A4550';ctx.lineWidth=1.5;
+  ctx.strokeRect(cx-rW/2-4,ry,rW+8,10);ctx.strokeRect(cx-rW/2-4,ry+rH-10,rW+8,10);
+}
+
+function drawMast(ctx,W,H,col){
+  var cx=W/2;
+  var bW=60,bH=12,bY=H*0.82;
+  ctx.fillStyle=ha(col,0.25);ctx.strokeStyle='#3A4550';ctx.lineWidth=1.5;
+  ctx.fillRect(cx-bW/2,bY,bW,bH);ctx.strokeRect(cx-bW/2,bY,bW,bH);
+  [cx-20,cx-8,cx+8,cx+20].forEach(function(bx){
+    ctx.beginPath();ctx.moveTo(bx,bY);ctx.lineTo(bx,bY+bH+8);ctx.stroke();
+    ctx.beginPath();ctx.arc(bx,bY+bH+9,3,0,Math.PI*2);ctx.fill();ctx.stroke();
+  });
+  var mW=10,mH=H*0.68,mY=bY-mH;
+  var grad=ctx.createLinearGradient(cx-mW/2,0,cx+mW/2,0);
+  grad.addColorStop(0,'#C8C4BC');grad.addColorStop(0.4,'#E8E4DE');grad.addColorStop(1,'#C0BDB5');
+  ctx.fillStyle=grad;ctx.fillRect(cx-mW/2,mY,mW,mH);ctx.strokeRect(cx-mW/2,mY,mW,mH);
+  ctx.fillStyle=ha(col,0.6);ctx.fillRect(cx-mW/2-3,mY,mW+6,14);
+  ctx.strokeStyle='#3A4550';ctx.strokeRect(cx-mW/2-3,mY,mW+6,14);
+}
+
+function drawDrill(ctx,W,H,col){
+  var cx=W/2,dW=10,dH=H*0.55,dY=H*0.12;
+  ctx.fillStyle=ha(col,0.3);ctx.strokeStyle='#3A4550';ctx.lineWidth=1.5;
+  ctx.fillRect(cx-7,dY,14,18);ctx.strokeRect(cx-7,dY,14,18);
+  ctx.fillStyle='#DEDAD3';ctx.fillRect(cx-dW/2,dY+18,dW,dH-18);ctx.strokeRect(cx-dW/2,dY+18,dW,dH-18);
+  ctx.strokeStyle=ha(col,0.4);ctx.lineWidth=1;
+  for(var y=0;y<dH-22;y+=9){
+    ctx.beginPath();ctx.moveTo(cx-dW/2-2,dY+20+y);ctx.lineTo(cx+dW/2,dY+20+y+4);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-dW/2,dY+20+y+4);ctx.lineTo(cx+dW/2+2,dY+20+y);ctx.stroke();
+  }
+  var tipY=dY+dH;
+  ctx.fillStyle='#7A7570';ctx.beginPath();ctx.moveTo(cx-dW/2,tipY);ctx.lineTo(cx,tipY+H*0.14);ctx.lineTo(cx+dW/2,tipY);ctx.closePath();ctx.fill();ctx.stroke();
+}
+
+function drawPlate(ctx,W,H,col){
+  var pw=W*0.62,ph=H*0.38,px=(W-pw)/2,py=(H-ph)/2;
+  ctx.fillStyle=ha(col,0.15);ctx.strokeStyle='#3A4550';ctx.lineWidth=1.8;
+  ctx.fillRect(px,py,pw,ph);ctx.strokeRect(px,py,pw,ph);
+  var holes=[[px+14,py+14],[px+pw-14,py+14],[px+14,py+ph-14],[px+pw-14,py+ph-14],[px+pw/2,py+ph/2]];
+  holes.forEach(function(h){
+    ctx.fillStyle='#F0EDE7';ctx.beginPath();ctx.arc(h[0],h[1],7,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#3A4550';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(h[0],h[1],7,0,Math.PI*2);ctx.stroke();
+  });
+}
+
+function drawSleeve(ctx,W,H,col){
+  var cx=W/2,cy=H/2,r=34,ir=20,sH=H*0.55;
+  ctx.fillStyle='#DEDAD3';ctx.strokeStyle='#3A4550';ctx.lineWidth=1.5;
+  ctx.fillRect(cx-r,cy-sH/2,r*2,sH);ctx.strokeRect(cx-r,cy-sH/2,r*2,sH);
+  ctx.fillStyle='#F0EDE7';ctx.fillRect(cx-ir,cy-sH/2-1,ir*2,sH+2);ctx.strokeRect(cx-ir,cy-sH/2,ir*2,sH);
+  ctx.strokeStyle=ha(col,0.5);ctx.lineWidth=1;
+  for(var y=8;y<sH;y+=8){ctx.beginPath();ctx.moveTo(cx-r-3,cy-sH/2+y);ctx.lineTo(cx-ir,cy-sH/2+y);ctx.stroke();ctx.beginPath();ctx.moveTo(cx+ir,cy-sH/2+y);ctx.lineTo(cx+r+3,cy-sH/2+y);ctx.stroke()}
+  ctx.fillStyle=ha(col,0.4);ctx.fillRect(cx-r-2,cy-sH/2,r*2+4,12);ctx.fillRect(cx-r-2,cy+sH/2-12,r*2+4,12);
+  ctx.strokeStyle='#3A4550';ctx.lineWidth=1.5;ctx.strokeRect(cx-r-2,cy-sH/2,r*2+4,12);ctx.strokeRect(cx-r-2,cy+sH/2-12,r*2+4,12);
+}
+
+function drawMesh(ctx,W,H,col){
+  var mx=W*0.15,my=H*0.18,mw=W*0.7,mh=H*0.64;
+  ctx.fillStyle=ha(col,0.08);ctx.fillRect(mx,my,mw,mh);
+  ctx.strokeStyle='#3A4550';ctx.lineWidth=1.5;ctx.strokeRect(mx,my,mw,mh);
+  ctx.strokeStyle=ha(col,0.65);ctx.lineWidth=1.5;
+  var cols=6,rows=5;
+  for(var c=0;c<=cols;c++){var xi=mx+c*(mw/cols);ctx.beginPath();ctx.moveTo(xi,my);ctx.lineTo(xi,my+mh);ctx.stroke()}
+  for(var r=0;r<=rows;r++){var yi=my+r*(mh/rows);ctx.beginPath();ctx.moveTo(mx,yi);ctx.lineTo(mx+mw,yi);ctx.stroke()}
+  ctx.fillStyle=ha(col,0.7);
+  for(var ci=0;ci<=cols;ci++)for(var ri=0;ri<=rows;ri++){
+    var xi2=mx+ci*(mw/cols),yi2=my+ri*(mh/rows);
+    ctx.beginPath();ctx.arc(xi2,yi2,3,0,Math.PI*2);ctx.fill();
+  }
+}
+
+function drawBracket(ctx,W,H,col){
+  var cx=W/2,cy=H/2;
+  ctx.strokeStyle='#3A4550';ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.fillStyle=ha(col,0.2);
+  ctx.beginPath();ctx.moveTo(cx-50,cy-40);ctx.lineTo(cx+50,cy-40);ctx.lineTo(cx+50,cy+40);ctx.lineTo(cx-50,cy+40);ctx.closePath();
+  // L shape instead
+  ctx.clearRect(0,0,999,999);
+  var gd2=ctx.createLinearGradient(0,0,W,H);gd2.addColorStop(0,'#F6F4EF');gd2.addColorStop(1,'#EDEAE3');ctx.fillStyle=gd2;ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(0,0,0,0.04)';ctx.lineWidth=1;
+  for(var xi=0;xi<=W;xi+=20){ctx.beginPath();ctx.moveTo(xi,0);ctx.lineTo(xi,H);ctx.stroke()}
+  for(var yi=0;yi<=H;yi+=20){ctx.beginPath();ctx.moveTo(0,yi);ctx.lineTo(W,yi);ctx.stroke()}
+  var bx=cx-45,by=cy-50,bw=90,bh=18;
+  ctx.fillStyle=ha(col,0.2);ctx.strokeStyle='#3A4550';ctx.lineWidth=1.8;
+  ctx.fillRect(bx,by,bw,bh);ctx.strokeRect(bx,by,bw,bh);
+  var bx2=cx-45,by2=by+bh,bw2=18,bh2=80;
+  ctx.fillRect(bx2,by2,bw2,bh2);ctx.strokeRect(bx2,by2,bw2,bh2);
+  [cx-30,cx,cx+30].forEach(function(hx){ctx.beginPath();ctx.arc(hx,by+bh/2,5,0,Math.PI*2);ctx.fillStyle='#F0EDE7';ctx.fill();ctx.strokeStyle='#3A4550';ctx.stroke()});
+  [by2+20,by2+50].forEach(function(hy){ctx.beginPath();ctx.arc(bx2+bw2/2,hy,5,0,Math.PI*2);ctx.fillStyle='#F0EDE7';ctx.fill();ctx.strokeStyle='#3A4550';ctx.stroke()});
+}
+
+function drawWedge(ctx,W,H,col){
+  var cx=W/2,cy=H/2;
+  ctx.fillStyle=ha(col,0.2);ctx.strokeStyle='#3A4550';ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.moveTo(cx-12,cy-55);ctx.lineTo(cx+12,cy-55);ctx.lineTo(cx+20,cy+30);ctx.lineTo(cx-20,cy+30);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='#DEDAD3';ctx.strokeStyle='#3A4550';
+  ctx.beginPath();ctx.moveTo(cx-20,cy+30);ctx.lineTo(cx+20,cy+30);ctx.lineTo(cx+28,cy+55);ctx.lineTo(cx-28,cy+55);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle=ha(col,0.5);ctx.lineWidth=1;
+  [[cx-10,cy+30],[cx,cy+30],[cx+10,cy+30]].forEach(function(pt){ctx.beginPath();ctx.moveTo(pt[0],pt[1]);ctx.lineTo(pt[0]+(pt[0]-cx)*0.5,cy+55);ctx.stroke()});
+  ctx.strokeStyle='#3A4550';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy-55);ctx.lineTo(cx,cy-70);ctx.stroke();
+  ctx.fillStyle=ha(col,0.6);ctx.beginPath();ctx.arc(cx,cy-70,5,0,Math.PI*2);ctx.fill();ctx.stroke();
+}
+
+function drawCartridge(ctx,W,H,col){
+  var cx=W/2,cw=32,ch=H*0.58,cy=(H-ch)/2+10;
+  ctx.fillStyle='#DEDAD3';ctx.strokeStyle='#3A4550';ctx.lineWidth=1.8;
+  ctx.fillRect(cx-cw/2,cy,cw,ch);ctx.strokeRect(cx-cw/2,cy,cw,ch);
+  ctx.fillStyle=ha(col,0.6);ctx.fillRect(cx-cw/2,cy,cw,ch*0.25);
+  ctx.strokeStyle='#3A4550';ctx.strokeRect(cx-cw/2,cy,cw,ch*0.25);
+  ctx.fillStyle='#BFBBB4';ctx.fillRect(cx-8,cy-18,16,18);ctx.strokeRect(cx-8,cy-18,16,18);
+  ctx.fillStyle='#AEAAA4';ctx.fillRect(cx-4,cy-24,8,6);ctx.strokeRect(cx-4,cy-24,8,6);
+  ctx.strokeStyle=ha(col,0.3);ctx.lineWidth=1;
+  for(var y=ch*0.3;y<ch-4;y+=12){ctx.beginPath();ctx.moveTo(cx-cw/2+4,cy+y);ctx.lineTo(cx+cw/2-4,cy+y);ctx.stroke()}
+}
+
+function drawTool(ctx,W,H,col){
+  ctx.save();ctx.translate(W/2,H/2);ctx.rotate(-0.4);
+  var ow=14,oh=30,bw=55,bh=14;
+  ctx.fillStyle='#DEDAD3';ctx.strokeStyle='#3A4550';ctx.lineWidth=1.8;
+  ctx.fillRect(-bw*0.7,-(bh/2),bw*1.4,bh);ctx.strokeRect(-bw*0.7,-(bh/2),bw*1.4,bh);
+  ctx.fillStyle=ha(col,0.3);
+  [[-bw*0.7-ow/2,-(oh/2),ow,oh],[bw*0.7-ow/2,-(oh/2),ow,oh]].forEach(function(r){ctx.fillRect(r[0],r[1],r[2],r[3]);ctx.strokeStyle='#3A4550';ctx.lineWidth=1.8;ctx.strokeRect(r[0],r[1],r[2],r[3])});
+  ctx.fillStyle='#F0EDE7';
+  [[-bw*0.7+ow/4,-(oh*0.25)],[bw*0.7+ow/4,-(oh*0.25)]].forEach(function(h){ctx.beginPath();ctx.arc(h[0],h[1],7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#3A4550';ctx.lineWidth=1.5;ctx.stroke()});
+  ctx.restore();
+}
+
+/* ── STATE & NAV ── */
+var activeSegId = null;
+var navPath = []; // array of node objects from root to current
+var selectedProduct = null;
+var imgCache = {};
+
+function segColor(){return activeSegId?SEGS.find(function(s){return s.id===activeSegId}).color:'#888'}
+
+function getImg(type,color){
+  var k=type+'|'+color;
+  if(!imgCache[k]){var c=makeImg(type,color);imgCache[k]=c}
+  return imgCache[k];
+}
+
+function countLeafProducts(node){
+  if(node.products)return node.products.length;
+  if(!node.children)return 0;
+  return node.children.reduce(function(s,c){return s+countLeafProducts(c)},0);
+}
+
+/* ── SIDEBAR ── */
+function renderSidebar(){
+  var el=document.getElementById('sidebar');
+  el.innerHTML='<div class="sb-label">Segmenter</div>';
+  SEGS.forEach(function(seg){
+    var btn=document.createElement('button');
+    btn.className='cat-btn'+(seg.id===activeSegId?' active':'');
+    btn.dataset.id=seg.id;
+    btn.innerHTML='<span class="cat-swatch" style="background:'+seg.color+'"></span><span class="cat-txt"><span class="cat-name">'+seg.label+'</span><span class="cat-sub">'+countLeafProducts(seg)+' produkter</span></span>';
+    btn.onclick=function(){
+      activeSegId=seg.id;
+      navPath=[seg];
+      selectedProduct=null;
+      document.getElementById('detail').classList.remove('open');
+      renderSidebar();renderContent();
+    };
+    el.appendChild(btn);
+  });
+}
+
+/* ── BREADCRUMB ── */
+function renderCrumb(){
+  var el=document.getElementById('crumb');
+  el.innerHTML='';
+  if(!activeSegId){el.innerHTML='<span style="color:var(--muted);font-size:12px">Velg et segment fra menyen</span>';return}
+  var seg=SEGS.find(function(s){return s.id===activeSegId});
+  var dot=document.createElement('span');dot.className='crumb-dot';dot.style.background=seg.color;
+  el.appendChild(dot);
+  navPath.forEach(function(node,i){
+    var item=document.createElement('span');
+    item.className='crumb-item'+(i===navPath.length-1?' last':'');
+    item.textContent=node.label;
+    if(i<navPath.length-1){
+      item.onclick=function(){navPath=navPath.slice(0,i+1);selectedProduct=null;document.getElementById('detail').classList.remove('open');renderContent()};
+    }
+    el.appendChild(item);
+    if(i<navPath.length-1){var sep=document.createElement('span');sep.className='crumb-sep';sep.textContent='›';el.appendChild(sep)}
+  });
+}
+
+/* ── CONTENT ── */
+function renderContent(){
+  renderCrumb();
+  var el=document.getElementById('content');
+  el.innerHTML='';
+  if(!activeSegId)return;
+  var cur=navPath[navPath.length-1];
+  if(cur.products){
+    renderProductGrid(cur,el);
+  } else if(cur.children){
+    renderCategoryCards(cur,el);
+  }
+}
+
+function renderCategoryCards(node,el){
+  var hd=document.createElement('div');hd.className='section-hd';
+  hd.innerHTML='<div class="section-hd-title">'+node.label+'<span class="section-hd-count">'+node.children.length+' kategorier</span></div>';
+  el.appendChild(hd);
+  var grid=document.createElement('div');grid.className='cat-cards';
+  var color=segColor();
+  node.children.forEach(function(child){
+    var card=document.createElement('div');card.className='cat-card';
+    var cnt=countLeafProducts(child);
+    card.innerHTML='<div class="cat-card-name">'+child.label+'</div><div class="cat-card-count">'+cnt+' produkt'+(cnt===1?'':'er')+'</div><div class="cat-card-bar" style="background:'+color+'44"></div>';
+    card.onclick=function(){navPath.push(child);renderContent()};
+    grid.appendChild(card);
+  });
+  el.appendChild(grid);
+}
+
+function renderProductGrid(node,el){
+  var hd=document.createElement('div');hd.className='section-hd';
+  hd.innerHTML='<div class="section-hd-title">'+node.label+'<span class="section-hd-count">'+node.products.length+' produkter</span></div>';
+  el.appendChild(hd);
+  var grid=document.createElement('div');grid.className='prod-grid';
+  var color=segColor();
+  node.products.forEach(function(p){
+    var card=document.createElement('div');card.className='prod-card';
+    var imgDiv=document.createElement('div');imgDiv.className='prod-card-img';
+    var canvas=getImg(node.img||'bolt',color);
+    var clone=document.createElement('canvas');clone.width=canvas.width;clone.height=canvas.height;
+    clone.getContext('2d').drawImage(canvas,0,0);
+    imgDiv.appendChild(clone);
+    var specKeys=Object.keys(p.specs||{}).slice(0,3);
+    var pills=specKeys.map(function(k){return'<span class="spec-pill">'+p.specs[k]+'</span>'}).join('');
+    var body=document.createElement('div');body.className='prod-card-body';
+    body.innerHTML='<div class="prod-art">'+p.id+'</div><div class="prod-name">'+p.name+'</div><div class="prod-specs">'+pills+'</div>';
+    card.appendChild(imgDiv);card.appendChild(body);
+    card.onclick=function(){openDetail(p,node.img||'bolt',color)};
+    grid.appendChild(card);
+  });
+  el.appendChild(grid);
+}
+
+/* ── PRODUCT DETAIL ── */
+function openDetail(p,imgType,color){
+  selectedProduct=p;
+  document.getElementById('d-art').textContent=p.id;
+  var dc=document.getElementById('d-canvas');
+  dc.width=400;dc.height=300;
+  var src=getImg(imgType,color);
+  dc.getContext('2d').drawImage(src,0,0,400,300);
+  var body=document.getElementById('d-body');
+  var specs=p.specs||{};
+  var rows=Object.keys(specs).map(function(k){return'<tr><td>'+k+'</td><td>'+specs[k]+'</td></tr>'}).join('');
+  var extra='';
+  if(p.nameEN)extra+='<tr><td>Engelsk navn</td><td>'+p.nameEN+'</td></tr>';
+  if(p.unit)extra+='<tr><td>Enhet</td><td>'+p.unit+'</td></tr>';
+  if(p.vismaId)extra+='<tr><td>Visma ID</td><td>'+p.vismaId+'</td></tr>';
+  if(p.family)extra+='<tr><td>Produktfamilie</td><td>'+p.family+'</td></tr>';
+  body.innerHTML='<div><div class="detail-name">'+p.name+'</div>'+(p.family?'<div class="detail-family">'+p.family+'</div>':'')+'</div>'
+    +'<div><div class="detail-section-title">Spesifikasjoner</div><table class="spec-table">'+rows+extra+'</table></div>';
+  document.getElementById('detail').classList.add('open');
+}
+
+document.getElementById('d-close').onclick=function(){
+  document.getElementById('detail').classList.remove('open');
+  selectedProduct=null;
+};
+
+/* ── INIT ── */
+renderSidebar();renderContent();
+</script>

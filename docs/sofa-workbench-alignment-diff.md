@@ -116,7 +116,7 @@ The PDF specifies a **detailed public request form**; our spec captures only *na
 | F1 | **Content types** | 7 named: Article, News, Reference project, About us, Terms & conditions, Information page, Company certifications landing page | Stub lists *different generic candidates* (editorial landing / category / product editorial / navigation / banners) — `content-sanity-spec.md:34-38`; type list flagged open (`customer-overview-spec.md:251`) | 🟨 Gap | High |
 | F2 | **Content blocks** | 6 named: Text, Image, Product list, Link list, Category list, Accordion | **No blocks listed** (`content-sanity-spec.md:42` open `[ ]`) | 🟨 Gap | Med-High |
 | F3 | **Non-product imagery** | All website imagery except product media in Sanity | Implied but not explicit; asset handling is open (`content-sanity-spec.md:46`) | 🟨 Gap | Low |
-| F4 | **GDPR consent** | Consent text/categories editable in **Sanity**; consent **data** stored/handled in **Maestro** | **No consent model exists**; GDPR only as to-dos (`security-privacy-spec.md:35,39`); Maestro role list doesn't include consent (`customer-overview-spec.md:179`) | 🟨 Gap (we owe) | Med-High |
+| F4 | **GDPR consent** | Consent text/categories editable in **Sanity**; consent **data** stored/handled in **Maestro** | **Now specified, but diverges** — `security-privacy-spec.md` §7 captures 2 consents per contact (privacy-policy + marketing) **synced to RamBase Privacy**, *not* Maestro | ⛔ Contradiction (reconcile w/ Pretec) | Med-High |
 
 ---
 

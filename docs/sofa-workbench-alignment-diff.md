@@ -116,7 +116,7 @@ The PDF specifies a **detailed public request form**; our spec captures only *na
 | F1 | **Content types** | 7 named: Article, News, Reference project, About us, Terms & conditions, Information page, Company certifications landing page | Stub lists *different generic candidates* (editorial landing / category / product editorial / navigation / banners) — `content-sanity-spec.md:34-38`; type list flagged open (`customer-overview-spec.md:251`) | 🟨 Gap | High |
 | F2 | **Content blocks** | 6 named: Text, Image, Product list, Link list, Category list, Accordion | **No blocks listed** (`content-sanity-spec.md:42` open `[ ]`) | 🟨 Gap | Med-High |
 | F3 | **Non-product imagery** | All website imagery except product media in Sanity | Implied but not explicit; asset handling is open (`content-sanity-spec.md:46`) | 🟨 Gap | Low |
-| F4 | **GDPR consent** | Consent text/categories editable in **Sanity**; consent **data** stored/handled in **Maestro** | **Now specified, but diverges** — `security-privacy-spec.md` §7 captures 2 consents per contact (privacy-policy + marketing) **synced to RamBase Privacy**, *not* Maestro | ⛔ Contradiction (reconcile w/ Pretec) | Med-High |
+| F4 | **GDPR consent** | Consent text/categories editable in **Sanity**; consent **data** stored/handled in **Maestro** | **Decided** — `security-privacy-spec.md` §7: 2 consents per contact (privacy-policy + marketing) **synced to RamBase Privacy**; SoFa's "Maestro" is an **error to correct in the customer spec** | ✅ Resolved our side — PDF to fix (2026-06-24) | — |
 
 ---
 
@@ -171,7 +171,7 @@ Localization (Norwegian-only, NOK, multi-language architecture, Maestro redirect
 5. Entitlements-as-product-assortment (B5). *(User-role model B3 — ✅ done, `security-privacy-spec.md` §3.)*
 6. Become-a-Customer full field list + "credit check" notice (C2–C9).
 7. Special-price saving display (E2) — confirm RamBase fields.
-8. Sanity content types & blocks, certifications boundary, consent model (D2, F1, F2, F4).
+8. Sanity content types & blocks, certifications boundary (D2, F1, F2). *(Consent model F4 — ✅ decided: RamBase Privacy; correct the SoFa PDF.)*
 9. PLP/PDP/search detail to fill the catalog & search stubs (D3–D7).
 10. **Analytics (GTM/GA) — add a new integration row to `spec-index.md`** (H1); it has no home today.
 11. Reorder, My Page Struct docs, customer user-administration (G7, G8, G10). *(Release-governance gate H3 — ✅ done, `environments-spec.md` §3.)*

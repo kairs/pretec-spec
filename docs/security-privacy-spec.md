@@ -27,7 +27,8 @@ and deleted.
 - **Credentials & secrets:** RamBase, Struct, Sanity, and other service credentials are stored **per
   environment in Infisical** (see [X-2 §4](environments-spec.md)); never baked into images or committed.
   Two RamBase credential sets (test, production) are isolated by environment.
-- **Session / token lifetime:** short-lived access tokens; exact lifetimes set during build (§9).
+- **Session / token lifetime:** ID/access token **~1 hour**; refresh token **~30 days, sliding**. Once a
+  session is idle past the refresh window, the user re-authenticates.
 
 ---
 
@@ -95,9 +96,9 @@ Two consents are captured **per contact person**:
 
 Consent records are **synced to RamBase Privacy**, which is the source of truth for consent state.
 
-> **Divergence from SoFa Workbench:** the SoFa spec states consent data is stored/handled in *Maestro*.
-> Our model syncs consent to **RamBase Privacy** instead. Flagged for reconciliation with Pretec — see
-> [SoFa alignment diff F4](sofa-workbench-alignment-diff.md).
+> **Decision:** consent records are stored in **RamBase Privacy** (final). The SoFa Workbench spec's
+> statement that consent data lives in *Maestro* is an **error to be corrected** in the customer spec —
+> see [SoFa alignment diff F4](sofa-workbench-alignment-diff.md).
 
 ---
 
@@ -124,9 +125,7 @@ Consent records are **synced to RamBase Privacy**, which is the source of truth 
   RamBase**; deletions propagate to Mosaik via sync.
 
 **Open items:**
-- Exact access/refresh **token lifetimes** (set during build).
 - **Maestro / backoffice (Pretec staff) roles** — define with [C-2 Maestro usage](maestro-usage-spec.md).
-- **Consent storage location** to be confirmed with Pretec (our model: RamBase Privacy; SoFa: Maestro — §7).
 
 ---
 

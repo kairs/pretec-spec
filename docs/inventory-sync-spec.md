@@ -33,7 +33,7 @@ RamBase (stock) -> Harmony / Inventory Sync -> Storefront Catalog
 
 - [ ] Which RamBase stock figure(s) are used (on-hand, available-to-promise, per warehouse?)
 - [ ] Display model — exact quantity vs. in-stock/low/out-of-stock bands
-- [ ] Whether availability shows for anonymous users
+- [x] Whether availability shows for anonymous users — **inventory is hidden for anonymous users; login required to see stock availability**
 - [ ] Multi-warehouse / location handling (if any in Phase 1)
 - [ ] Sync frequency — inventory changes faster than product data; near-real-time vs. scheduled
 - [ ] Staleness tolerance and how stale stock is communicated

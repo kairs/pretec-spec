@@ -23,7 +23,7 @@ Depends on: [I-2 Catalog publish](catalog-publish-spec.md), [I-3 Inventory](inve
 
 - [ ] Listing / category page layout & pagination
 - [ ] Product detail page content (Struct enrichment + Sanity editorial + live price + inventory)
-- [ ] Anonymous browsing — catalog visible, **no prices, no cart**
+- [ ] Anonymous browsing — catalog visible, **no prices, no inventory, no cart**
 - [ ] Availability display rules (from [I-3](inventory-sync-spec.md))
 - [ ] Price display & "price on request" degradation (from [F-3](spec-index.md))
 - [ ] Variants / related products
@@ -44,4 +44,4 @@ Depends on: [I-2 Catalog publish](catalog-publish-spec.md), [I-3 Inventory](inve
 ## 5. Success criteria
 
 - Anonymous and logged-in users can browse categories and product detail pages.
-- Enrichment, editorial, availability, and (for logged-in users) prices render correctly together.
+- Enrichment and editorial render for all users; availability and prices are only shown to logged-in users.

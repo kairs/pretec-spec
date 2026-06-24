@@ -146,7 +146,7 @@ The PDF specifies a **detailed public request form**; our spec captures only *na
 |---|---|---|---|---|---|
 | H1 | **Analytics** | Google Tag Manager + Google Analytics, enhanced e-commerce baseline | **Absent from the entire repo** — no GTM/GA spec, no row in `spec-index.md` (only OTEL/Grafana *operational* observability) | 🟨 Gap (we owe) — **NEW integration** | High |
 | H2 | **Environment tiers** | dev/test → staging → production | Aligned: test → staging/UAT → production (`environments-spec.md:16-20`) | aligned | — |
-| H3 | **Release governance** | Pretec tests & **must approve** on staging; **production re-test** before go-live | Not stated (staging doubles as UAT but no explicit approval gate / prod re-test); `environments-spec.md` is a **stub** (`:35` pipeline open) | 🟨 Gap | Med |
+| H3 | **Release governance** | Pretec tests & **must approve** on staging; **production re-test** before go-live | **Now specified** — `environments-spec.md` §3 adopts the SoFa release process (test → staging/UAT → Pretec approval → production, prod re-test before go-live) | ✅ Resolved (2026-06-24) | — |
 | H4 | **Out of scope** | Payments, shipping, self-registration, account creation, quote downstream | Aligned (`customer-overview-spec.md:36-44`) | aligned | — |
 | H5 | **Deferred** | Additional markets/languages; non-NOK currencies | Aligned (`customer-overview-spec.md:41-42`; `spec-index.md:100`) | aligned | — |
 | H6 | **Quote statuses** | Conditional My Page feature | We treat quotes as **excluded** from Min side, not conditional (see G6) | ⛔ Contradiction | High |
@@ -174,7 +174,7 @@ Localization (Norwegian-only, NOK, multi-language architecture, Maestro redirect
 8. Sanity content types & blocks, certifications boundary, consent model (D2, F1, F2, F4).
 9. PLP/PDP/search detail to fill the catalog & search stubs (D3–D7).
 10. **Analytics (GTM/GA) — add a new integration row to `spec-index.md`** (H1); it has no home today.
-11. Reorder, My Page Struct docs, customer user-administration (G7, G8, G10); release-governance gate (H3).
+11. Reorder, My Page Struct docs, customer user-administration (G7, G8, G10). *(Release-governance gate H3 — ✅ done, `environments-spec.md` §3.)*
 
 **Close our own open items the PDF settles (🔵):** shared order visibility (B4), and confirm whether a public self-service registration form exists (B6).
 

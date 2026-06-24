@@ -47,13 +47,12 @@ only when the invitation is accepted**. The sync/company-creation mechanics live
 - [ ] Who invites (Pretec Sales per diagram) and who approves
 - [ ] De-duplication when the company already exists in RamBase
 - [ ] Customer deactivation handling
-- [ ] Re-invitation / additional users on an existing company
+- [x] **Additional users on an existing company** — an **org-admin** invites & manages standard users via the invitation flow (see [Security & privacy §3 User roles](security-privacy-spec.md)); invitation expiry/resend rules still open
 
 ## 5. Open decisions
 
 - Whether **phone** is captured at registration (spec earlier listed it; diagram shows name/company/email).
 - Invitation expiry and resend rules.
-- Adding **further users** to an already-onboarded company (same application flow, or a lighter invite-only path?).
 - What happens if a RamBase customer account is deactivated.
 
 ## 6. Responsibilities

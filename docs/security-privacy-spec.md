@@ -27,7 +27,8 @@ handled, how access is scoped, where data lives, and how PII is treated.
 ### Access control
 - [ ] Anonymous vs. logged-in vs. pending-approval boundaries (no price/cart until approved)
 - [ ] Company-scoped data access (orders/invoices shared across users in a company)
-- [ ] Maestro / backoffice roles
+- [x] End-customer user roles — **two-tier model (org-admin / standard)**, defined in §3
+- [ ] Maestro / backoffice roles (Pretec staff)
 
 ### Data & privacy
 - [ ] PII inventory (customer, contact persons) and where it is stored (Cognito, Storefront DB, MongoDB cart)
@@ -35,21 +36,42 @@ handled, how access is scoped, where data lives, and how PII is treated.
 - [ ] Retention (e.g. cart TTL 90 days) and deletion / GDPR rights
 - [ ] Logging — ensuring PII is not over-logged (ties to [X-3 Observability](spec-index.md))
 
-## 3. Open decisions
+## 3. User roles & permissions
+
+End-customer access uses a **two-tier role model**:
+
+| Role | Capabilities |
+|---|---|
+| **Standard user** | Standard My Page access — the company's orders, quotes, and documentation. |
+| **Org-admin** | All standard-user capabilities, **plus** inviting and managing the company's standard users. |
+
+- **No self-promotion.** A standard user cannot elevate their own role, and an **org-admin cannot promote
+  any user to org-admin**. Org-admin status is assigned **internally by Pretec in RamBase**; the website
+  only **reads** role data and never writes it.
+- Roles are **company-scoped** — an org-admin manages only users within their own company, and order/invoice
+  visibility is shared across users of the same company (see Access control, §2).
+- User invitations issued by an org-admin follow the invitation-based onboarding flow (see
+  [A-1 Authentication & identity](authentication-spec.md)); the account is created on invitation acceptance.
+
+---
+
+## 4. Open decisions
 
 - Data residency / region requirements.
 - GDPR / data-subject request handling process.
 - What happens to user data when a RamBase customer is deactivated.
 
-## 4. Responsibilities
+## 5. Responsibilities
 
 | Area | Geta | Pretec |
 |---|---|---|
 | Security implementation | Build & operate | Define policy & compliance requirements |
 | PII / GDPR process | Implement agreed process | Own data controller obligations |
 
-## 5. Success criteria
+## 6. Success criteria
 
 - Tokens and credentials are validated, scoped, and rotated correctly.
 - Access boundaries hold for anonymous / pending / approved users and across companies.
+- The two-tier role model holds: org-admins manage only their own company's standard users, and no user
+  (org-admin included) can grant org-admin — that is set by Pretec in RamBase only.
 - PII handling meets Pretec's compliance requirements.

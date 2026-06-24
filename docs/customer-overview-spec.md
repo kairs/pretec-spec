@@ -160,8 +160,10 @@ Pretec still needs to confirm:
 - Who approves applications and who sends invitations
 - De-duplication when the company already exists in RamBase
 - Invitation expiry / resend rules and whether `phone` is captured at registration
-- Adding further users to an already-onboarded company
 - What happens if a RamBase customer account is deactivated
+
+Additional users on an already-onboarded company are handled by an **org-admin** inviting and managing
+standard users (two-tier role model — see [Security & privacy §3 User roles](security-privacy-spec.md)).
 
 See the detailed [Registration & Approval spec](registration-approval-spec.md) and [Customer Sync spec](customer-sync-spec.md).
 

@@ -52,7 +52,7 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 | I-1 | **Product & Category sync** — RamBase → Struct via Harmony | INT | ✅ Written | [product-rambase-struct-harmony-spec.md](product-rambase-struct-harmony-spec.md) |
 | I-2 | **Catalog publish** — Struct → Storefront Catalog via Harmony (Catalog Sync) | INT | ⬜ To write (stub) | [catalog-publish-spec.md](catalog-publish-spec.md) |
 | I-3 | **Inventory sync** — RamBase → Storefront Catalog via Harmony | INT | ⬜ To write (stub) | [inventory-sync-spec.md](inventory-sync-spec.md) |
-| I-4 | **Customer sync** — RamBase → Mosaik (Harmony) + approval write-back Mosaik → RamBase | INT | 🟡 Partial | [customer-sync-spec.md](customer-sync-spec.md) (consolidating [flows-customer-sync.md](flows-customer-sync.md)) |
+| I-4 | **Customer sync** — RamBase → Mosaik (Harmony) + approval write-back Mosaik → RamBase | INT | ✅ Written | [customer-sync-spec.md](customer-sync-spec.md) |
 | I-5 | **Content sync** — Sanity → Storefront (documents + content assets) | INT | ⬜ To write (stub) | [content-sanity-spec.md](content-sanity-spec.md) |
 | I-6 | **RamBase API integration** — auth model, system credential, scoping, environments | INT | 🟡 Partial | [rambase-api-integration-spec.md](rambase-api-integration-spec.md) (consolidating [rambase-api-audit.md](superpowers/research/rambase-api-audit.md)) |
 
@@ -118,7 +118,7 @@ Specs that **still need to be written** (⬜), in suggested priority order:
 7. **C-2 Maestro usage**, **C-3 Storefront customization** — config-only but undocumented.
 8. **X-5 Security & privacy** — cross-cutting, no spec yet. *(X-1 Localization — ✅ written.)*
 
-Items marked 🟡 **Partial** now have **consolidation stubs** (I-4, I-6, F-1, F-7, A-1, X-2) — each
+Items marked 🟡 **Partial** now have **consolidation stubs** (I-6, F-1, F-7, A-1, X-2) — each
 points at where the partial content currently lives (overview / Service API / flows / research) and lists
 what to pull together. They stay 🟡 until the consolidated spec is fully written and the source content is
 either moved or cross-referenced.

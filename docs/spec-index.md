@@ -100,7 +100,7 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 | X-1 | **Localization & markets** — languages (NO only Phase 1), currency (NOK), translations | XC | ✅ Written | [localization-spec.md](localization-spec.md) |
 | X-2 | **Environments & deployment** — test / staging-UAT / production, upstream env mapping, release governance | XC | ✅ Written | [environments-spec.md](environments-spec.md) |
 | X-3 | **Observability & monitoring** — OTEL, Grafana, alerting, operational ownership | XC | ✅ Written | [observability-spec.md](observability-spec.md) |
-| X-4 | **Resilience & error handling** — RamBase dependency, timeouts/retries, graceful degradation | XC | 🟡 Partial | Service API §6 — applies platform-wide |
+| X-4 | **Resilience & error handling** — RamBase dependency, timeouts/retries, graceful degradation | XC | ✅ Written | [resilience-spec.md](resilience-spec.md) (consolidating Service API §6) |
 | X-5 | **Security & data privacy** — token handling, data residency, PII, access control | XC | ⬜ To write (stub) | [security-privacy-spec.md](security-privacy-spec.md) |
 
 ---

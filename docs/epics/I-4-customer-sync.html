@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epic I-4 — Customer Sync (RamBase ↔ Mosaik via Harmony)</title>
+  <style>
+    :root {
+      --color-bg: #f8f9fb;
+      --color-surface: #ffffff;
+      --color-border: #e2e6ea;
+      --color-primary: #1a56db;
+      --color-primary-light: #eff4ff;
+      --color-success: #0e7c56;
+      --color-warn: #b45309;
+      --color-muted: #6b7280;
+      --color-text: #111827;
+      --radius: 8px;
+      --font: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--color-bg); color: var(--color-text); font-size: 15px; line-height: 1.6; }
+    .page { max-width: 900px; margin: 40px auto; padding: 0 24px 80px; }
+    .epic-header { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 24px; }
+    .epic-id { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-primary); background: var(--color-primary-light); padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 12px; }
+    .epic-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .epic-meta { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 16px; font-size: 13px; color: var(--color-muted); }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-partial { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 20px; }
+    .card-title { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 16px; }
+    .flow { background: #1e293b; color: #e2e8f0; padding: 16px 20px; border-radius: 6px; font-family: monospace; font-size: 13px; line-height: 1.8; margin: 12px 0; }
+    .flow-label { font-size: 12px; color: #94a3b8; }
+    .stories { list-style: none; }
+    .stories li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--color-border); }
+    .stories li:last-child { border-bottom: none; }
+    .story-icon { flex-shrink: 0; width: 20px; height: 20px; background: var(--color-primary-light); color: var(--color-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; }
+    .tasks { list-style: none; }
+    .tasks li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .tasks li:last-child { border-bottom: none; }
+    .checkbox { width: 16px; height: 16px; border: 2px solid var(--color-border); border-radius: 3px; flex-shrink: 0; margin-top: 3px; }
+    .decisions { list-style: none; }
+    .decisions li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .decisions li:last-child { border-bottom: none; }
+    .decision-icon { flex-shrink: 0; color: var(--color-warn); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { background: var(--color-bg); font-weight: 600; text-align: left; padding: 10px 14px; border: 1px solid var(--color-border); color: var(--color-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    td { padding: 10px 14px; border: 1px solid var(--color-border); }
+    .success-list { list-style: none; }
+    .success-list li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .success-list li:last-child { border-bottom: none; }
+    .tick { color: var(--color-success); font-weight: 700; }
+    .deps { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dep-tag { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
+    .section-label { font-size: 12px; font-weight: 600; color: var(--color-muted); margin-bottom: 8px; margin-top: 16px; text-transform: uppercase; letter-spacing: .05em; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="epic-header">
+    <div class="epic-id">I-4 · Integration Epic</div>
+    <div class="epic-title">Customer Sync — RamBase ↔ Mosaik via Harmony</div>
+    <p style="color: var(--color-muted); margin-top: 8px;">Two-way customer sync: existing company/contact data flows RamBase → Mosaik (inbound, scheduled). On new-company approval, Mosaik → RamBase creates the company and returns the RamBase ID (write-back).</p>
+    <div class="epic-meta">
+      <span class="meta-item"><strong>Status:</strong> &nbsp;<span class="badge badge-partial">Partial — consolidating</span></span>
+      <span class="meta-item"><strong>Type:</strong> Integration (INT)</span>
+      <span class="meta-item"><strong>Direction:</strong> Bi-directional (inbound scheduled + outbound on approval)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Data Flow</div>
+    <div class="section-label">Direction 1 — Inbound (existing customers)</div>
+    <div class="flow">
+RamBase  (existing companies + contact persons)
+    │
+    ▼  Harmony — Customer Sync  (scheduled)
+    │
+    ▼
+Mosaik Storefront User DB
+    </div>
+    <div class="section-label">Direction 2 — Write-back (new company application)</div>
+    <div class="flow">
+Storefront  (new company registration form)
+    │
+    ▼  Maestro — approval by Pretec Sales
+    │
+    ▼  Harmony — Create Customer  (on approval)
+    │
+    ▼
+RamBase  (new company created)
+    │
+    ▼  RamBase unique ID returned → stored in Mosaik account
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">User Stories</div>
+    <ul class="stories">
+      <li><div class="story-icon">1</div><div>As an <strong>existing Pretec customer</strong>, when I log into the storefront for the first time my company and contact-person data from RamBase is already populated in my account.</div></li>
+      <li><div class="story-icon">2</div><div>As a <strong>new company applicant</strong>, once Pretec Sales approves my registration, my company is created in RamBase and I receive an invitation to activate my account linked to the correct RamBase customer ID.</div></li>
+      <li><div class="story-icon">3</div><div>As <strong>Pretec Sales</strong>, when I approve a new company application in Maestro, the company is created in RamBase automatically (with the extra information I fill in) so I don't have to create it twice.</div></li>
+      <li><div class="story-icon">4</div><div>As <strong>Pretec Sales</strong>, when an application names a company that already exists in RamBase, the system links the application to the existing company rather than creating a duplicate.</div></li>
+      <li><div class="story-icon">5</div><div>As <strong>Geta operations</strong>, if a customer sync or company-creation fails I want a visible alert with retry capability so no customer is permanently stuck.</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Implementation Tasks</div>
+    <ul class="tasks">
+      <li><div class="checkbox"></div><div>Define field mapping: RamBase customer / contact person → Storefront User DB (inbound sync)</div></li>
+      <li><div class="checkbox"></div><div>Define "create-company" payload — exact RamBase fields set on approval, including the extra information Pretec Sales fills in</div></li>
+      <li><div class="checkbox"></div><div>Confirm how the returned RamBase unique ID is stored and linked to the Mosaik account</div></li>
+      <li><div class="checkbox"></div><div>Define delta / incremental strategy for inbound sync (ties to C-1 Harmony config)</div></li>
+      <li><div class="checkbox"></div><div>Confirm whether the approving user also becomes a RamBase contact person on the new company</div></li>
+      <li><div class="checkbox"></div><div>Define de-duplication rule when application names a company that already exists in RamBase</div></li>
+      <li><div class="checkbox"></div><div>Define conflict handling — RamBase as source of truth for existing company master data</div></li>
+      <li><div class="checkbox"></div><div>Confirm customer deactivation handling (account disabled in storefront, GDPR/security implications)</div></li>
+      <li><div class="checkbox"></div><div>Implement and test error handling for create-company failure mid-approval (partial failure recovery)</div></li>
+      <li><div class="checkbox"></div><div>Confirm whether company creation runs through Harmony or via direct RamBase API call</div></li>
+      <li><div class="checkbox"></div><div>Configure Harmony inbound customer sync and validate field mapping with Pretec</div></li>
+      <li><div class="checkbox"></div><div>Implement Maestro approval workflow triggering the write-back (coordinates with F-7)</div></li>
+      <li><div class="checkbox"></div><div>Execute initial customer data load and validate in storefront</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Open Decisions</div>
+    <ul class="decisions">
+      <li><div class="decision-icon">⚠</div><div>De-duplication rule when an application's company name already exists in RamBase — link vs. create new?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Does company creation on approval run through Harmony (per diagram) or via a direct RamBase API call?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Does the approving Pretec Sales user also become a contact person in RamBase on the new company?</div></li>
+      <li><div class="decision-icon">⚠</div><div>What happens when a RamBase customer account is deactivated — disable storefront access, GDPR cleanup?</div></li>
+      <li><div class="decision-icon">⚠</div><div>What is the inbound sync frequency — and how are large initial loads handled?</div></li>
+      <li><div class="decision-icon">⚠</div><div>What happens if create-company fails after approval has already been granted?</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Responsibilities</div>
+    <table>
+      <thead><tr><th>Area</th><th>Geta</th><th>Pretec</th></tr></thead>
+      <tbody>
+        <tr><td>Customer Sync config (inbound)</td><td>Configure Harmony sync + field mapping</td><td>Provide RamBase access, validate data</td></tr>
+        <tr><td>Company creation (write-back)</td><td>Implement write-back via Harmony / API</td><td>Define required payload fields; operate approval in Maestro</td></tr>
+        <tr><td>De-duplication logic</td><td>Implement per agreed rule</td><td>Define the de-duplication rule</td></tr>
+        <tr><td>Approval operation</td><td>Implement Maestro approval flow</td><td>Approve &amp; link applications (F-7)</td></tr>
+        <tr><td>Error handling</td><td>Implement retry &amp; alerting</td><td>Correct source data; re-approve if needed</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dependencies</div>
+    <div class="deps">
+      <span class="dep-tag">I-6 RamBase API Integration (auth &amp; credentials)</span>
+      <span class="dep-tag">F-7 Customer Registration &amp; Approval</span>
+      <span class="dep-tag">A-1 Authentication &amp; Identity (RamBase ID → Mosaik mapping)</span>
+      <span class="dep-tag">C-1 Harmony Sync Configuration</span>
+      <span class="dep-tag">X-5 Security &amp; Privacy (deactivation / PII handling)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Success Criteria</div>
+    <ul class="success-list">
+      <li><div class="tick">✓</div><div>Existing RamBase company and contact data appears in the Storefront on schedule.</div></li>
+      <li><div class="tick">✓</div><div>Approving a new company application creates the company in RamBase and links the returned ID to the account.</div></li>
+      <li><div class="tick">✓</div><div>De-duplication logic prevents duplicate companies in RamBase.</div></li>
+      <li><div class="tick">✓</div><div>Sync and write-back failures are visible and retryable.</div></li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

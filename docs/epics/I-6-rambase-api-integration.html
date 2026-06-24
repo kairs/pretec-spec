@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epic I-6 — RamBase API Integration</title>
+  <style>
+    :root {
+      --color-bg: #f8f9fb;
+      --color-surface: #ffffff;
+      --color-border: #e2e6ea;
+      --color-primary: #1a56db;
+      --color-primary-light: #eff4ff;
+      --color-success: #0e7c56;
+      --color-warn: #b45309;
+      --color-muted: #6b7280;
+      --color-text: #111827;
+      --radius: 8px;
+      --font: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--color-bg); color: var(--color-text); font-size: 15px; line-height: 1.6; }
+    .page { max-width: 900px; margin: 40px auto; padding: 0 24px 80px; }
+    .epic-header { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 24px; }
+    .epic-id { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-primary); background: var(--color-primary-light); padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 12px; }
+    .epic-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .epic-meta { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 16px; font-size: 13px; color: var(--color-muted); }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-partial { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 20px; }
+    .card-title { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 16px; }
+    .flow { background: #1e293b; color: #e2e8f0; padding: 16px 20px; border-radius: 6px; font-family: monospace; font-size: 13px; line-height: 1.8; margin: 12px 0; }
+    .stories { list-style: none; }
+    .stories li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--color-border); }
+    .stories li:last-child { border-bottom: none; }
+    .story-icon { flex-shrink: 0; width: 20px; height: 20px; background: var(--color-primary-light); color: var(--color-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; }
+    .tasks { list-style: none; }
+    .tasks li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .tasks li:last-child { border-bottom: none; }
+    .checkbox { width: 16px; height: 16px; border: 2px solid var(--color-border); border-radius: 3px; flex-shrink: 0; margin-top: 3px; }
+    .decisions { list-style: none; }
+    .decisions li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .decisions li:last-child { border-bottom: none; }
+    .decision-icon { flex-shrink: 0; color: var(--color-warn); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { background: var(--color-bg); font-weight: 600; text-align: left; padding: 10px 14px; border: 1px solid var(--color-border); color: var(--color-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    td { padding: 10px 14px; border: 1px solid var(--color-border); }
+    .success-list { list-style: none; }
+    .success-list li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .success-list li:last-child { border-bottom: none; }
+    .tick { color: var(--color-success); font-weight: 700; }
+    .deps { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dep-tag { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
+    .known-list { list-style: none; }
+    .known-list li { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .known-list li:last-child { border-bottom: none; }
+    .known-icon { color: var(--color-success); font-weight: 700; flex-shrink: 0; }
+    .doc-types { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .doc-tag { background: #eff4ff; border: 1px solid #c7d7fd; border-radius: 4px; padding: 2px 8px; font-family: monospace; font-size: 13px; color: #1a56db; }
+    .blocking { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 6px; padding: 12px 16px; margin-bottom: 16px; font-size: 14px; color: #991b1b; }
+    .blocking strong { display: block; margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="epic-header">
+    <div class="epic-id">I-6 · Integration Epic</div>
+    <div class="epic-title">RamBase API Integration — Auth, Credentials, Scoping &amp; Environments</div>
+    <p style="color: var(--color-muted); margin-top: 8px;">Define and implement the shared foundation that all Geta services use to authenticate to and call the RamBase API — OAuth2 credential model, customer scoping, environment mapping, and operational resilience.</p>
+    <div class="epic-meta">
+      <span class="meta-item"><strong>Status:</strong> &nbsp;<span class="badge badge-partial">Partial — consolidating</span></span>
+      <span class="meta-item"><strong>Type:</strong> Integration (INT)</span>
+      <span class="meta-item"><strong>Shared by:</strong> Price, Cart, Quote, Query, Customer write-back (I-4)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Auth Model (known)</div>
+    <div class="flow">
+Geta Service  →  OAuth2 Client Credentials flow  →  RamBase OAuth endpoint
+                     │  access token (Bearer)
+                     ▼
+              RamBase API  [$db parameter selects company]
+    </div>
+    <p style="font-size: 13px; color: var(--color-muted); margin-top: 8px;">A single system/integration credential is used; customer scoping is done via <code style="font-family:monospace">$filter</code> / <code style="font-family:monospace">$db</code> parameters, not per-user tokens.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Already Documented (from RamBase API Audit)</div>
+    <ul class="known-list">
+      <li><div class="known-icon">✓</div><div>Auth model: OAuth2 Client-Credentials, Bearer token, <code style="font-family:monospace">$db</code> selects company</div></li>
+      <li><div class="known-icon">✓</div><div>Orders/invoices endpoints + cursor pagination (<code style="font-family:monospace">$top</code> / <code style="font-family:monospace">$pageKey</code>, <code style="font-family:monospace">$inlineCount</code>)</div></li>
+      <li><div class="known-icon">✓</div><div>Document/PDF mechanism (PEPPOL / Document-Messages)</div></li>
+      <li><div class="known-icon">✓</div><div>Service-side auth hops documented in Service API §3</div></li>
+    </ul>
+    <p style="font-size: 13px; color: var(--color-muted); margin-top: 12px;">Document types in use:</p>
+    <div class="doc-types">
+      <span class="doc-tag">ART</span>
+      <span class="doc-tag">AGR</span>
+      <span class="doc-tag">CRQ</span>
+      <span class="doc-tag">CQU</span>
+      <span class="doc-tag">COA</span>
+      <span class="doc-tag">CUS</span>
+      <span class="doc-tag">IPA</span>
+      <span class="doc-tag">PLI</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Blocked Items (require RamBase credentials)</div>
+    <div class="blocking">
+      <strong>These items are unresolved until Pretec provides RamBase API access:</strong>
+      <ul style="margin-left: 16px; margin-top: 4px;">
+        <li>Customer-specific <strong>price</strong> lookup endpoint for <code style="font-family:monospace">(product, customer, qty)</code></li>
+        <li>Exact <code style="font-family:monospace">$filter</code> field paths for date/status/PO; Sales Invoice (CIN) + credit notes</li>
+        <li>Create-quote endpoint (<code style="font-family:monospace">CRQ→CQU→COA</code>) and required fields</li>
+        <li>Whether a single system account may read prices for any customer by parameter</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">User Stories</div>
+    <ul class="stories">
+      <li><div class="story-icon">1</div><div>As <strong>Geta engineering</strong>, I want a single, clearly documented credential model for all RamBase API calls so every service uses the same auth pattern and I don't re-implement it per service.</div></li>
+      <li><div class="story-icon">2</div><div>As <strong>Geta engineering</strong>, I want credentials stored and rotatable per environment (test / staging / production) so I can rotate without code changes.</div></li>
+      <li><div class="story-icon">3</div><div>As <strong>Geta engineering</strong>, I want customer-scoped reads (price, orders, invoices) to work via agreed parameters so I can fetch data for the correct customer without per-user credentials.</div></li>
+      <li><div class="story-icon">4</div><div>As <strong>Geta engineering</strong>, I want documented retry/timeout behavior for RamBase API calls so all services degrade gracefully when RamBase is slow or unavailable.</div></li>
+      <li><div class="story-icon">5</div><div>As <strong>Pretec</strong>, I want RamBase API credentials to be properly scoped and stored so the system cannot be exploited to access data beyond its intended scope.</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Implementation Tasks</div>
+    <ul class="tasks">
+      <li><div class="checkbox"></div><div>Document single system/integration credential model and required OAuth2 scopes</div></li>
+      <li><div class="checkbox"></div><div>Define credential storage solution per environment (secret manager / vault) with rotation procedure</div></li>
+      <li><div class="checkbox"></div><div>Document customer-scoping pattern — <code style="font-family:monospace">$filter</code> on customer field, <code style="font-family:monospace">$db</code> for company selection</div></li>
+      <li><div class="checkbox"></div><div>Map RamBase environments (test, production) to Geta environments (ties to X-2 Environments)</div></li>
+      <li><div class="checkbox"></div><div>Define rate limits, retry strategy, and timeout values for all RamBase API calls (ties to X-4 Resilience)</div></li>
+      <li><div class="checkbox"></div><div>Document document types in use: ART, AGR, CRQ, CQU, COA, CUS, IPA, PLI</div></li>
+      <li><div class="checkbox"></div><div>Resolve blocked items once Pretec provides RamBase API credentials (price endpoint, filter paths, create-quote)</div></li>
+      <li><div class="checkbox"></div><div>Implement credential retrieval and token-refresh in the Pretec Service API</div></li>
+      <li><div class="checkbox"></div><div>Validate auth model in test environment before production rollout</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Open Decisions</div>
+    <ul class="decisions">
+      <li><div class="decision-icon">⚠</div><div>Customer-specific price lookup endpoint — does one exist? Can a single system account read prices for any customer by parameter?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Exact <code style="font-family:monospace">$filter</code> field paths for date, status, and PO on Sales Invoices (CIN) and credit notes</div></li>
+      <li><div class="decision-icon">⚠</div><div>Create-quote endpoint flow (<code style="font-family:monospace">CRQ→CQU→COA</code>) and all required fields</div></li>
+      <li><div class="decision-icon">⚠</div><div>Where are credentials stored per environment — AWS Secrets Manager, Azure Key Vault, other?</div></li>
+      <li><div class="decision-icon">⚠</div><div>What are the agreed rate limits and per-call timeout values for RamBase APIs?</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Responsibilities</div>
+    <table>
+      <thead><tr><th>Area</th><th>Geta</th><th>Pretec</th></tr></thead>
+      <tbody>
+        <tr><td>Integration build</td><td>Build, implement, and operate the auth model</td><td>Provide RamBase API access &amp; required scopes</td></tr>
+        <tr><td>Credential management</td><td>Define storage &amp; rotation procedure</td><td>Issue credentials; confirm scope boundaries</td></tr>
+        <tr><td>RamBase environment access</td><td>Consume; map to Geta environments</td><td>Provide test + production RamBase access</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dependencies</div>
+    <div class="deps">
+      <span class="dep-tag">I-1 Product &amp; Category Sync (consumer)</span>
+      <span class="dep-tag">I-3 Inventory Sync (consumer)</span>
+      <span class="dep-tag">I-4 Customer Sync (consumer)</span>
+      <span class="dep-tag">S-1 Pretec Service API — Price, Cart, Quote, Query</span>
+      <span class="dep-tag">X-2 Environments (RamBase env mapping)</span>
+      <span class="dep-tag">X-4 Resilience &amp; Error Handling</span>
+      <span class="dep-tag">X-5 Security &amp; Privacy (credential storage)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Success Criteria</div>
+    <ul class="success-list">
+      <li><div class="tick">✓</div><div>All Geta services authenticate to RamBase reliably per environment using the agreed credential model.</div></li>
+      <li><div class="tick">✓</div><div>Credentials are stored securely and can be rotated per environment without code changes.</div></li>
+      <li><div class="tick">✓</div><div>Customer-scoped reads and writes work via the agreed parameters; blocked items resolved during build.</div></li>
+      <li><div class="tick">✓</div><div>Retry and timeout behavior is consistent across all services calling RamBase.</div></li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

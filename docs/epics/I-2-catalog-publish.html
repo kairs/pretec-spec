@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epic I-2 — Catalog Publish (Struct → Storefront Catalog via Harmony)</title>
+  <style>
+    :root {
+      --color-bg: #f8f9fb;
+      --color-surface: #ffffff;
+      --color-border: #e2e6ea;
+      --color-primary: #1a56db;
+      --color-primary-light: #eff4ff;
+      --color-success: #0e7c56;
+      --color-success-bg: #ecfdf5;
+      --color-warn: #b45309;
+      --color-warn-bg: #fffbeb;
+      --color-muted: #6b7280;
+      --color-text: #111827;
+      --radius: 8px;
+      --font: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--color-bg); color: var(--color-text); font-size: 15px; line-height: 1.6; }
+    .page { max-width: 900px; margin: 40px auto; padding: 0 24px 80px; }
+    .epic-header { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 24px; }
+    .epic-id { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-primary); background: var(--color-primary-light); padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 12px; }
+    .epic-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .epic-meta { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 16px; font-size: 13px; color: var(--color-muted); }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-stub { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 20px; }
+    .card-title { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 16px; }
+    .flow { background: #1e293b; color: #e2e8f0; padding: 16px 20px; border-radius: 6px; font-family: monospace; font-size: 13px; line-height: 1.8; margin: 12px 0; }
+    .stories { list-style: none; }
+    .stories li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--color-border); }
+    .stories li:last-child { border-bottom: none; }
+    .story-icon { flex-shrink: 0; width: 20px; height: 20px; background: var(--color-primary-light); color: var(--color-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; }
+    .tasks { list-style: none; }
+    .tasks li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .tasks li:last-child { border-bottom: none; }
+    .checkbox { width: 16px; height: 16px; border: 2px solid var(--color-border); border-radius: 3px; flex-shrink: 0; margin-top: 3px; }
+    .decisions { list-style: none; }
+    .decisions li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .decisions li:last-child { border-bottom: none; }
+    .decision-icon { flex-shrink: 0; color: var(--color-warn); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { background: var(--color-bg); font-weight: 600; text-align: left; padding: 10px 14px; border: 1px solid var(--color-border); color: var(--color-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    td { padding: 10px 14px; border: 1px solid var(--color-border); }
+    .success-list { list-style: none; }
+    .success-list li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .success-list li:last-child { border-bottom: none; }
+    .tick { color: var(--color-success); font-weight: 700; }
+    .deps { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dep-tag { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="epic-header">
+    <div class="epic-id">I-2 · Integration Epic</div>
+    <div class="epic-title">Catalog Publish — Struct → Storefront Catalog via Harmony</div>
+    <p style="color: var(--color-muted); margin-top: 8px;">Publish enriched product and category data from Struct (PIM) to the Mosaik Storefront Catalog via Harmony Catalog Sync, making the catalogue available for browsing and search.</p>
+    <div class="epic-meta">
+      <span class="meta-item"><strong>Status:</strong> &nbsp;<span class="badge badge-stub">Stub — to write</span></span>
+      <span class="meta-item"><strong>Type:</strong> Integration (INT)</span>
+      <span class="meta-item"><strong>Direction:</strong> One-way — Struct → Harmony → Storefront Catalog</span>
+      <span class="meta-item"><strong>Priority:</strong> #1 gap (completes the product flow)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Data Flow</div>
+    <div class="flow">
+[I-1 upstream]  RamBase → Harmony → Struct (enriched PIM)
+                                          │
+                                          ▼  Mosaik Harmony — Catalog Sync
+                                          │
+                                          ▼
+                               Mosaik Storefront Catalog
+                               (listing, PDP, navigation)
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">User Stories</div>
+    <ul class="stories">
+      <li><div class="story-icon">1</div><div>As a <strong>storefront shopper</strong>, I want enriched product data (name, images, descriptions, attributes) from Struct to appear in product listing and detail pages so I can browse the full catalogue.</div></li>
+      <li><div class="story-icon">2</div><div>As a <strong>storefront shopper</strong>, I want product categories from RamBase (enriched in Struct) to appear as navigation so I can browse by category.</div></li>
+      <li><div class="story-icon">3</div><div>As <strong>Pretec content team</strong>, when I publish a product change in Struct I want it to appear in the storefront within the agreed sync window.</div></li>
+      <li><div class="story-icon">4</div><div>As <strong>Pretec content team</strong>, when I unpublish or deactivate a product, I want predictable storefront behavior (hidden / shown as unavailable) per agreed rules.</div></li>
+      <li><div class="story-icon">5</div><div>As <strong>Geta operations</strong>, when a catalog publish fails I want a visible error so I can retry without stale products appearing in the storefront.</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Implementation Tasks</div>
+    <ul class="tasks">
+      <li><div class="checkbox"></div><div>Define field mapping: Struct product fields → Storefront Catalog fields (field by field)</div></li>
+      <li><div class="checkbox"></div><div>Define publish eligibility rules — what makes a product/category "ready to publish"</div></li>
+      <li><div class="checkbox"></div><div>Confirm asset handling — how images and documents are transferred from Struct to the catalog/CDN</div></li>
+      <li><div class="checkbox"></div><div>Define category tree shape in the Storefront Catalog and how it derives from Struct/RamBase</div></li>
+      <li><div class="checkbox"></div><div>Confirm variant and product relationship handling in the catalog</div></li>
+      <li><div class="checkbox"></div><div>Define unpublish / deactivation behavior (hide vs. unpublish vs. show as unavailable)</div></li>
+      <li><div class="checkbox"></div><div>Configure Harmony Catalog Sync mapping and transformations</div></li>
+      <li><div class="checkbox"></div><div>Set up initial full catalog load and validate output in Storefront</div></li>
+      <li><div class="checkbox"></div><div>Configure sync frequency and delta load strategy</div></li>
+      <li><div class="checkbox"></div><div>Define data-quality gates that block publishing of incomplete product records</div></li>
+      <li><div class="checkbox"></div><div>Set up error handling and alerting for catalog publish failures</div></li>
+      <li><div class="checkbox"></div><div>Confirm which catalog fields feed Search &amp; Filtering (F-2) — coordinate with search team</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Open Decisions</div>
+    <ul class="decisions">
+      <li><div class="decision-icon">⚠</div><div>What is the publish eligibility flag / rule in Struct? (Carries over from I-1 web/catalog-eligible flag)</div></li>
+      <li><div class="decision-icon">⚠</div><div>Is the ERP/Struct display name used directly, or does the catalog have its own display name field?</div></li>
+      <li><div class="decision-icon">⚠</div><div>How are product images and documents transferred — direct CDN reference or Harmony proxied copy?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Unpublish/deactivation behavior — hide from listing, show as unavailable, or full unpublish?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Which Struct fields (attributes, facets) are required for storefront listing and filtering (F-2)?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Sync frequency — how quickly must Struct changes appear in the storefront?</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Responsibilities</div>
+    <table>
+      <thead><tr><th>Area</th><th>Geta</th><th>Pretec</th></tr></thead>
+      <tbody>
+        <tr><td>Catalog Sync config &amp; mapping</td><td>Configure Harmony Catalog Sync, field mapping, publish rules</td><td>Approve mapping, confirm eligibility rules</td></tr>
+        <tr><td>Enrichment quality in Struct</td><td>Support Struct model; define data-quality gates</td><td>Own enrichment — ensure products are complete before publish</td></tr>
+        <tr><td>Asset delivery</td><td>Configure CDN / asset handling</td><td>Upload and maintain product assets in Struct</td></tr>
+        <tr><td>Sync operations</td><td>Monitor catalog sync failures</td><td>Confirm business impact; correct data quality issues</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dependencies</div>
+    <div class="deps">
+      <span class="dep-tag">I-1 Product &amp; Category Sync (upstream)</span>
+      <span class="dep-tag">F-2 Search &amp; Filtering (catalog field requirements)</span>
+      <span class="dep-tag">F-1 Catalog Browsing (storefront consumer)</span>
+      <span class="dep-tag">C-1 Harmony Sync Configuration</span>
+      <span class="dep-tag">X-2 Environments</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Success Criteria</div>
+    <ul class="success-list">
+      <li><div class="tick">✓</div><div>Enriched products and categories in Struct appear correctly in the Storefront Catalog.</div></li>
+      <li><div class="tick">✓</div><div>Product assets render correctly in the storefront.</div></li>
+      <li><div class="tick">✓</div><div>Publish and unpublish rules behave as agreed.</div></li>
+      <li><div class="tick">✓</div><div>Publish failures are visible and retryable without leaving stale data live.</div></li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

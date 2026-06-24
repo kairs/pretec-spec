@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epic I-1 — Product &amp; Category Sync (RamBase → Struct via Harmony)</title>
+  <style>
+    :root {
+      --color-bg: #f8f9fb;
+      --color-surface: #ffffff;
+      --color-border: #e2e6ea;
+      --color-primary: #1a56db;
+      --color-primary-light: #eff4ff;
+      --color-success: #0e7c56;
+      --color-success-bg: #ecfdf5;
+      --color-warn: #b45309;
+      --color-warn-bg: #fffbeb;
+      --color-danger: #c02020;
+      --color-danger-bg: #fef2f2;
+      --color-muted: #6b7280;
+      --color-text: #111827;
+      --radius: 8px;
+      --font: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--color-bg); color: var(--color-text); font-size: 15px; line-height: 1.6; }
+    .page { max-width: 900px; margin: 40px auto; padding: 0 24px 80px; }
+    .epic-header { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 24px; }
+    .epic-id { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-primary); background: var(--color-primary-light); padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 12px; }
+    .epic-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .epic-meta { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 16px; font-size: 13px; color: var(--color-muted); }
+    .meta-item strong { color: var(--color-text); }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-partial { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
+    .badge-written { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
+    .badge-stub { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 20px; }
+    .card-title { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 16px; }
+    .flow { background: #1e293b; color: #e2e8f0; padding: 16px 20px; border-radius: 6px; font-family: monospace; font-size: 13px; line-height: 1.8; margin: 12px 0; }
+    .stories { list-style: none; }
+    .stories li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--color-border); }
+    .stories li:last-child { border-bottom: none; }
+    .story-icon { flex-shrink: 0; width: 20px; height: 20px; background: var(--color-primary-light); color: var(--color-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; }
+    .tasks { list-style: none; }
+    .tasks li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .tasks li:last-child { border-bottom: none; }
+    .checkbox { width: 16px; height: 16px; border: 2px solid var(--color-border); border-radius: 3px; flex-shrink: 0; margin-top: 3px; }
+    .decisions { list-style: none; }
+    .decisions li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .decisions li:last-child { border-bottom: none; }
+    .decision-icon { flex-shrink: 0; color: var(--color-warn); font-size: 16px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { background: var(--color-bg); font-weight: 600; text-align: left; padding: 10px 14px; border: 1px solid var(--color-border); color: var(--color-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    td { padding: 10px 14px; border: 1px solid var(--color-border); }
+    .success-list { list-style: none; }
+    .success-list li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .success-list li:last-child { border-bottom: none; }
+    .tick { color: var(--color-success); font-weight: 700; }
+    .deps { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dep-tag { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="epic-header">
+    <div class="epic-id">I-1 · Integration Epic</div>
+    <div class="epic-title">Product &amp; Category Sync — RamBase → Struct via Harmony</div>
+    <p style="color: var(--color-muted); margin-top: 8px;">Sync product master data and category tree from RamBase (ERP) into Struct (PIM) via Mosaik Harmony, enabling Pretec to enrich products for the storefront.</p>
+    <div class="epic-meta">
+      <span class="meta-item"><strong>Status:</strong> &nbsp;<span class="badge badge-written">Written</span></span>
+      <span class="meta-item"><strong>Type:</strong> Integration (INT)</span>
+      <span class="meta-item"><strong>Direction:</strong> One-way — RamBase → Harmony → Struct</span>
+      <span class="meta-item"><strong>Spec date:</strong> 2026-06-19</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Data Flow</div>
+    <div class="flow">
+RamBase  (product master / category tree)
+    │
+    ▼  Mosaik Harmony — Product &amp; Category Sync
+    │
+    ▼
+Struct (PIM) — Pretec enrichment
+    │
+    ▼  [downstream → I-2 Catalog Publish]
+Storefront Catalog
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">User Stories</div>
+    <ul class="stories">
+      <li><div class="story-icon">1</div><div>As <strong>Pretec content team</strong>, when a new product is created in RamBase, I want it to appear in Struct automatically so I can start enriching it without manual data entry.</div></li>
+      <li><div class="story-icon">2</div><div>As <strong>Pretec content team</strong>, when ERP fields are updated in RamBase, I want my Struct enrichment (descriptions, images, SEO) to be preserved — only RamBase-owned fields should change.</div></li>
+      <li><div class="story-icon">3</div><div>As <strong>Pretec content team</strong>, when a product is deactivated in RamBase, I want a predictable, agreed behavior in Struct (hidden / unpublished / shown as unavailable).</div></li>
+      <li><div class="story-icon">4</div><div>As <strong>Pretec content team</strong>, I want category assignments to be available in Struct so I can organise the storefront catalogue by browsing category.</div></li>
+      <li><div class="story-icon">5</div><div>As <strong>Geta operations</strong>, when a product fails to sync I want a clear error log with product ID and reason so I can investigate and retry without manual cleanup.</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Implementation Tasks</div>
+    <ul class="tasks">
+      <li><div class="checkbox"></div><div>Confirm which RamBase product endpoint(s) and fields are exported by Harmony</div></li>
+      <li><div class="checkbox"></div><div>Confirm which RamBase category / classification structure becomes the storefront category tree</div></li>
+      <li><div class="checkbox"></div><div>Agree field ownership mapping (RamBase-owned vs. Struct-owned) field by field</div></li>
+      <li><div class="checkbox"></div><div>Confirm which RamBase field marks a product as web/catalog eligible</div></li>
+      <li><div class="checkbox"></div><div>Confirm whether product name in ERP is used as display name or Struct overrides it</div></li>
+      <li><div class="checkbox"></div><div>Configure Harmony product &amp; category sync mapping and transformations</div></li>
+      <li><div class="checkbox"></div><div>Configure Struct product model and target attributes required for listing, filtering, and PDP</div></li>
+      <li><div class="checkbox"></div><div>Decide and configure sync frequency (scheduled hourly/nightly vs. near-real-time)</div></li>
+      <li><div class="checkbox"></div><div>Agree and implement product deactivation behavior in Struct and downstream catalog</div></li>
+      <li><div class="checkbox"></div><div>Set up error reporting for failed product syncs with retry capability</div></li>
+      <li><div class="checkbox"></div><div>Define and apply minimum product data quality rules</div></li>
+      <li><div class="checkbox"></div><div>Confirm initial product volume and expected daily change volume for sizing</div></li>
+      <li><div class="checkbox"></div><div>Confirm operational owner for sync failure follow-up (Geta vs. Pretec)</div></li>
+      <li><div class="checkbox"></div><div>Confirm whether Struct may create storefront-only categories for merchandising</div></li>
+      <li><div class="checkbox"></div><div>Execute initial full product &amp; category load</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Open Decisions</div>
+    <ul class="decisions">
+      <li><div class="decision-icon">⚠</div><div>Which RamBase field marks a product as web/catalog eligible?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Is the ERP product name the storefront display name, or does Struct own the display name?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Can Struct create storefront-only categories (not derived from RamBase)?</div></li>
+      <li><div class="decision-icon">⚠</div><div>What is the sync frequency — hourly, nightly, or event-driven?</div></li>
+      <li><div class="decision-icon">⚠</div><div>What happens when a product is deactivated in RamBase — hidden, unpublished, or shown as unavailable?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Who owns operational follow-up when a sync failure is detected?</div></li>
+      <li><div class="decision-icon">⚠</div><div>What are the required Struct product attributes for listing, filtering, and product detail pages?</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Responsibilities</div>
+    <table>
+      <thead><tr><th>Area</th><th>Geta</th><th>Pretec</th></tr></thead>
+      <tbody>
+        <tr><td>Harmony configuration</td><td>Configure sync, mapping, transformations, error handling</td><td>Review and approve mapping</td></tr>
+        <tr><td>RamBase product data</td><td>Consume through integration</td><td>Own product master data and data quality</td></tr>
+        <tr><td>Struct product model</td><td>Configure target model and mapping with Pretec</td><td>Confirm enrichment fields and editorial ownership</td></tr>
+        <tr><td>Product enrichment</td><td>Support model/workflow</td><td>Enrich products in Struct</td></tr>
+        <tr><td>Data validation</td><td>Report sync/data issues</td><td>Correct source data where needed</td></tr>
+        <tr><td>Sync operations</td><td>Monitor technical failures</td><td>Confirm business impact and data corrections</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dependencies</div>
+    <div class="deps">
+      <span class="dep-tag">I-6 RamBase API Integration (auth &amp; credentials)</span>
+      <span class="dep-tag">I-2 Catalog Publish (downstream)</span>
+      <span class="dep-tag">I-3 Inventory Sync (parallel ERP source)</span>
+      <span class="dep-tag">C-1 Harmony Sync Configuration</span>
+      <span class="dep-tag">X-2 Environments (RamBase env mapping)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Success Criteria</div>
+    <ul class="success-list">
+      <li><div class="tick">✓</div><div>Products created or updated in RamBase are created or updated in Struct by Harmony.</div></li>
+      <li><div class="tick">✓</div><div>RamBase-owned fields stay controlled by RamBase; Struct enrichment is never overwritten.</div></li>
+      <li><div class="tick">✓</div><div>Category assignments from RamBase are available in Struct for catalogue organisation.</div></li>
+      <li><div class="tick">✓</div><div>Product sync failures are visible, actionable, and retryable.</div></li>
+      <li><div class="tick">✓</div><div>Enriched Struct product data can be consumed by the downstream Catalog Publish (I-2).</div></li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

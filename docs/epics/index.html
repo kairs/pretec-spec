@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pretec — Integration Epics</title>
+  <style>
+    :root {
+      --color-bg: #f8f9fb;
+      --color-surface: #ffffff;
+      --color-border: #e2e6ea;
+      --color-primary: #1a56db;
+      --color-primary-light: #eff4ff;
+      --color-success: #065f46;
+      --color-success-bg: #ecfdf5;
+      --color-success-border: #6ee7b7;
+      --color-warn: #b45309;
+      --color-warn-bg: #fffbeb;
+      --color-warn-border: #fcd34d;
+      --color-stub: #4b5563;
+      --color-stub-bg: #f3f4f6;
+      --color-stub-border: #d1d5db;
+      --color-muted: #6b7280;
+      --color-text: #111827;
+      --radius: 8px;
+      --font: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--color-bg); color: var(--color-text); font-size: 15px; line-height: 1.6; }
+    .page { max-width: 860px; margin: 40px auto; padding: 0 24px 80px; }
+    header { margin-bottom: 36px; }
+    header h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    header p { color: var(--color-muted); font-size: 15px; }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--color-muted); }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-written { background: var(--color-success-bg); color: var(--color-success); border: 1px solid var(--color-success-border); }
+    .badge-partial { background: var(--color-warn-bg); color: var(--color-warn); border: 1px solid var(--color-warn-border); }
+    .badge-stub { background: var(--color-stub-bg); color: var(--color-stub); border: 1px solid var(--color-stub-border); }
+    .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--color-muted); margin-bottom: 12px; margin-top: 32px; }
+    .epic-grid { display: flex; flex-direction: column; gap: 12px; }
+    .epic-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 20px 24px; text-decoration: none; color: inherit; display: flex; align-items: flex-start; gap: 20px; transition: border-color .15s, box-shadow .15s; }
+    .epic-card:hover { border-color: var(--color-primary); box-shadow: 0 2px 8px rgba(26,86,219,.1); }
+    .epic-card-id { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-primary); background: var(--color-primary-light); padding: 3px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+    .epic-card-body { flex: 1; }
+    .epic-card-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .epic-card-desc { font-size: 13px; color: var(--color-muted); margin-bottom: 10px; }
+    .epic-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: var(--color-muted); }
+    .meta-pill { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 20px; padding: 2px 9px; }
+    .arrow { margin-left: auto; color: var(--color-muted); font-size: 18px; flex-shrink: 0; align-self: center; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Pretec — Integration Epics</h1>
+    <p>One HTML epic per integration. Derived from the specs in <code style="font-family:monospace">pretec-spec/docs/</code>. Last generated: 2026-06-24.</p>
+    <div class="legend">
+      <div class="legend-item"><span class="badge badge-written">Written</span> Spec fully written</div>
+      <div class="legend-item"><span class="badge badge-partial">Partial</span> Spec partially covered, consolidation in progress</div>
+      <div class="legend-item"><span class="badge badge-stub">Stub</span> Identified, spec yet to be written</div>
+    </div>
+  </header>
+
+  <div class="section-title">Integration Epics</div>
+  <div class="epic-grid">
+
+    <a class="epic-card" href="I-1-product-category-sync.html">
+      <span class="epic-card-id">I-1</span>
+      <div class="epic-card-body">
+        <div class="epic-card-title">Product &amp; Category Sync — RamBase → Struct via Harmony</div>
+        <div class="epic-card-desc">Sync product master data and category tree from RamBase (ERP) into Struct (PIM) via Mosaik Harmony, enabling Pretec to enrich products for the storefront.</div>
+        <div class="epic-card-meta">
+          <span class="badge badge-written">Written</span>
+          <span class="meta-pill">RamBase → Harmony → Struct</span>
+          <span class="meta-pill">One-way</span>
+          <span class="meta-pill">Foundation for I-2</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="epic-card" href="I-2-catalog-publish.html">
+      <span class="epic-card-id">I-2</span>
+      <div class="epic-card-body">
+        <div class="epic-card-title">Catalog Publish — Struct → Storefront Catalog via Harmony</div>
+        <div class="epic-card-desc">Publish enriched product and category data from Struct (PIM) to the Mosaik Storefront Catalog via Harmony Catalog Sync, making the catalogue available for browsing.</div>
+        <div class="epic-card-meta">
+          <span class="badge badge-stub">Stub — to write</span>
+          <span class="meta-pill">Struct → Harmony → Storefront</span>
+          <span class="meta-pill">One-way</span>
+          <span class="meta-pill">Priority gap #1</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="epic-card" href="I-3-inventory-sync.html">
+      <span class="epic-card-id">I-3</span>
+      <div class="epic-card-body">
+        <div class="epic-card-title">Inventory Sync — RamBase → Storefront Catalog via Harmony</div>
+        <div class="epic-card-desc">Synchronise stock and availability data from RamBase to the Mosaik Storefront Catalog via Harmony, enabling availability display on listing and product detail pages.</div>
+        <div class="epic-card-meta">
+          <span class="badge badge-stub">Stub — to write</span>
+          <span class="meta-pill">RamBase → Harmony → Storefront</span>
+          <span class="meta-pill">Synced (not live)</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="epic-card" href="I-4-customer-sync.html">
+      <span class="epic-card-id">I-4</span>
+      <div class="epic-card-body">
+        <div class="epic-card-title">Customer Sync — RamBase ↔ Mosaik via Harmony</div>
+        <div class="epic-card-desc">Two-way customer sync: existing company/contact data RamBase → Mosaik (scheduled), and new-company approval write-back Mosaik → RamBase returning the linked RamBase ID.</div>
+        <div class="epic-card-meta">
+          <span class="badge badge-partial">Partial — consolidating</span>
+          <span class="meta-pill">Bi-directional</span>
+          <span class="meta-pill">Approval write-back</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="epic-card" href="I-5-content-sync.html">
+      <span class="epic-card-id">I-5</span>
+      <div class="epic-card-body">
+        <div class="epic-card-title">Content Sync — Sanity → Storefront</div>
+        <div class="epic-card-desc">Define the Sanity content model and deliver editorial content and assets (landing pages, category content, navigation, banners) to the Mosaik Storefront.</div>
+        <div class="epic-card-meta">
+          <span class="badge badge-stub">Stub — to write</span>
+          <span class="meta-pill">Sanity → Storefront</span>
+          <span class="meta-pill">Content types unconfirmed</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="epic-card" href="I-6-rambase-api-integration.html">
+      <span class="epic-card-id">I-6</span>
+      <div class="epic-card-body">
+        <div class="epic-card-title">RamBase API Integration — Auth, Credentials &amp; Scoping</div>
+        <div class="epic-card-desc">Shared foundation for all Geta services calling RamBase: OAuth2 credential model, customer scoping via parameters, environment mapping, and operational resilience (retries, timeouts).</div>
+        <div class="epic-card-meta">
+          <span class="badge badge-partial">Partial — consolidating</span>
+          <span class="meta-pill">OAuth2 Client-Credentials</span>
+          <span class="meta-pill">Foundation for I-1, I-3, I-4, S-1</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+
+  </div>
+
+</div>
+</body>
+</html>

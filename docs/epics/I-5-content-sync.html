@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epic I-5 — Content Sync (Sanity → Storefront)</title>
+  <style>
+    :root {
+      --color-bg: #f8f9fb;
+      --color-surface: #ffffff;
+      --color-border: #e2e6ea;
+      --color-primary: #1a56db;
+      --color-primary-light: #eff4ff;
+      --color-success: #0e7c56;
+      --color-warn: #b45309;
+      --color-muted: #6b7280;
+      --color-text: #111827;
+      --radius: 8px;
+      --font: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--color-bg); color: var(--color-text); font-size: 15px; line-height: 1.6; }
+    .page { max-width: 900px; margin: 40px auto; padding: 0 24px 80px; }
+    .epic-header { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 24px; }
+    .epic-id { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-primary); background: var(--color-primary-light); padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 12px; }
+    .epic-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .epic-meta { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 16px; font-size: 13px; color: var(--color-muted); }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-stub { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 20px; }
+    .card-title { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 16px; }
+    .flow { background: #1e293b; color: #e2e8f0; padding: 16px 20px; border-radius: 6px; font-family: monospace; font-size: 13px; line-height: 1.8; margin: 12px 0; }
+    .stories { list-style: none; }
+    .stories li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--color-border); }
+    .stories li:last-child { border-bottom: none; }
+    .story-icon { flex-shrink: 0; width: 20px; height: 20px; background: var(--color-primary-light); color: var(--color-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; }
+    .tasks { list-style: none; }
+    .tasks li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .tasks li:last-child { border-bottom: none; }
+    .checkbox { width: 16px; height: 16px; border: 2px solid var(--color-border); border-radius: 3px; flex-shrink: 0; margin-top: 3px; }
+    .decisions { list-style: none; }
+    .decisions li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .decisions li:last-child { border-bottom: none; }
+    .decision-icon { flex-shrink: 0; color: var(--color-warn); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { background: var(--color-bg); font-weight: 600; text-align: left; padding: 10px 14px; border: 1px solid var(--color-border); color: var(--color-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    td { padding: 10px 14px; border: 1px solid var(--color-border); }
+    .success-list { list-style: none; }
+    .success-list li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; }
+    .success-list li:last-child { border-bottom: none; }
+    .tick { color: var(--color-success); font-weight: 700; }
+    .deps { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dep-tag { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
+    .content-types { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+    .ct { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 6px; padding: 10px 14px; font-size: 14px; }
+    .ct-name { font-weight: 600; margin-bottom: 2px; }
+    .ct-note { font-size: 12px; color: var(--color-muted); }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="epic-header">
+    <div class="epic-id">I-5 · Integration Epic</div>
+    <div class="epic-title">Content Sync — Sanity → Storefront</div>
+    <p style="color: var(--color-muted); margin-top: 8px;">Define the Sanity content model, deliver editorial content and content assets to the Mosaik Storefront, and specify how editorial content combines with catalog data on shared pages.</p>
+    <div class="epic-meta">
+      <span class="meta-item"><strong>Status:</strong> &nbsp;<span class="badge badge-stub">Stub — to write</span></span>
+      <span class="meta-item"><strong>Type:</strong> Integration (INT) + Feature rendering (F-8)</span>
+      <span class="meta-item"><strong>Direction:</strong> One-way — Sanity → Storefront</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Data Flow</div>
+    <div class="flow">
+Sanity CMS  (documents + content assets, authored by Pretec)
+    │
+    ▼  Sanity API / webhook / build-time delivery
+    │
+    ▼
+Mosaik Storefront  (renders editorial + catalog data combined)
+    </div>
+    <p style="font-size: 13px; color: var(--color-muted); margin-top: 8px;">Delivery mechanism — Sanity API (runtime), webhooks, or build-time — is an open decision.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Candidate Content Types (to confirm)</div>
+    <div class="content-types">
+      <div class="ct"><div class="ct-name">Editorial landing pages</div><div class="ct-note">Campaign / brand pages</div></div>
+      <div class="ct"><div class="ct-name">Category content</div><div class="ct-note">Banners, descriptions per category</div></div>
+      <div class="ct"><div class="ct-name">Product editorial</div><div class="ct-note">Boundary with Struct TBD</div></div>
+      <div class="ct"><div class="ct-name">Navigation / mega menu</div><div class="ct-note">Authored menu structure</div></div>
+      <div class="ct"><div class="ct-name">Banners &amp; campaigns</div><div class="ct-note">Promotional content</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">User Stories</div>
+    <ul class="stories">
+      <li><div class="story-icon">1</div><div>As <strong>Pretec content team</strong>, I want to author and publish editorial landing pages in Sanity and see them live on the storefront without requiring a developer deployment.</div></li>
+      <li><div class="story-icon">2</div><div>As <strong>Pretec content team</strong>, I want to author category banners and descriptions in Sanity that appear on the storefront category pages alongside product listings from the catalog.</div></li>
+      <li><div class="story-icon">3</div><div>As <strong>Pretec content team</strong>, I want to manage the storefront navigation / mega menu in Sanity so I can update it without a code change.</div></li>
+      <li><div class="story-icon">4</div><div>As a <strong>storefront shopper</strong>, I want editorial category content and product catalog to appear together on category pages so I get a cohesive experience.</div></li>
+      <li><div class="story-icon">5</div><div>As <strong>Pretec content team</strong>, I want a clear boundary between what I manage in Sanity vs. Struct so I don't duplicate content or maintain it in two places.</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Implementation Tasks</div>
+    <ul class="tasks">
+      <li><div class="checkbox"></div><div>Confirm which content types are in Phase 1 scope with Pretec</div></li>
+      <li><div class="checkbox"></div><div>Define Sanity content model / schema per agreed content type</div></li>
+      <li><div class="checkbox"></div><div>Define the boundary between Sanity (editorial) and Struct (product enrichment) — avoid overlap</div></li>
+      <li><div class="checkbox"></div><div>Design how Sanity content and catalog data combine on shared pages (e.g., category page = catalog + Sanity block)</div></li>
+      <li><div class="checkbox"></div><div>Decide delivery mechanism — Sanity API (runtime), webhook-triggered build, or build-time static</div></li>
+      <li><div class="checkbox"></div><div>Implement preview / draft / publish workflow in Sanity</div></li>
+      <li><div class="checkbox"></div><div>Define asset handling and CDN delivery for content images</div></li>
+      <li><div class="checkbox"></div><div>Define localization of content (ties to X-1 Localization — NO Phase 1 only)</div></li>
+      <li><div class="checkbox"></div><div>Confirm who authors and approves content (Pretec roles)</div></li>
+      <li><div class="checkbox"></div><div>Integrate Sanity content delivery into the storefront rendering layer</div></li>
+      <li><div class="checkbox"></div><div>Set up and test initial content in Sanity and validate rendering in storefront</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Open Decisions</div>
+    <ul class="decisions">
+      <li><div class="decision-icon">⚠</div><div>Which content types are in Phase 1 scope?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Who authors and approves content — and what is the approval workflow in Sanity?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Delivery mechanism — Sanity API (runtime fetch), webhook-triggered cache invalidation, or build-time?</div></li>
+      <li><div class="decision-icon">⚠</div><div>What is the exact boundary between Sanity (editorial) and Struct (product enrichment) for product-related content?</div></li>
+      <li><div class="decision-icon">⚠</div><div>How are content assets (images) hosted — Sanity CDN, or transferred to a separate CDN?</div></li>
+      <li><div class="decision-icon">⚠</div><div>Localization scope for Phase 1 — only Norwegian (NO), or English too?</div></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Responsibilities</div>
+    <table>
+      <thead><tr><th>Area</th><th>Geta</th><th>Pretec</th></tr></thead>
+      <tbody>
+        <tr><td>Content model &amp; integration</td><td>Define Sanity schema, integrate with storefront</td><td>Confirm content types and approve schema</td></tr>
+        <tr><td>Content authoring</td><td>—</td><td>Author and maintain all content in Sanity</td></tr>
+        <tr><td>Sanity–Struct boundary</td><td>Define technical boundary, prevent duplication</td><td>Confirm editorial ownership split</td></tr>
+        <tr><td>Asset delivery / CDN</td><td>Configure asset delivery</td><td>Upload and manage content assets</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dependencies</div>
+    <div class="deps">
+      <span class="dep-tag">I-2 Catalog Publish (shared category pages)</span>
+      <span class="dep-tag">F-1 Catalog Browsing (category page rendering)</span>
+      <span class="dep-tag">F-8 Content Rendering (storefront feature)</span>
+      <span class="dep-tag">X-1 Localization (NO Phase 1 content)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Success Criteria</div>
+    <ul class="success-list">
+      <li><div class="tick">✓</div><div>Pretec can author the agreed content types in Sanity and see them render correctly in the storefront.</div></li>
+      <li><div class="tick">✓</div><div>Editorial and catalog data combine cleanly on shared pages (e.g. category pages).</div></li>
+      <li><div class="tick">✓</div><div>Content assets render correctly in the storefront.</div></li>
+      <li><div class="tick">✓</div><div>The Sanity–Struct boundary is clear; no content is managed in two places.</div></li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

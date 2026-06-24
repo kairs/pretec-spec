@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pretec — I-1 Product &amp; Category Sync (sequence)</title>
+<link rel="stylesheet" href="_diagram.css" />
+</head>
+<body>
+<header>
+  <div>
+    <div class="id" id="h-id"></div>
+    <h1 id="h-title"></h1>
+    <div class="summary" id="h-summary"></div>
+  </div>
+  <span class="badge" id="h-badge"></span>
+  <div class="head-links">
+    <a id="h-epic" href="#">Epic ↗</a>
+    <a id="h-spec" href="#">Spec ↗</a>
+    <a class="home" href="index.html">All diagrams</a>
+  </div>
+</header>
+<div class="toolbar">
+  <button id="btn-prev">‹ Prev</button>
+  <button id="btn-next">Next ›</button>
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-reset">Reset</button>
+  <span class="pos" id="pos"></span>
+  <span class="legend">
+    <span><span class="lk"></span>sync</span>
+    <span><span class="lk async"></span>async</span>
+    <span><span class="lk ret"></span>return</span>
+    <span><span class="lk prov"></span>provisional</span>
+  </span>
+</div>
+<main>
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="hint">Click a step for detail · hover a participant to isolate · ← → to step through</div>
+  </div>
+  <aside id="panel">
+    <button class="p-close" id="pclose" title="Close">×</button>
+    <div id="panel-content"></div>
+  </aside>
+</main>
+
+<script src="_diagram.js"></script>
+<script>
+const DIAGRAM = {
+  id: "I-1",
+  title: "Product & Category Sync",
+  status: "partial",
+  summary: "One-way RamBase → Struct sync via Harmony: scheduled poll reads products & categories, maps ERP-owned fields to Struct, upserts while preserving enrichment, with isolated per-product failures that are logged and retryable.",
+  spec: "../product-rambase-struct-harmony-spec.md",
+  epic: "../epics/I-1-product-category-sync.html",
+  actors: [
+    {id:"rambase", label:"RamBase",  sub:"ERP — master data source", role:"erp"},
+    {id:"harmony", label:"Harmony",  sub:"Mosaik sync engine",        role:"engine"},
+    {id:"struct",  label:"Struct",   sub:"PIM — enrichment",          role:"pim"},
+  ],
+  steps: [
+    // ── Authentication to RamBase ─────────────────────────────────────
+    {from:"harmony", to:"rambase", kind:"sync", label:"OAuth2 client-credentials",
+     detail:"Harmony authenticates to RamBase as a system integration using OAuth2 client-credentials, receiving a Bearer token; the $db parameter selects the Pretec company database.",
+     note:"Auth model per RamBase API spec §Auth: OAuth2 Client-Credentials, Bearer, $db selects company."},
+    {from:"rambase", to:"harmony", kind:"return", label:"Bearer token"},
+
+    // ── Scheduled, one-way sync cycle ─────────────────────────────────
+    {kind:"note", over:["rambase","harmony","struct"],
+     text:"Phase 1 product flow is one-way: RamBase → Harmony → Struct. Struct enrichment is never written back to RamBase."},
+    {frag:"loop", label:"scheduled sync cycle (hourly or nightly — frequency TBC)"},
+      {from:"harmony", to:"rambase", kind:"sync", label:"Read categories",
+       detail:"Harmony reads the category / classification structure from RamBase, the authoritative source for the category tree used to organise the storefront catalog.",
+       provisional:true,
+       note:"Open decision: which RamBase category/classification structure becomes the storefront tree (spec §5, §12)."},
+      {from:"rambase", to:"harmony", kind:"return", label:"categories"},
+
+      {frag:"alt", label:"initial / full load (first run)"},
+        {from:"harmony", to:"rambase", kind:"sync", label:"Read all products",
+         detail:"On the first run Harmony performs a full load, reading every catalog-eligible product from RamBase.",
+         provisional:true,
+         note:"Initial vs. delta load strategy is still open in Harmony config (harmony-sync-spec §2)."},
+      {frag:"else", label:"delta load (subsequent runs)"},
+        {from:"harmony", to:"rambase", kind:"sync", label:"Read products changed since last run",
+         detail:"Subsequent runs read only products created or changed since the previous cycle to limit volume.",
+         provisional:true,
+         note:"Delta strategy and the web/catalog-eligible field are open decisions (spec §10, §12)."},
+      {frag:"end"},
+      {from:"rambase", to:"harmony", kind:"return", label:"products + ERP fields"},
+
+      // ── Per-product processing with isolated failures ──────────────
+      {frag:"loop", label:"for each product (failures isolated per product)"},
+        {from:"harmony", to:"harmony", kind:"sync", label:"Map RamBase → Struct model",
+         detail:"Harmony maps ERP-owned fields — SKU/product ID, name, status, type, unit of measure, category assignment — to the agreed Struct product model."},
+
+        {frag:"alt", label:"product passes validation"},
+          {from:"harmony", to:"struct", kind:"sync", label:"Upsert product (create or update)",
+           detail:"Harmony creates the product in Struct if new, or updates ERP-owned fields if it already exists, keyed by the stable RamBase SKU / product ID."},
+          {from:"struct", to:"harmony", kind:"return", label:"ok — enrichment preserved",
+           detail:"Struct accepts the write and preserves enrichment fields (descriptions, media, SEO, display name) so RamBase updates never overwrite Pretec's editorial content.",
+           note:"Re-running the sync after data correction updates the product without manual cleanup (spec §9)."},
+        {frag:"else", label:"validation / API failure"},
+          {from:"harmony", to:"harmony", kind:"sync", label:"Log failure with context",
+           detail:"Missing required key, invalid category reference, unsupported field value, or a Struct/RamBase API error is logged with enough context to identify the product and retry; the failed product does not block the others.",
+           note:"Operational alerting and follow-up ownership still need confirmation (spec §9, §12)."},
+        {frag:"end"},
+      {frag:"end"},
+    {frag:"end"},
+
+    // ── Downstream handoff ────────────────────────────────────────────
+    {from:"struct", to:"struct", kind:"async", label:"Enriched product ready for catalog",
+     detail:"Once Pretec enriches the synced product in Struct it becomes available to the separate downstream Struct → Storefront catalog sync (I-2), which is out of scope for this flow.",
+     provisional:true},
+  ],
+};
+renderSequence(DIAGRAM);
+</script>
+</body>
+</html>

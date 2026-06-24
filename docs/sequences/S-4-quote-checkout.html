@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pretec — S-4 Quote / Checkout (sequence)</title>
+<link rel="stylesheet" href="_diagram.css" />
+</head>
+<body>
+<header>
+  <div>
+    <div class="id" id="h-id"></div>
+    <h1 id="h-title"></h1>
+    <div class="summary" id="h-summary"></div>
+  </div>
+  <span class="badge" id="h-badge"></span>
+  <div class="head-links">
+    <a id="h-epic" href="#">Epic ↗</a>
+    <a id="h-spec" href="#">Spec ↗</a>
+    <a class="home" href="index.html">All diagrams</a>
+  </div>
+</header>
+<div class="toolbar">
+  <button id="btn-prev">‹ Prev</button>
+  <button id="btn-next">Next ›</button>
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-reset">Reset</button>
+  <span class="pos" id="pos"></span>
+  <span class="legend">
+    <span><span class="lk"></span>sync</span>
+    <span><span class="lk async"></span>async</span>
+    <span><span class="lk ret"></span>return</span>
+    <span><span class="lk prov"></span>provisional</span>
+  </span>
+</div>
+<main>
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="hint">Click a step for detail · hover a participant to isolate · ← → to step through</div>
+  </div>
+  <aside id="panel">
+    <button class="p-close" id="pclose" title="Close">×</button>
+    <div id="panel-content"></div>
+  </aside>
+</main>
+
+<script src="_diagram.js"></script>
+<script>
+const DIAGRAM = {
+  id: "S-4",
+  title: "Quote / Checkout",
+  status: "done",
+  summary: "Checkout creates one RamBase sales quote per submission from the cart (request-for-quote only — never firm online ordering), then clears the cart. Confirmation on-screen plus email; a sales rep follows up.",
+  spec: "../superpowers/specs/2026-06-08-pretec-service-api-design.md",
+  epic: "",
+  actors: [
+    {id:"user",    label:"B2B User",       sub:"Logged in",           role:"client"},
+    {id:"sf",      label:"Storefront",     sub:"Mosaik (Next.js)",    role:"store"},
+    {id:"quote",   label:"Quote Service",  sub:"Pretec Service API",  role:"service"},
+    {id:"mongo",   label:"MongoDB",        sub:"Cart store (EKS)",    role:"datastore"},
+    {id:"rambase", label:"RamBase",        sub:"Sales quote (CRQ)",   role:"erp"},
+  ],
+  steps: [
+    {from:"user", to:"sf", kind:"sync", label:"Submit checkout",
+     detail:"Payload: customer reference (own PO), delivery address (pick from RamBase customer addresses or custom), requested delivery date, quote comment. Login required."},
+    {from:"sf", to:"quote", kind:"sync", label:"POST /carts/{id}/create-order-request",
+     detail:"Standard cart contract quote trigger. Always request-for-quote — there is no firm online ordering, ever."},
+    {from:"quote", to:"quote", kind:"sync", label:"Validate ID token + resolve customer",
+     detail:"ID token validated for identity; the RamBase customer is resolved from the Mosaik mapping. Only authenticated, linked users may submit."},
+    {from:"quote", to:"mongo", kind:"sync", label:"Load cart by customer",
+     detail:"The current cart is loaded from MongoDB to build the quote lines."},
+    {from:"mongo", to:"quote", kind:"return", label:"cart lines"},
+    {from:"quote", to:"rambase", kind:"sync", label:"Create sales quote (CRQ)",
+     detail:"One RamBase sales quote document is created per submission, customer-scoped via the system credential, carrying the checkout payload and cart lines (CRQ→CQU→COA chain).",
+     provisional:true,
+     note:"Create-quote endpoint and required fields are behind the credentialed portal — unresolved (spec §8.6)."},
+    {frag:"alt", label:"RamBase quote create fails"},
+      {from:"rambase", to:"quote", kind:"return", label:"error"},
+      {from:"quote", to:"sf", kind:"return", label:"Clear, retryable error",
+       detail:"Submission must fail with a clear, retryable error — never silently drop the request. The cart is NOT cleared.",
+       note:"Resilience: quote submission is the one path that must never silently drop (spec §6)."},
+    {frag:"else", label:"quote created"},
+      {from:"rambase", to:"quote", kind:"return", label:"quote id / number"},
+      {from:"quote", to:"mongo", kind:"sync", label:"Clear cart",
+       detail:"On success the cart is cleared from MongoDB."},
+      {from:"quote", to:"sf", kind:"return", label:"Quote confirmation",
+       detail:"Confirmation returned to the storefront. Quotes do not appear in Min side (orders/invoices only)."},
+      {from:"quote", to:"user", kind:"async", label:"Confirmation email",
+       detail:"On-screen confirmation plus email; a Pretec sales rep follows up in RamBase to convert the quote."},
+    {frag:"end"},
+  ],
+};
+renderSequence(DIAGRAM);
+</script>
+</body>
+</html>

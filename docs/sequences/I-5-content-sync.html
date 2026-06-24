@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pretec — I-5 Content Sync (sequence)</title>
+<link rel="stylesheet" href="_diagram.css" />
+</head>
+<body>
+<header>
+  <div>
+    <div class="id" id="h-id"></div>
+    <h1 id="h-title"></h1>
+    <div class="summary" id="h-summary"></div>
+  </div>
+  <span class="badge" id="h-badge"></span>
+  <div class="head-links">
+    <a id="h-epic" href="#">Epic ↗</a>
+    <a id="h-spec" href="#">Spec ↗</a>
+    <a class="home" href="index.html">All diagrams</a>
+  </div>
+</header>
+<div class="toolbar">
+  <button id="btn-prev">‹ Prev</button>
+  <button id="btn-next">Next ›</button>
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-reset">Reset</button>
+  <span class="pos" id="pos"></span>
+  <span class="legend">
+    <span><span class="lk"></span>sync</span>
+    <span><span class="lk async"></span>async</span>
+    <span><span class="lk ret"></span>return</span>
+    <span><span class="lk prov"></span>provisional</span>
+  </span>
+</div>
+<main>
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="hint">Click a step for detail · hover a participant to isolate · ← → to step through</div>
+  </div>
+  <aside id="panel">
+    <button class="p-close" id="pclose" title="Close">×</button>
+    <div id="panel-content"></div>
+  </aside>
+</main>
+
+<script src="_diagram.js"></script>
+<script>
+const DIAGRAM = {
+  id: "I-5",
+  title: "Content Sync",
+  status: "todo",
+  summary: "Editorial content & assets authored in Sanity (landing pages, category content, navigation, banners) reach the Mosaik Storefront via publish webhook and runtime GROQ/CDN fetch. Spec is a stub — mechanism inferred.",
+  spec: "../content-sanity-spec.md",
+  epic: "../epics/I-5-content-sync.html",
+  actors: [
+    {id:"editor", label:"Content Editor", sub:"Pretec author",        role:"client"},
+    {id:"sanity", label:"Sanity",         sub:"Headless CMS + CDN",    role:"cms"},
+    {id:"sf",     label:"Storefront",      sub:"Mosaik (Next.js)",      role:"store"},
+    {id:"shopper",label:"Shopper",         sub:"Site visitor",          role:"client"},
+  ],
+  steps: [
+    {kind:"note", over:["editor","sanity","sf"],
+     text:"Provisional — content-sanity-spec.md is a stub. Content types (landing pages, category content, navigation, banners) and the delivery mechanism are unconfirmed; the whole sequence is inferred."},
+
+    // ── Authoring & publish in Sanity ─────────────────────────────────
+    {from:"editor", to:"sanity", kind:"sync", label:"Author / edit content",
+     detail:"Pretec editor creates or edits editorial documents in the Sanity Studio — landing pages, category content (banners, descriptions), navigation/mega menu, and campaign banners.",
+     note:"Content types are candidates only (spec §3, all unchecked). Boundary vs. Struct product enrichment is unresolved.",
+     provisional:true},
+    {from:"editor", to:"sanity", kind:"sync", label:"Preview draft",
+     detail:"Editor reviews the draft against a Storefront preview before publishing. Preview/draft/publish workflow is listed as 'to specify' (spec §4).",
+     provisional:true},
+    {from:"editor", to:"sanity", kind:"sync", label:"Publish document",
+     detail:"Editor publishes the document, promoting the draft to the published dataset.",
+     provisional:true},
+
+    // ── Delivery: publish webhook → cache invalidation ────────────────
+    {frag:"opt", label:"on publish — delivery mechanism inferred"},
+      {from:"sanity", to:"sf", kind:"async", label:"Publish webhook",
+       detail:"Sanity fires a webhook to the Storefront on publish so it can revalidate affected pages. Delivery mechanism (API / webhook / build-time vs. runtime) is unspecified (spec §4) — webhook + runtime fetch is assumed.",
+       provisional:true},
+      {from:"sf", to:"sf", kind:"sync", label:"Revalidate / purge cache",
+       detail:"Storefront invalidates cached content for the affected routes (e.g. Next.js on-demand revalidation) so the next request re-fetches.",
+       provisional:true},
+    {frag:"end"},
+
+    // ── Runtime render: shopper requests a page ───────────────────────
+    {kind:"note", over:["shopper","sf","sanity"],
+     text:"Runtime rendering — independent of the publish path."},
+    {from:"shopper", to:"sf", kind:"sync", label:"Request page",
+     detail:"A shopper requests a content-backed page such as a landing or category page.",
+     provisional:true},
+    {from:"sf", to:"sanity", kind:"sync", label:"GROQ query (content + assets)",
+     detail:"Storefront queries the Sanity content API/CDN with GROQ for the page's editorial content and resolves content-asset URLs from the Sanity asset CDN. Asset handling / CDN is 'to specify' (spec §4).",
+     provisional:true},
+    {from:"sanity", to:"sf", kind:"return", label:"Content + asset refs",
+     detail:"Sanity returns the published documents and CDN references for images and other content assets.",
+     provisional:true},
+    {from:"sf", to:"sf", kind:"sync", label:"Merge editorial + catalog",
+     detail:"Storefront combines Sanity editorial blocks with Mosaik catalog data on shared pages (e.g. category page = catalog + Sanity block), per success criteria (spec §6).",
+     provisional:true},
+    {from:"sf", to:"shopper", kind:"return", label:"Rendered page",
+     detail:"The merged, localized page is rendered and returned to the shopper. Localization ties to X-1 Localization (spec §4).",
+     provisional:true},
+  ],
+};
+renderSequence(DIAGRAM);
+</script>
+</body>
+</html>

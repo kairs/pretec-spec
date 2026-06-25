@@ -74,7 +74,7 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 | F-2 | **Search & filtering** — what powers search, facets, filters | FEAT | ✅ Written | [search-filtering-spec.md](search-filtering-spec.md) |
 | F-3 | **Pricing display** — ex-VAT, "price on request" degradation, NOK only | FEAT | ✅ Written | [pricing-display-spec.md](pricing-display-spec.md) |
 | F-4 | **Cart UX** — add/edit lines, 90-day sliding expiry, live price display | FEAT | ✅ Written | [cart-ux-spec.md](cart-ux-spec.md) |
-| F-5 | **Checkout & quote UX** — PO/reference, delivery address, requested date, comment | FEAT | 🟡 Partial | overview §5.4 + Service API §4.3 |
+| F-5 | **Checkout & quote UX** — PO/reference, delivery address, requested date, comment | FEAT | ✅ Written | [checkout-quote-spec.md](checkout-quote-spec.md) |
 | F-6 | **My Page / Min side** — order & invoice history, scoping, PDF download | FEAT | 🟡 Partial | overview §5.5 + Service API §4.4 |
 | F-7 | **Customer registration & approval** — application → approval → invitation (new company in RamBase) | FEAT | 🟡 Partial | [registration-approval-spec.md](registration-approval-spec.md) (consolidating [flows-customer-sync.md](flows-customer-sync.md)) |
 | F-8 | **Content rendering** — editorial pages, category content, navigation, banners | FEAT | ⬜ To write (stub) | folds into I-5 / [content-sanity-spec.md](content-sanity-spec.md) |

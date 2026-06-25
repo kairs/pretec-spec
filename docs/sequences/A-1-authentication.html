@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pretec — A-1 Authentication &amp; Identity (sequence)</title>
+<link rel="stylesheet" href="_diagram.css" />
+</head>
+<body>
+<header>
+  <div>
+    <div class="id" id="h-id"></div>
+    <h1 id="h-title"></h1>
+    <div class="summary" id="h-summary"></div>
+  </div>
+  <span class="badge" id="h-badge"></span>
+  <div class="head-links">
+    <a id="h-epic" href="#">Epic ↗</a>
+    <a id="h-spec" href="#">Spec ↗</a>
+    <a class="home" href="index.html">All diagrams</a>
+  </div>
+</header>
+<div class="toolbar">
+  <button id="btn-prev">‹ Prev</button>
+  <button id="btn-next">Next ›</button>
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-reset">Reset</button>
+  <span class="pos" id="pos"></span>
+  <span class="legend">
+    <span><span class="lk"></span>sync</span>
+    <span><span class="lk async"></span>async</span>
+    <span><span class="lk ret"></span>return</span>
+    <span><span class="lk prov"></span>provisional</span>
+  </span>
+</div>
+<main>
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="hint">Click a step for detail · hover a participant to isolate · ← → to step through</div>
+  </div>
+  <aside id="panel">
+    <button class="p-close" id="pclose" title="Close">×</button>
+    <div id="panel-content"></div>
+  </aside>
+</main>
+
+<script src="_diagram.js"></script>
+<script>
+const DIAGRAM = {
+  id: "A-1",
+  title: "Authentication & Identity",
+  status: "partial",
+  summary: "User authenticates at the Storefront via AWS Cognito (ID token). The Pretec Service API validates the Cognito JWT per request and resolves the RamBase customer from the Mosaik user↔customer mapping — no token claim.",
+  spec: "../authentication-spec.md",
+  epic: "",
+  actors: [
+    {id:"user",    label:"B2B User",          sub:"Browser",                 role:"client"},
+    {id:"sf",      label:"Storefront",        sub:"Mosaik (Next.js)",        role:"store"},
+    {id:"cognito", label:"AWS Cognito",       sub:"Identity · User Pool",    role:"identity"},
+    {id:"api",     label:"Pretec Service API",sub:".NET · price/cart/quote", role:"service"},
+    {id:"mosaik",  label:"Mosaik Mapping",    sub:"user↔customer store",     role:"datastore"},
+    {id:"rambase", label:"RamBase",           sub:"ERP — customer data",     role:"erp"},
+  ],
+  steps: [
+    // ── Login → Cognito token issuance ────────────────────────────────
+    {from:"user", to:"sf", kind:"sync", label:"Sign in (email + password)",
+     detail:"An onboarded B2B user signs in at the Storefront. The Cognito user already exists (created at invitation acceptance)."},
+    {from:"sf", to:"cognito", kind:"sync", label:"Authenticate user",
+     detail:"The Storefront delegates authentication to the AWS Cognito user pool, which establishes who the user is (the authenticated subject)."},
+    {from:"cognito", to:"sf", kind:"return", label:"ID token (+ refresh)",
+     detail:"Cognito issues an ID token for identity. It carries the subject (sub) but NO RamBase customer claim.",
+     note:"The ID token is validated downstream (not the access token) to avoid the Cognito Plus tier."},
+    {from:"sf", to:"user", kind:"return", label:"Logged in",
+     detail:"Session established in the browser; the ID token is held for authenticated API calls."},
+
+    // ── Authenticated request to the Service API ──────────────────────
+    {from:"user", to:"sf", kind:"sync", label:"Open price / cart / orders",
+     detail:"The user triggers a logged-in-only operation (live price, cart, quote or order history)."},
+    {from:"sf", to:"api", kind:"sync", label:"Request + Bearer ID token",
+     detail:"The Storefront calls the Pretec Service API (via the Istio route) with the Cognito ID token in the Authorization header. The frontend sends NO customer id."},
+
+    // ── Token validation (JWKS) ───────────────────────────────────────
+    {frag:"opt", label:"JWKS keys cached (refreshed on rotation / cache miss)"},
+      {from:"api", to:"cognito", kind:"sync", label:"GET JWKS (public keys)",
+       detail:"On a cache miss the Service API fetches Cognito's JWKS to obtain the public signing keys.",
+       provisional:true},
+      {from:"cognito", to:"api", kind:"return", label:"signing keys",
+       provisional:true},
+    {frag:"end"},
+
+    {from:"api", to:"api", kind:"sync", label:"Validate JWT",
+     detail:"The Service API verifies signature against the JWKS key, plus issuer (the Cognito user pool) and audience (the app client)."},
+
+    // ── Valid vs invalid token ────────────────────────────────────────
+    {frag:"alt", label:"token valid (signature / issuer / audience OK)"},
+      {from:"api", to:"mosaik", kind:"sync", label:"Resolve customer (GET /customers/current)",
+       detail:"Keyed by the authenticated subject, the Service API resolves the RamBase customer from the Mosaik user↔customer mapping — server-side, per request.",
+       note:"RESOLVED: the RamBase customer is looked up from the Mosaik mapping. There is NO rambaseCustomerId token claim and NO Pre-Token-Generation Lambda — a customer-link change takes effect on the next request (no refresh gap)."},
+      {frag:"alt", label:"mapping found"},
+        {from:"mosaik", to:"api", kind:"return", label:"RamBase customer id",
+         detail:"The resolved customer id scopes the operation. It is never trusted from the client, preventing customer spoofing."},
+        {from:"api", to:"rambase", kind:"sync", label:"Operation scoped to customer X",
+         detail:"The Service API calls RamBase with a single system credential, passing the resolved customer as a parameter (price/cart/quote/orders)."},
+        {from:"api", to:"sf", kind:"return", label:"200 — data",
+         detail:"Customer-scoped result returned to the Storefront."},
+      {frag:"else", label:"no mapping (authenticated but not onboarded)"},
+        {from:"mosaik", to:"api", kind:"return", label:"no mapping",
+         detail:"The user is authenticated but has no RamBase customer link."},
+        {from:"api", to:"sf", kind:"return", label:"Not onboarded (never 500)",
+         detail:"A clear not-onboarded state is returned, not a server error.",
+         note:"No-mapping handling is a resolved decision (spec §3 / Service API §3)."},
+      {frag:"end"},
+    {frag:"else", label:"token invalid or expired"},
+      {from:"api", to:"sf", kind:"return", label:"401 Unauthorized",
+       detail:"Failed signature / issuer / audience check, or an expired token, is rejected before any customer resolution or RamBase call."},
+      {from:"sf", to:"user", kind:"return", label:"Re-authenticate",
+       detail:"The Storefront refreshes the token or sends the user back through Cognito sign-in."},
+    {frag:"end"},
+  ],
+};
+renderSequence(DIAGRAM);
+</script>
+</body>
+</html>

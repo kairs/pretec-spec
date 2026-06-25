@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pretec — I-6 RamBase API Integration (sequence)</title>
+<link rel="stylesheet" href="_diagram.css" />
+</head>
+<body>
+<header>
+  <div>
+    <div class="id" id="h-id"></div>
+    <h1 id="h-title"></h1>
+    <div class="summary" id="h-summary"></div>
+  </div>
+  <span class="badge" id="h-badge"></span>
+  <div class="head-links">
+    <a id="h-epic" href="#">Epic ↗</a>
+    <a id="h-spec" href="#">Spec ↗</a>
+    <a class="home" href="index.html">All diagrams</a>
+  </div>
+</header>
+<div class="toolbar">
+  <button id="btn-prev">‹ Prev</button>
+  <button id="btn-next">Next ›</button>
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-reset">Reset</button>
+  <span class="pos" id="pos"></span>
+  <span class="legend">
+    <span><span class="lk"></span>sync</span>
+    <span><span class="lk async"></span>async</span>
+    <span><span class="lk ret"></span>return</span>
+    <span><span class="lk prov"></span>provisional</span>
+  </span>
+</div>
+<main>
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="hint">Click a step for detail · hover a participant to isolate · ← → to step through</div>
+  </div>
+  <aside id="panel">
+    <button class="p-close" id="pclose" title="Close">×</button>
+    <div id="panel-content"></div>
+  </aside>
+</main>
+
+<script src="_diagram.js"></script>
+<script>
+const DIAGRAM = {
+  id: "I-6",
+  title: "RamBase API Integration",
+  status: "partial",
+  summary: "How the Pretec Service API authenticates to RamBase (OAuth2 client-credentials, cached Bearer token), scopes calls by $db/customer params, and handles timeout, retry and 401 refresh.",
+  spec: "../rambase-api-integration-spec.md",
+  epic: "../epics/I-6-rambase-api-integration.html",
+  actors: [
+    {id:"service", label:"Pretec Service API", sub:".NET on EKS · Istio", role:"service"},
+    {id:"cache",   label:"Token Cache",        sub:"in-process",          role:"sub"},
+    {id:"vault",   label:"Infisical",          sub:"Secrets (per env)",   role:"datastore"},
+    {id:"identity",label:"RamBase OAuth",      sub:"Token endpoint",      role:"identity"},
+    {id:"rambase", label:"RamBase",            sub:"ERP — test / prod",   role:"erp"},
+  ],
+  steps: [
+    {kind:"note", over:["service","rambase"],
+     text:"Env mapping: Mosaik test+staging → RamBase test; production → RamBase production. Credential set is selected per environment (spec — Environments §2)."},
+
+    // ── Resolve a Bearer token (cache vs acquire) ─────────────────────
+    {from:"service", to:"cache", kind:"sync", label:"Get valid access token",
+     detail:"Before any RamBase call the Service API asks its token cache for a current Bearer token.",
+     note:"Token caching/reuse is the intended model but not yet written in the spec.", provisional:true},
+    {frag:"alt", label:"cached token present & not expired"},
+      {from:"cache", to:"service", kind:"return", label:"reuse cached Bearer token",
+       detail:"A still-valid token is reused — no round-trip to the OAuth endpoint.", provisional:true},
+    {frag:"else", label:"no token / expired — acquire new"},
+      {from:"service", to:"vault", kind:"sync", label:"Read client credentials (this env)",
+       detail:"The system/integration client_id + client_secret for the current environment are read from Infisical; secrets are never baked into the image."},
+      {from:"vault", to:"service", kind:"return", label:"client_id + client_secret"},
+      {from:"service", to:"identity", kind:"sync", label:"POST token (client_credentials)",
+       detail:"OAuth2 client-credentials grant against the RamBase token endpoint using the single system credential.",
+       note:"Single system/integration credential & scopes are still to be specified (spec §3)."},
+      {from:"identity", to:"service", kind:"return", label:"access_token + expires_in",
+       detail:"RamBase returns a Bearer access token and its lifetime."},
+      {from:"service", to:"cache", kind:"async", label:"Cache token until expiry",
+       detail:"The token is cached and reused for subsequent calls until it expires.", provisional:true},
+    {frag:"end"},
+
+    // ── Representative scoped business call with resilience ───────────
+    {kind:"note", over:["service","rambase"],
+     text:"Customer scoping: $db selects the RamBase company; customer-specific reads are scoped by parameter ($filter on customer). Per-customer price endpoint is still an open item (spec §4)."},
+    {frag:"loop", label:"idempotent read · timeout ~3s · up to 1 retry (Resilience §2)"},
+      {from:"service", to:"rambase", kind:"sync", label:"GET resource ($db, customer $filter)",
+       detail:"A representative scoped read (e.g. orders/invoices or price for a customer) with Authorization: Bearer + $db company selection and a customer-scoping $filter. Cursor pagination via $top/$pageKey.",
+       note:"Reads retry once; writes (quote submission) are not auto-retried to avoid duplicates (Resilience §2, §6)."},
+      {frag:"alt", label:"200 OK"},
+        {from:"rambase", to:"service", kind:"return", label:"resource payload",
+         detail:"Scoped data returned; the loop completes."},
+      {frag:"else", label:"401 Unauthorized — token expired/revoked"},
+        {from:"service", to:"cache", kind:"sync", label:"Invalidate cached token",
+         detail:"On 401 the cached token is discarded so the next attempt re-acquires via client-credentials, then the read is retried.", provisional:true},
+      {frag:"else", label:"timeout / transient 5xx — retry with backoff"},
+        {from:"service", to:"service", kind:"sync", label:"Back off, then retry once",
+         detail:"After the ~3s timeout the single read retry is attempted with a short backoff; if it is also exhausted the call fails and the capability degrades (e.g. price → 'price on request').",
+         note:"Backoff between attempts is implied; exact strategy not yet written (Resilience §2).", provisional:true},
+      {frag:"end"},
+    {frag:"end"},
+  ],
+};
+renderSequence(DIAGRAM);
+</script>
+</body>
+</html>

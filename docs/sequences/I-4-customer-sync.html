@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pretec — I-4 Customer Sync (sequence)</title>
+<link rel="stylesheet" href="_diagram.css" />
+</head>
+<body>
+<header>
+  <div>
+    <div class="id" id="h-id"></div>
+    <h1 id="h-title"></h1>
+    <div class="summary" id="h-summary"></div>
+  </div>
+  <span class="badge" id="h-badge"></span>
+  <div class="head-links">
+    <a id="h-epic" href="#">Epic ↗</a>
+    <a id="h-spec" href="#">Spec ↗</a>
+    <a class="home" href="index.html">All diagrams</a>
+  </div>
+</header>
+<div class="toolbar">
+  <button id="btn-prev">‹ Prev</button>
+  <button id="btn-next">Next ›</button>
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-reset">Reset</button>
+  <span class="pos" id="pos"></span>
+  <span class="legend">
+    <span><span class="lk"></span>sync</span>
+    <span><span class="lk async"></span>async</span>
+    <span><span class="lk ret"></span>return</span>
+    <span><span class="lk prov"></span>provisional</span>
+  </span>
+</div>
+<main>
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="hint">Click a step for detail · hover a participant to isolate · ← → to step through</div>
+  </div>
+  <aside id="panel">
+    <button class="p-close" id="pclose" title="Close">×</button>
+    <div id="panel-content"></div>
+  </aside>
+</main>
+
+<script src="_diagram.js"></script>
+<script>
+const DIAGRAM = {
+  id: "I-4",
+  title: "Customer Sync",
+  status: "partial",
+  summary: "Two-way RamBase ↔ Mosaik customer sync: new-company onboarding (Mosaik → RamBase, approval write-back) and scheduled inbound delta (RamBase → Mosaik, source of truth).",
+  spec: "../customer-sync-spec.md",
+  epic: "../epics/I-4-customer-sync.html",
+  actors: [
+    {id:"user",    label:"New B2B User", sub:"Applicant",        role:"client"},
+    {id:"sf",      label:"Storefront",   sub:"Mosaik (Next.js)", role:"store"},
+    {id:"be",      label:"Mosaik Backend",sub:"Platform + DB",   role:"service"},
+    {id:"maestro", label:"Maestro",      sub:"Backoffice · Sales",role:"backoffice"},
+    {id:"harmony", label:"Harmony",      sub:"Sync engine",      role:"engine"},
+    {id:"rambase", label:"RamBase",      sub:"ERP — source of truth", role:"erp"},
+    {id:"cognito", label:"AWS Cognito",  sub:"Identity",         role:"identity"},
+  ],
+  steps: [
+    // ── Registration & de-duplication ─────────────────────────────────
+    {from:"user", to:"sf", kind:"sync", label:"Register (company + contact)",
+     detail:"Applicant fills the B2B registration form: company name, org number, department, website, company email, invoice method, plus contact-person name/email/phone/address."},
+    {from:"sf", to:"be", kind:"sync", label:"Add company application",
+     detail:"Storefront raises a pending company application capturing the company and the registering user."},
+    {from:"be", to:"rambase", kind:"sync", label:"Check org number",
+     detail:"De-duplication: the Norwegian org number is checked against existing RamBase companies before the application is accepted. Name matching is not used."},
+    {frag:"alt", label:"org number matches an existing company"},
+      {from:"rambase", to:"be", kind:"return", label:"match found"},
+      {from:"be", to:"sf", kind:"return", label:"Application blocked",
+       detail:"Applicant is directed to contact Pretec Sales — no application is created.",
+       note:"Block on org-number match is a resolved decision (spec §4)."},
+    {frag:"else", label:"no match — proceed"},
+      {from:"rambase", to:"be", kind:"return", label:"no match"},
+      {from:"be", to:"maestro", kind:"async", label:"Notify Sales — new registration",
+       detail:"Sales is notified by email of the new registration. No user account exists yet — it is created only on invitation acceptance.",
+       note:"No 'browse while pending' window: the Cognito user is created at invitation accept, not at registration."},
+    {frag:"end"},
+
+    // ── Approval → create company → write-back (Mosaik → RamBase) ──────
+    {from:"maestro", to:"be", kind:"sync", label:"Approve + fill Sales fields",
+     detail:"Sales reviews in Maestro and fills the three Sales-only fields — shipment arrangement, shipment partner customer number, CoBuilder membership — then approves."},
+    {from:"be", to:"be", kind:"sync", label:"Create company in Mosaik",
+     detail:"Maestro creates the company record in Mosaik. It has no RamBase Company ID yet."},
+    {frag:"loop", label:"Harmony sync cycle picks up companies without a RamBase ID"},
+      {from:"harmony", to:"be", kind:"async", label:"Poll: companies without RamBase ID",
+       detail:"On its next cycle Harmony selects Mosaik companies that have no RamBase Company ID."},
+      {from:"harmony", to:"rambase", kind:"sync", label:"Create company",
+       detail:"Harmony creates the new company in RamBase."},
+      {frag:"alt", label:"RamBase create succeeds"},
+        {from:"rambase", to:"harmony", kind:"return", label:"RamBase Company ID"},
+        {from:"harmony", to:"be", kind:"sync", label:"Write back RamBase Company ID",
+         detail:"The returned RamBase Company ID is written to the Mosaik company record. Subsequent syncs use it to UPDATE (not duplicate) the company."},
+        {from:"harmony", to:"rambase", kind:"sync", label:"Create contact person",
+         detail:"The registering user's contact details are written to RamBase as a contact person on the new company."},
+      {frag:"else", label:"RamBase returns an error"},
+        {from:"rambase", to:"harmony", kind:"return", label:"error"},
+        {from:"harmony", to:"be", kind:"sync", label:"Roll back approval",
+         detail:"No company is created in Mosaik or RamBase. Sales sees the error in Maestro and must retry the approval manually.",
+         note:"Approval is atomic — it rolls back on RamBase error (spec §3.4)."},
+      {frag:"end"},
+    {frag:"end"},
+
+    // ── Invitation → account creation ─────────────────────────────────
+    {from:"maestro", to:"be", kind:"sync", label:"Invite user",
+     detail:"Once the company exists (and is linked to RamBase), Sales invites the registering user."},
+    {from:"be", to:"sf", kind:"async", label:"Send invitation"},
+    {from:"sf", to:"user", kind:"return", label:"Invitation email"},
+    {from:"user", to:"sf", kind:"sync", label:"Accept invitation",
+     detail:"The user account is created only when the invitation is accepted (invitation-based onboarding)."},
+    {from:"sf", to:"be", kind:"sync", label:"Create user — application completed"},
+    {from:"be", to:"cognito", kind:"sync", label:"Create Cognito user",
+     detail:"A Cognito user is created for identity only.",
+     note:"The user↔RamBase-customer mapping is recorded in Mosaik. Price/cart/quote/orders resolve the RamBase customer from that mapping server-side — no token claim, no Pre-Token-Generation Lambda."},
+    {from:"sf", to:"user", kind:"return", label:"Full B2B access",
+     detail:"Live prices, cart, quote and order history become available."},
+
+    // ── Ongoing inbound sync (RamBase → Mosaik) ───────────────────────
+    {kind:"note", over:["harmony","rambase","be"],
+     text:"Separate ongoing direction — independent of onboarding."},
+    {frag:"loop", label:"scheduled every 10 min · delta · RamBase is source of truth"},
+      {from:"harmony", to:"rambase", kind:"sync", label:"GET customers changed since last run",
+       detail:"Delta sync using RamBase's filterable last-modified timestamp. Lookup key is the RamBase Company ID stored on the Mosaik record. (Requires RamBase to expose a filterable last-modified timestamp.)"},
+      {from:"rambase", to:"harmony", kind:"return", label:"changed companies + contacts"},
+      {from:"harmony", to:"be", kind:"sync", label:"Upsert company + contact records",
+       detail:"RamBase data overwrites Mosaik on update — RamBase is source of truth for all mapped fields.",
+       note:"Deactivated in RamBase → Mosaik account blocked (cannot log in). Deleted in RamBase → Mosaik account deleted."},
+    {frag:"end"},
+  ],
+};
+renderSequence(DIAGRAM);
+</script>
+</body>
+</html>

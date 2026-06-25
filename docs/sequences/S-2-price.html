@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pretec — S-2 Price (sequence)</title>
+<link rel="stylesheet" href="_diagram.css" />
+</head>
+<body>
+<header>
+  <div>
+    <div class="id" id="h-id"></div>
+    <h1 id="h-title"></h1>
+    <div class="summary" id="h-summary"></div>
+  </div>
+  <span class="badge" id="h-badge"></span>
+  <div class="head-links">
+    <a id="h-epic" href="#">Epic ↗</a>
+    <a id="h-spec" href="#">Spec ↗</a>
+    <a class="home" href="index.html">All diagrams</a>
+  </div>
+</header>
+<div class="toolbar">
+  <button id="btn-prev">‹ Prev</button>
+  <button id="btn-next">Next ›</button>
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-reset">Reset</button>
+  <span class="pos" id="pos"></span>
+  <span class="legend">
+    <span><span class="lk"></span>sync</span>
+    <span><span class="lk async"></span>async</span>
+    <span><span class="lk ret"></span>return</span>
+    <span><span class="lk prov"></span>provisional</span>
+  </span>
+</div>
+<main>
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="hint">Click a step for detail · hover a participant to isolate · ← → to step through</div>
+  </div>
+  <aside id="panel">
+    <button class="p-close" id="pclose" title="Close">×</button>
+    <div id="panel-content"></div>
+  </aside>
+</main>
+
+<script src="_diagram.js"></script>
+<script>
+const DIAGRAM = {
+  id: "S-2",
+  title: "Price",
+  status: "done",
+  summary: "Live per-user B2B batch price lookup. Storefront renders catalog without prices, then fetches live customer-specific prices via the Service API, which resolves the RamBase customer and queries RamBase.",
+  spec: "../superpowers/specs/2026-06-08-pretec-service-api-design.md",
+  epic: "",
+  actors: [
+    {id:"user",    label:"B2B User",        sub:"Logged in",            role:"client"},
+    {id:"sf",      label:"Storefront",      sub:"Mosaik (Next.js)",     role:"store"},
+    {id:"price",   label:"Price Service",   sub:"Pretec Service API",   role:"service"},
+    {id:"mosaik",  label:"Mosaik Platform", sub:"user↔customer mapping",role:"service"},
+    {id:"rambase", label:"RamBase",         sub:"ERP — source of truth",role:"erp"},
+  ],
+  steps: [
+    {from:"user", to:"sf", kind:"sync", label:"Open listing page",
+     detail:"User browses a listing or product page. Anonymous users see no prices; this flow is logged-in only."},
+    {from:"sf", to:"sf", kind:"sync", label:"Render catalog without prices",
+     detail:"Catalog/price decoupling: the page renders first from synced catalog data with no RamBase dependency, then prices are fetched afterward from the frontend."},
+    {from:"sf", to:"price", kind:"sync", label:"POST /prices — N SKUs",
+     detail:"Client-side batch call: prices for these N products, for the current customer. The frontend never sends a customer id.",
+     note:"Batch endpoint /prices is a Pretec extension — price is embedded in standard catalog reads, no standard batch endpoint exists."},
+    {from:"price", to:"price", kind:"sync", label:"Validate Cognito ID token",
+     detail:"The ID token (not the access token) is validated for identity — establishes the authenticated subject and avoids the Cognito Plus tier."},
+    {from:"price", to:"mosaik", kind:"sync", label:"GET /customers/current",
+     detail:"Resolve the RamBase customer from the Mosaik user↔customer mapping, keyed by the authenticated subject. No token claim, no spoofable client-supplied id."},
+    {frag:"alt", label:"authenticated user has no mapping"},
+      {from:"mosaik", to:"price", kind:"return", label:"no customer mapping"},
+      {from:"price", to:"sf", kind:"return", label:"\"not onboarded\" state",
+       detail:"A clear not-onboarded state is returned, never a 500.",
+       note:"Customer-link changes take effect on the next request — no token-refresh gap."},
+    {frag:"else", label:"customer resolved"},
+      {from:"mosaik", to:"price", kind:"return", label:"RamBase customer id"},
+      {frag:"loop", label:"batch the N SKUs into customer-scoped RamBase price calls"},
+        {from:"price", to:"rambase", kind:"sync", label:"Price for (product, customer)",
+         detail:"Single system/integration credential; the customer is passed as a parameter. One price per (product, customer) — no quantity-break / tiered pricing.",
+         provisional:true,
+         note:"RamBase customer-price lookup endpoint is unresolved — needs credentialed confirmation (spec §8.2)."},
+        {from:"rambase", to:"price", kind:"return", label:"net price per SKU",
+         detail:"Prices are ex-VAT (net); no VAT amounts shown. Exact fields (currency, price unit, discount) to confirm against RamBase.",
+         provisional:true},
+      {frag:"end"},
+      {from:"price", to:"sf", kind:"return", label:"Prices keyed by SKU",
+       detail:"The Service API returns one live price per SKU. Prices are never persisted as truth — always fetched live for display."},
+    {frag:"end"},
+    {from:"sf", to:"user", kind:"return", label:"Prices fill in progressively",
+     detail:"Prices populate the rendered catalog; unavailable prices degrade to \"price on request\"."},
+  ],
+};
+renderSequence(DIAGRAM);
+</script>
+</body>
+</html>

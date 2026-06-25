@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pretec — I-3 Inventory Sync (sequence)</title>
+<link rel="stylesheet" href="_diagram.css" />
+</head>
+<body>
+<header>
+  <div>
+    <div class="id" id="h-id"></div>
+    <h1 id="h-title"></h1>
+    <div class="summary" id="h-summary"></div>
+  </div>
+  <span class="badge" id="h-badge"></span>
+  <div class="head-links">
+    <a id="h-epic" href="#">Epic ↗</a>
+    <a id="h-spec" href="#">Spec ↗</a>
+    <a class="home" href="index.html">All diagrams</a>
+  </div>
+</header>
+<div class="toolbar">
+  <button id="btn-prev">‹ Prev</button>
+  <button id="btn-next">Next ›</button>
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-reset">Reset</button>
+  <span class="pos" id="pos"></span>
+  <span class="legend">
+    <span><span class="lk"></span>sync</span>
+    <span><span class="lk async"></span>async</span>
+    <span><span class="lk ret"></span>return</span>
+    <span><span class="lk prov"></span>provisional</span>
+  </span>
+</div>
+<main>
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="hint">Click a step for detail · hover a participant to isolate · ← → to step through</div>
+  </div>
+  <aside id="panel">
+    <button class="p-close" id="pclose" title="Close">×</button>
+    <div id="panel-content"></div>
+  </aside>
+</main>
+
+<script src="_diagram.js"></script>
+<script>
+const DIAGRAM = {
+  id: "I-3",
+  title: "Inventory Sync",
+  status: "todo",
+  summary: "Scheduled delta sync of stock/availability from RamBase to the Storefront Catalog via Harmony, surfaced on listing/PDP. Largely inferred — the spec is a stub.",
+  spec: "../inventory-sync-spec.md",
+  epic: "../epics/I-3-inventory-sync.html",
+  actors: [
+    {id:"rambase", label:"RamBase",          sub:"ERP — source of truth (stock)", role:"erp"},
+    {id:"harmony", label:"Harmony",          sub:"Inventory Sync engine",         role:"engine"},
+    {id:"catalog", label:"Storefront Catalog",sub:"Mosaik",                        role:"store"},
+    {id:"user",    label:"Logged-in User",   sub:"B2B shopper",                    role:"client"},
+  ],
+  steps: [
+    // ── Provisional sequence — spec I-3 is a stub ─────────────────────
+    {kind:"note", over:["rambase","harmony","catalog"],
+     text:"Spec I-3 is a stub (status: todo). This sequence is best-effort — nearly all steps are provisional and inferred from the Phase 1 assumption (synced via Harmony, not live)."},
+
+    // ── Scheduled delta sync cycle (RamBase → Harmony → Catalog) ──────
+    {frag:"loop", label:"scheduled delta sync · RamBase is source of truth"},
+      {from:"harmony", to:"rambase", kind:"sync", label:"GET stock changed since last run",
+       detail:"On its scheduled cycle Harmony reads RamBase stock/availability changed since the previous run (delta). Frequency, stock figure (on-hand vs available-to-promise) and multi-warehouse handling are unresolved in the spec.",
+       provisional:true,
+       note:"Sync frequency, source stock field, and multi-warehouse handling are open items (spec §3)."},
+      {from:"rambase", to:"harmony", kind:"return", label:"changed stock quantities",
+       detail:"RamBase returns the changed availability figures for affected products.",
+       provisional:true},
+      {from:"harmony", to:"harmony", kind:"sync", label:"Map to availability bands",
+       detail:"Harmony maps raw stock quantities to the agreed display model (e.g. exact quantity vs in-stock/low/out-of-stock bands). The exact model is unresolved in the spec.",
+       provisional:true,
+       note:"Display model (exact quantity vs bands) is an open item (spec §3)."},
+      {from:"harmony", to:"catalog", kind:"sync", label:"Publish availability to catalog",
+       detail:"Harmony writes the mapped availability onto the Storefront Catalog so it can be surfaced on listing pages and PDPs. Synced (cached), not live.",
+       provisional:true,
+       note:"Phase 1 assumption: inventory is synced via Harmony, not live like price (spec §4)."},
+      {frag:"opt", label:"sync fails"},
+        {from:"harmony", to:"catalog", kind:"async", label:"Keep last-known availability",
+         detail:"On failure the catalog retains the previous availability so browsing is not broken; the failure should be visible to operations. Failure behaviour and staleness handling are unresolved.",
+         provisional:true,
+         note:"Behaviour on sync failure and staleness tolerance are open items (spec §3)."},
+      {frag:"end"},
+    {frag:"end"},
+
+    // ── Surfacing availability to the shopper ─────────────────────────
+    {from:"user", to:"catalog", kind:"sync", label:"View listing / PDP",
+     detail:"A logged-in B2B user browses a product listing or product detail page.",
+     provisional:true},
+    {from:"catalog", to:"user", kind:"return", label:"Show synced availability",
+     detail:"The catalog surfaces the last synced availability band/quantity. Inventory is hidden for anonymous users — login is required to see stock availability.",
+     provisional:true,
+     note:"Resolved decision: availability is hidden for anonymous users; login required (spec §3)."},
+  ],
+};
+renderSequence(DIAGRAM);
+</script>
+</body>
+</html>

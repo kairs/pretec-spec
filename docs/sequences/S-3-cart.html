@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pretec — S-3 Cart (sequence)</title>
+<link rel="stylesheet" href="_diagram.css" />
+</head>
+<body>
+<header>
+  <div>
+    <div class="id" id="h-id"></div>
+    <h1 id="h-title"></h1>
+    <div class="summary" id="h-summary"></div>
+  </div>
+  <span class="badge" id="h-badge"></span>
+  <div class="head-links">
+    <a id="h-epic" href="#">Epic ↗</a>
+    <a id="h-spec" href="#">Spec ↗</a>
+    <a class="home" href="index.html">All diagrams</a>
+  </div>
+</header>
+<div class="toolbar">
+  <button id="btn-prev">‹ Prev</button>
+  <button id="btn-next">Next ›</button>
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-reset">Reset</button>
+  <span class="pos" id="pos"></span>
+  <span class="legend">
+    <span><span class="lk"></span>sync</span>
+    <span><span class="lk async"></span>async</span>
+    <span><span class="lk ret"></span>return</span>
+    <span><span class="lk prov"></span>provisional</span>
+  </span>
+</div>
+<main>
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="hint">Click a step for detail · hover a participant to isolate · ← → to step through</div>
+  </div>
+  <aside id="panel">
+    <button class="p-close" id="pclose" title="Close">×</button>
+    <div id="panel-content"></div>
+  </aside>
+</main>
+
+<script src="_diagram.js"></script>
+<script>
+const DIAGRAM = {
+  id: "S-3",
+  title: "Cart",
+  status: "done",
+  summary: "Service-owned cart state persisted in MongoDB (90-day sliding expiry), keyed by the resolved RamBase customer. Contract mirrors the standard Mosaik cart; live prices are fetched for display, never stored as truth.",
+  spec: "../superpowers/specs/2026-06-08-pretec-service-api-design.md",
+  epic: "",
+  actors: [
+    {id:"user",    label:"B2B User",       sub:"Logged in",           role:"client"},
+    {id:"sf",      label:"Storefront",     sub:"Mosaik (Next.js)",    role:"store"},
+    {id:"cart",    label:"Cart Service",   sub:"Pretec Service API",  role:"service"},
+    {id:"mongo",   label:"MongoDB",        sub:"Cart store (EKS)",    role:"datastore"},
+    {id:"rambase", label:"RamBase",        sub:"Live prices",         role:"erp"},
+  ],
+  steps: [
+    {from:"user", to:"sf", kind:"sync", label:"Add to cart / update line",
+     detail:"User adds, updates, or removes a cart line. Cart is login-only — not available to anonymous users."},
+    {from:"sf", to:"cart", kind:"sync", label:"POST /carts — mutate line",
+     detail:"Storefront calls the Service API using the standard Mosaik cart contract, reused without forking."},
+    {from:"cart", to:"cart", kind:"sync", label:"Validate Cognito ID token",
+     detail:"The ID token is validated for identity (the authenticated subject) on every request."},
+    {from:"cart", to:"mosaik", kind:"sync", label:"Resolve RamBase customer",
+     detail:"GET /customers/current resolves the RamBase customer from the Mosaik mapping. The cart is keyed by that customer, not by a client-supplied id."},
+    {frag:"opt", label:"no customer mapping"},
+      {from:"cart", to:"sf", kind:"return", label:"\"not onboarded\" state",
+       detail:"Authenticated user with no mapping gets a clear not-onboarded state, never a 500."},
+    {frag:"end"},
+    {from:"cart", to:"mongo", kind:"sync", label:"Upsert cart doc (key: customer)",
+     detail:"The mutated cart is persisted in MongoDB. Prices are NOT stored on the line as truth.",
+     note:"Cart TTL is 90 days, sliding: expiresAt is reset to now+90d on every read or write."},
+    {from:"mongo", to:"cart", kind:"return", label:"saved cart"},
+    {frag:"loop", label:"fetch live prices for the cart lines (display only)"},
+      {from:"cart", to:"rambase", kind:"sync", label:"Batch price for lines",
+       detail:"Live customer-specific net prices are fetched for display. RamBase is a hard runtime dependency for cart pricing.",
+       provisional:true,
+       note:"RamBase customer-price lookup unresolved (spec §8.2)."},
+      {from:"rambase", to:"cart", kind:"return", label:"net prices"},
+    {frag:"end"},
+    {from:"cart", to:"sf", kind:"return", label:"Cart + live prices",
+     detail:"Cart contents returned with live prices merged in for display. If pricing is slow/unavailable, lines degrade to \"price on request\"."},
+    {from:"sf", to:"user", kind:"return", label:"Updated cart view"},
+    {kind:"note", over:["cart","mongo"],
+     text:"Every subsequent read also slides expiresAt to now+90d, keeping active carts alive."},
+  ],
+};
+renderSequence(DIAGRAM);
+</script>
+</body>
+</html>

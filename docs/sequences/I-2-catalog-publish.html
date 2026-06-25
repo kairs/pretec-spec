@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pretec — I-2 Catalog Publish (sequence)</title>
+<link rel="stylesheet" href="_diagram.css" />
+</head>
+<body>
+<header>
+  <div>
+    <div class="id" id="h-id"></div>
+    <h1 id="h-title"></h1>
+    <div class="summary" id="h-summary"></div>
+  </div>
+  <span class="badge" id="h-badge"></span>
+  <div class="head-links">
+    <a id="h-epic" href="#">Epic ↗</a>
+    <a id="h-spec" href="#">Spec ↗</a>
+    <a class="home" href="index.html">All diagrams</a>
+  </div>
+</header>
+<div class="toolbar">
+  <button id="btn-prev">‹ Prev</button>
+  <button id="btn-next">Next ›</button>
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-reset">Reset</button>
+  <span class="pos" id="pos"></span>
+  <span class="legend">
+    <span><span class="lk"></span>sync</span>
+    <span><span class="lk async"></span>async</span>
+    <span><span class="lk ret"></span>return</span>
+    <span><span class="lk prov"></span>provisional</span>
+  </span>
+</div>
+<main>
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="hint">Click a step for detail · hover a participant to isolate · ← → to step through</div>
+  </div>
+  <aside id="panel">
+    <button class="p-close" id="pclose" title="Close">×</button>
+    <div id="panel-content"></div>
+  </aside>
+</main>
+
+<script src="_diagram.js"></script>
+<script>
+const DIAGRAM = {
+  id: "I-2",
+  title: "Catalog Publish",
+  status: "todo",
+  summary: "Publish enriched product & category data from Struct to the Mosaik Storefront Catalog via Harmony's Catalog Sync. Spec is a stub — flow is best-effort and provisional.",
+  spec: "../catalog-publish-spec.md",
+  epic: "../epics/I-2-catalog-publish.html",
+  actors: [
+    {id:"struct",  label:"Struct",      sub:"PIM — enriched source", role:"pim"},
+    {id:"harmony", label:"Harmony",     sub:"Catalog Sync engine",   role:"engine"},
+    {id:"catalog", label:"Storefront",  sub:"Mosaik Catalog / CDN",  role:"store"},
+  ],
+  steps: [
+    {kind:"note", over:["struct","harmony","catalog"],
+     text:"Spec I-2 is a stub (status: todo). The steps below are a best-effort publish flow inferred from the upstream product spec and the Harmony sync config — treat as provisional."},
+
+    {frag:"loop", label:"scheduled / triggered catalog publish cycle (frequency TBD)"},
+      {from:"harmony", to:"struct", kind:"async", label:"Poll: published-eligible changes",
+       detail:"On each cycle Harmony selects products/categories in Struct that are catalog-eligible and changed since the last run (delta).",
+       note:"Publish trigger and the web/catalog-eligible flag are open decisions (spec §3, §4).", provisional:true},
+      {from:"struct", to:"harmony", kind:"return", label:"changed products + categories",
+       detail:"Struct returns the enriched, catalog-ready product and category records plus asset references.", provisional:true},
+
+      {from:"harmony", to:"harmony", kind:"sync", label:"Map Struct → catalog model",
+       detail:"Harmony maps Struct fields to the Storefront catalog model: descriptions, attributes, SEO, display names, relationships.",
+       note:"Field-by-field mapping is not yet specified (spec §3).", provisional:true},
+
+      {frag:"opt", label:"data-quality gate passes"},
+        {from:"harmony", to:"catalog", kind:"sync", label:"Build / update category tree",
+         detail:"Harmony upserts the category tree in the catalog, derived from RamBase/Struct categories before products are attached.", provisional:true},
+        {from:"harmony", to:"catalog", kind:"sync", label:"Upsert products into catalog",
+         detail:"Enriched products are created or updated in the Storefront catalog, keyed by the stable RamBase SKU / product ID.", provisional:true},
+        {from:"harmony", to:"catalog", kind:"async", label:"Publish assets to CDN",
+         detail:"Images and documents referenced from Struct are pushed to the catalog/CDN.",
+         note:"Asset handling is unspecified (spec §3).", provisional:true},
+      {frag:"end"},
+
+      {frag:"alt", label:"product no longer catalog-eligible / deactivated"},
+        {from:"harmony", to:"catalog", kind:"sync", label:"Unpublish / hide product",
+         detail:"Deactivated or non-eligible products are hidden, unpublished, or shown as unavailable.",
+         note:"Hide vs. unpublish vs. show-unavailable is an open decision (spec §3).", provisional:true},
+      {frag:"else", label:"publish fails for a record"},
+        {from:"catalog", to:"harmony", kind:"return", label:"error",
+         detail:"A failed product is logged with context and isolated so it does not block the rest of the batch; the record is retryable on a later cycle.",
+         note:"Error handling and data-quality gates are unspecified (spec §3).", provisional:true},
+      {frag:"end"},
+    {frag:"end"},
+  ],
+};
+renderSequence(DIAGRAM);
+</script>
+</body>
+</html>

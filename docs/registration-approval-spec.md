@@ -1,67 +1,159 @@
 # Customer Registration & Approval Specification
 
-**Date:** 2026-06-21
-**Status:** Stub — consolidation of existing flows
+**Date:** 2026-06-25
+**Status:** Complete
 **Audience:** Pretec and Geta
 **Scope:** Company application, approval, invitation, and account creation (invitation-based onboarding)
 **Index ref:** [spec-index.md](spec-index.md) → F-7
-**Consolidates:** [flows-customer-sync.md Diagram 1](flows-customer-sync.md) + [customer-overview §4.7](customer-overview-spec.md)
+**Consolidates:** [flows-customer-sync.md Diagram 1](flows-customer-sync.md) · [customer-overview §4.7](customer-overview-spec.md)
+**Sync mechanics:** [I-4 Customer sync](customer-sync-spec.md) — RamBase company creation and write-back
 
 ---
 
 ## 1. Purpose
 
-Promote the registration/approval flow into its own spec covering the user-facing journey and the operating
-process behind it. This platform uses an **invitation-based onboarding** model (see authoritative
-[`sign-up.png`](sign-up.png)): a registration raises a **company application**; the **user account is created
-only when the invitation is accepted**. The sync/company-creation mechanics live in
-[I-4 Customer sync](customer-sync-spec.md); this spec covers the **experience and process**.
+This specification covers the user-facing journey and operating process for onboarding a new B2B company to the Pretec storefront. The platform uses **invitation-based onboarding**: registration raises a company application, the user account is created only when the invitation is accepted. No account exists before acceptance.
+
+The RamBase company creation, sync mechanics, and field mapping are in [I-4 Customer sync](customer-sync-spec.md). This spec covers the experience and process.
 
 ---
 
-## 2. Application & account states (invitation-based)
+## 2. Account states
 
-- **Anonymous** — browse catalog only; no account.
-- **Application pending** — a company application has been submitted; **no user account exists yet**.
-  Pretec Sales reviews and fills in extra needed information.
-- **Approved / invited** — application approved, company created in RamBase, invitation sent; **account not
-  yet created**.
-- **Completed / active** — user accepted the invitation; **account created** and the user↔RamBase-customer
-  mapping recorded in Mosaik; full B2B access (live price/cart/quote/orders).
+| State | Description |
+|---|---|
+| **Anonymous** | Browsing catalog only — no account |
+| **Application pending** | Company application submitted; no user account yet. Pretec Sales reviews. |
+| **Approved / invited** | Application approved, company created in RamBase, invitation sent; account not yet created |
+| **Active** | Invitation accepted; account created, user↔RamBase-customer mapping recorded; full B2B access |
 
-> Note: because the account is created at invitation acceptance, there is **no logged-in "pending" user
-> browsing with an account**. Pre-account browsing is plain anonymous browsing.
+There is no "logged-in pending" state. Until the invitation is accepted, the applicant browses as anonymous.
 
-## 3. Already documented (pull in / don't duplicate)
+---
 
-- Signup → company application → approval → invitation → account sequence — [flows-customer-sync.md Diagram 1](flows-customer-sync.md) / [`sign-up.png`](sign-up.png)
-- Mapping recorded from the new RamBase id at account creation — [Service API §3](superpowers/specs/2026-06-08-pretec-service-api-design.md)
+## 3. Registration form (new company)
 
-## 4. To specify
+Filled by the applicant on the storefront registration page:
 
-- [ ] Registration form fields (name, company, email — confirm whether phone is captured)
-- [ ] Company-application review screen in Maestro — what "extra needed information" Pretec Sales fills in
-- [ ] Approval → company creation in RamBase (ties to [I-4 Customer sync](customer-sync-spec.md))
-- [ ] Invitation mechanism — email content, token/link, expiry, resend
-- [ ] Invitation acceptance → account (Cognito user) creation + user↔customer mapping recorded in Mosaik
-- [ ] Who invites (Pretec Sales per diagram) and who approves
-- [ ] De-duplication when the company already exists in RamBase
-- [ ] Customer deactivation handling
-- [x] **Additional users on an existing company** — an **org-admin** invites & manages standard users via the invitation flow (see [Security & privacy §3 User roles](security-privacy-spec.md)); invitation expiry/resend rules still open
+**Company information**
 
-## 5. Open decisions
+| Field | Required |
+|---|---|
+| Company name | Yes |
+| Organization number | Yes |
+| Department | No |
+| Website | No |
+| Company email | Yes |
+| Invoice method (EHF or E-mail invoice) | Yes |
 
-- Whether **phone** is captured at registration (spec earlier listed it; diagram shows name/company/email).
-- Invitation expiry and resend rules.
-- What happens if a RamBase customer account is deactivated.
+**Contact person**
 
-## 6. Responsibilities
+| Field | Required |
+|---|---|
+| First / last name | Yes |
+| Email | Yes |
+| Phone number | Yes |
+| Direct phone | No |
+| Address | No |
+| Postal code | No |
+| City | No |
+
+On submit, the org number is checked against existing RamBase companies. If a match is found, the application is **blocked** and the applicant is directed to contact Pretec Sales. See [I-4 §4 De-duplication](customer-sync-spec.md).
+
+---
+
+## 4. Maestro — application review (Pretec Sales)
+
+Pretec Sales receives an email notification when a new application is submitted. In Maestro, Sales reviews the application and fills in three additional fields before approving:
+
+| Field | Values |
+|---|---|
+| Shipment arrangement | Pretec arranges / Own partner |
+| Shipment partner customer number | Free text (when own partner) |
+| CoBuilder membership | Yes / No |
+
+On approval:
+1. The company is created in Mosaik.
+2. Harmony syncs the company to RamBase and receives the RamBase Company ID.
+3. The RamBase Company ID is written back to the Mosaik company record.
+4. Pretec Sales sends the invitation to the contact person from Maestro.
+
+If RamBase returns an error on company creation, the approval rolls back. Pretec Sales sees the error in Maestro and retries manually. See [I-4 §3.4](customer-sync-spec.md).
+
+---
+
+## 5. Invitation — new company contact person
+
+After approval, Pretec Sales sends the invitation from Maestro.
+
+| Property | Value |
+|---|---|
+| Sent by | Pretec Sales (from Maestro) |
+| Delivery | Email to the contact person's registered email address |
+| Expiry | 7 days from send |
+| Resend | Available in Maestro — Pretec Sales can resend an expired or pending invitation |
+
+The invitation email contains a unique link. When the contact person clicks the link and completes account setup:
+
+- A Cognito user is created.
+- The user↔RamBase-customer mapping is recorded in Mosaik.
+- The application is marked completed.
+- The user immediately has full B2B access (live prices, cart, quote, order history).
+
+---
+
+## 6. Additional users on an existing company
+
+An **org-admin** user can invite additional users to join their company account. This is the same invitation email flow, but the form the new user fills in contains **contact information only** — no company information is required (the company already exists).
+
+| Step | Description |
+|---|---|
+| Org-admin sends invitation | From the storefront account management area |
+| Invitee receives email | Unique invitation link, valid for 7 days |
+| Invitee accepts | Fills in name and contact details; account created and linked to the same RamBase company |
+| Resend | Org-admin can resend an expired or pending invitation |
+
+For the two-tier role model (org-admin vs standard user), see [Security & privacy §3](security-privacy-spec.md).
+
+---
+
+## 7. Deactivation
+
+When a RamBase customer account or contact person is deactivated, the change is picked up on the next Harmony sync cycle (up to 10 minutes). After sync:
+
+- The user's storefront account is **blocked** — they cannot log in.
+- Active sessions are invalidated on next token validation.
+
+See [I-4 §5.3 Deactivation and deletion](customer-sync-spec.md) for the full sync rules.
+
+---
+
+## 8. Responsibilities
 
 | Area | Geta | Pretec |
 |---|---|---|
-| Registration/approval build | Implement agreed flow | Define approvers & operating process |
+| Registration form | Build and validate (including org-number de-duplication check) | Confirm field requirements and wording |
+| Maestro application review UI | Configure Maestro approval flow | Review applications and fill in Sales fields |
+| Invitation email | Build invitation mechanism and email template | Provide email content and branding |
+| Invitation acceptance → account creation | Implement Cognito user creation and Mosaik mapping | — |
+| Org-admin invitation flow | Build account management area for additional users | Define who has org-admin rights |
+| Resend invitation | Implement resend in Maestro and storefront account management | — |
+| Deactivation enforcement | Implement block on next sync after Harmony update | Deactivate/delete in RamBase |
 
-## 7. Success criteria
+---
 
-- Users can submit a company application; approval creates the company in RamBase; the invited user gains
-  full B2B access only after accepting the invitation. No account exists before acceptance.
+## 9. Open questions
+
+| Question | Status |
+|---|---|
+| Invitation email content and branding | Confirm with Pretec |
+| Who in Pretec has org-admin approval rights | Confirm operating process with Pretec |
+
+---
+
+## 10. Related specs
+
+- [flows-customer-sync.md](flows-customer-sync.md) — Sequence diagram (Diagram 1) and flow charts
+- [customer-sync-spec.md](customer-sync-spec.md) — I-4 RamBase company creation, sync mechanics, de-duplication
+- [authentication-spec.md](authentication-spec.md) — A-1 Cognito identity and user↔customer mapping
+- [security-privacy-spec.md](security-privacy-spec.md) — X-5 user roles (org-admin vs standard user)

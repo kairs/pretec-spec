@@ -76,7 +76,7 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 | F-4 | **Cart UX** — add/edit lines, 90-day sliding expiry, live price display | FEAT | ✅ Written | [cart-ux-spec.md](cart-ux-spec.md) |
 | F-5 | **Checkout & quote UX** — PO/reference, delivery address, requested date, comment | FEAT | ✅ Written | [checkout-quote-spec.md](checkout-quote-spec.md) |
 | F-6 | **My Page / Min side** — order & invoice history, scoping, PDF download | FEAT | ✅ Written | [min-side-spec.md](min-side-spec.md) |
-| F-7 | **Customer registration & approval** — application → approval → invitation (new company in RamBase) | FEAT | 🟡 Partial | [registration-approval-spec.md](registration-approval-spec.md) (consolidating [flows-customer-sync.md](flows-customer-sync.md)) |
+| F-7 | **Customer registration & approval** — application → approval → invitation (new company in RamBase) | FEAT | ✅ Written | [registration-approval-spec.md](registration-approval-spec.md) |
 | F-8 | **Content rendering** — editorial pages, category content, navigation, banners | FEAT | ⬜ To write (stub) | folds into I-5 / [content-sanity-spec.md](content-sanity-spec.md) |
 
 ### 3.4 Authentication & identity

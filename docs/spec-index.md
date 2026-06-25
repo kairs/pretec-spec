@@ -71,8 +71,8 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 | # | Capability | Type | Status | Spec |
 |---|---|---|---|---|
 | F-1 | **Catalog & product browsing** — listing, product detail, anonymous browsing | FEAT | ✅ Written | [catalog-browsing-spec.md](catalog-browsing-spec.md) |
-| F-2 | **Search & filtering** — what powers search, facets, filters | FEAT | ⬜ To write (stub) | [search-filtering-spec.md](search-filtering-spec.md) |
-| F-3 | **Pricing display** — ex-VAT, "price on request" degradation, NOK only | FEAT | 🟡 Partial | overview §5.3 + Service API §4.1 |
+| F-2 | **Search & filtering** — what powers search, facets, filters | FEAT | ✅ Written | [search-filtering-spec.md](search-filtering-spec.md) |
+| F-3 | **Pricing display** — ex-VAT, "price on request" degradation, NOK only | FEAT | ✅ Written | [pricing-display-spec.md](pricing-display-spec.md) |
 | F-4 | **Cart UX** — add/edit lines, 90-day sliding expiry, live price display | FEAT | 🟡 Partial | overview §5.4 + Service API §4.2 |
 | F-5 | **Checkout & quote UX** — PO/reference, delivery address, requested date, comment | FEAT | 🟡 Partial | overview §5.4 + Service API §4.3 |
 | F-6 | **My Page / Min side** — order & invoice history, scoping, PDF download | FEAT | 🟡 Partial | overview §5.5 + Service API §4.4 |

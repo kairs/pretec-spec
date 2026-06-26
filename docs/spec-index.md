@@ -51,7 +51,7 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 |---|---|---|---|---|
 | I-1 | **Product & Category sync** — RamBase → Struct via Harmony | INT | ✅ Written | [product-rambase-struct-harmony-spec.md](product-rambase-struct-harmony-spec.md) |
 | I-2 | **Catalog publish** — Struct → Storefront Catalog via Harmony (Catalog Sync) | INT | ✅ Written | [catalog-publish-spec.md](catalog-publish-spec.md) |
-| I-3 | **Inventory sync** — RamBase → Storefront Catalog via Harmony | INT | ⬜ To write (stub) | [inventory-sync-spec.md](inventory-sync-spec.md) |
+| I-3 | **Inventory sync** — RamBase → Storefront Catalog via Harmony | INT | ✅ Written | [inventory-sync-spec.md](inventory-sync-spec.md) |
 | I-4 | **Customer sync** — RamBase → Mosaik (Harmony) + approval write-back Mosaik → RamBase | INT | ✅ Written | [customer-sync-spec.md](customer-sync-spec.md) |
 | I-5 | **Content sync** — Sanity → Storefront (documents + content assets) | INT | ⬜ To write (stub) | [content-sanity-spec.md](content-sanity-spec.md) |
 | I-6 | **RamBase API integration** — auth model, system credential, scoping, environments | INT | ✅ Written | [rambase-api-integration-spec.md](rambase-api-integration-spec.md) |

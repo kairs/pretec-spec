@@ -89,7 +89,7 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 
 | # | Area | Type | Status | Spec |
 |---|---|---|---|---|
-| C-1 | **Harmony — sync configuration** — engine config, frequency, error handling, initial vs delta | CFG | ⬜ To write (stub) | [harmony-sync-spec.md](harmony-sync-spec.md) (cross-cuts I-1…I-4) |
+| C-1 | **Harmony — sync configuration** — engine config, frequency, error handling, initial vs delta | CFG | ✅ Written | [harmony-sync-spec.md](harmony-sync-spec.md) |
 | C-2 | **Maestro — backoffice usage** — redirects, translations, user/version views (as-provided) | CFG | ⬜ To write (stub) | [maestro-usage-spec.md](maestro-usage-spec.md) |
 | C-3 | **Storefront customization** — which parts are config vs starterkit customization | CFG | ⬜ To write (stub) | [storefront-customization-spec.md](storefront-customization-spec.md) |
 

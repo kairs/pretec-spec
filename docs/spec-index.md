@@ -53,7 +53,7 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 | I-2 | **Catalog publish** — Struct → Storefront Catalog via Harmony (Catalog Sync) | INT | ✅ Written | [catalog-publish-spec.md](catalog-publish-spec.md) |
 | I-3 | **Inventory sync** — RamBase → Storefront Catalog via Harmony | INT | ✅ Written | [inventory-sync-spec.md](inventory-sync-spec.md) |
 | I-4 | **Customer sync** — RamBase → Mosaik (Harmony) + approval write-back Mosaik → RamBase | INT | ✅ Written | [customer-sync-spec.md](customer-sync-spec.md) |
-| I-5 | **Content sync** — Sanity → Storefront (documents + content assets) | INT | ⬜ To write (stub) | [content-sanity-spec.md](content-sanity-spec.md) |
+| I-5 | **Content sync** — Sanity → Storefront (documents + content assets) | INT | ✅ Written | [content-sanity-spec.md](content-sanity-spec.md) |
 | I-6 | **RamBase API integration** — auth model, system credential, scoping, environments | INT | ✅ Written | [rambase-api-integration-spec.md](rambase-api-integration-spec.md) |
 
 ### 3.2 Services (Geta-built)
@@ -77,7 +77,7 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 | F-5 | **Checkout & quote UX** — PO/reference, delivery address, requested date, comment | FEAT | ✅ Written | [checkout-quote-spec.md](checkout-quote-spec.md) |
 | F-6 | **My Page / Min side** — order & invoice history, scoping, PDF download | FEAT | ✅ Written | [min-side-spec.md](min-side-spec.md) |
 | F-7 | **Customer registration & approval** — application → approval → invitation (new company in RamBase) | FEAT | ✅ Written | [registration-approval-spec.md](registration-approval-spec.md) |
-| F-8 | **Content rendering** — editorial pages, category content, navigation, banners | FEAT | ⬜ To write (stub) | folds into I-5 / [content-sanity-spec.md](content-sanity-spec.md) |
+| F-8 | **Content rendering** — editorial pages, navigation, banners | FEAT | ✅ Written | [content-sanity-spec.md](content-sanity-spec.md) |
 
 ### 3.4 Authentication & identity
 

@@ -91,7 +91,7 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 |---|---|---|---|---|
 | C-1 | **Harmony — sync configuration** — engine config, frequency, error handling, initial vs delta | CFG | ✅ Written | [harmony-sync-spec.md](harmony-sync-spec.md) |
 | C-2 | **Maestro — backoffice usage** — redirects, translations, user/version views (as-provided) | CFG | ✅ Written | [maestro-usage-spec.md](maestro-usage-spec.md) |
-| C-3 | **Storefront customization** — which parts are config vs starterkit customization | CFG | ⬜ To write (stub) | [storefront-customization-spec.md](storefront-customization-spec.md) |
+| C-3 | **Storefront customization** — which parts are config vs starterkit customization | CFG | ✅ Written | [storefront-customization-spec.md](storefront-customization-spec.md) |
 
 ### 3.6 Cross-cutting & non-functional
 
@@ -107,20 +107,9 @@ storefront/user-facing capability · **CFG** = platform configuration · **XC** 
 
 ## 4. Gaps at a glance
 
-Specs that **still need to be written** (⬜), in suggested priority order:
+All specifications are written (✅). No outstanding gaps as of 2026-06-26.
 
-1. **I-2 Catalog publish (Struct → Storefront)** — completes the product flow; I-1 only covers RamBase → Struct.
-2. **I-3 Inventory sync** — needed for catalog availability display.
-3. **A-1 Authentication & identity** — foundational for every logged-in capability; currently only sketched.
-4. **C-1 Harmony sync configuration** — the cross-cutting engine config behind I-1…I-4.
-5. **I-5 / F-8 Content (Sanity)** — content types unconfirmed; whole flow unspecified.
-6. **F-2 Search & filtering** — open question with no home yet.
-7. **C-2 Maestro usage**, **C-3 Storefront customization** — config-only but undocumented.
-
-Items marked 🟡 **Partial** now have **consolidation stubs** (I-6, F-1, F-7, A-1) — each
-points at where the partial content currently lives (overview / Service API / flows / research) and lists
-what to pull together. They stay 🟡 until the consolidated spec is fully written and the source content is
-either moved or cross-referenced.
+Open items and questions within individual specs are tracked in each spec's **Open questions** section. The main outstanding action for Pretec is provisioning RamBase API credentials so that the six unresolved API questions in [I-6 §7](rambase-api-integration-spec.md) can be answered.
 
 ---
 

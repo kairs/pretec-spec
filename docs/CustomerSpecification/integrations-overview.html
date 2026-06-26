@@ -55,6 +55,10 @@
     .card-body p + p { margin-top: 10px; }
     .card-note { margin-top: 16px; background: var(--yellow-bg); border: 1px solid var(--yellow-border); border-radius: 6px; padding: 10px 14px; font-size: 13px; color: var(--yellow); }
     .card-note strong { display: block; margin-bottom: 2px; }
+    .card-agreed { margin-top: 16px; background: var(--green-bg); border: 1px solid var(--green-border); border-radius: 6px; padding: 10px 14px; font-size: 13px; color: var(--green); }
+    .card-agreed strong { display: block; margin-bottom: 4px; }
+    .card-agreed ul { margin: 4px 0 0 16px; }
+    .card-agreed li { margin-top: 2px; }
 
     /* Flow arrow */
     .flow-line { display: flex; align-items: center; gap: 8px; margin: 14px 0; font-size: 13px; flex-wrap: wrap; }
@@ -85,7 +89,7 @@
 
   <div class="intro-box">
     <p>The Pretec webshop is not a single system — it is made up of several specialised tools that each do one job well. To make them work as one platform, data needs to flow between them automatically.</p>
-    <p>This document describes, in plain terms, each of the six connections ("integrations") that make the platform work. For each one you will find: what it does, why it matters, and what still needs to be agreed before it can be built.</p>
+    <p>This document describes, in plain terms, each of the six connections ("integrations") that make the platform work. Decisions have been agreed for all six; the only remaining open item is providing RamBase API credentials so Geta can verify the final technical details of the live-price and quote connections.</p>
   </div>
 
   <div class="section-label">The six integrations</div>
@@ -105,16 +109,19 @@
       <span class="flow-sys">Harmony</span>
       <span class="flow-arrow">→</span>
       <span class="flow-sys">Struct</span>
-      <span class="flow-label">— automatic, scheduled</span>
+      <span class="flow-label">— automatic, every 10 minutes</span>
     </div>
     <div class="card-body">
       <p>Whenever a product is created or changed in RamBase (your ERP system), that product automatically appears in Struct — the tool where Pretec adds photos, descriptions, technical details, and other content that makes the product look good on the webshop.</p>
-      <p>RamBase stays in charge of the core product information (product number, name, status, unit of measure). Struct is where your team enriches it with everything a customer needs to make a purchase decision. The two are kept in sync automatically, so your content team never needs to manually re-enter product data.</p>
-      <p>The same applies to product categories: the category structure from RamBase is brought into Struct, where it can be enriched with images and descriptions for the webshop navigation.</p>
+      <p>RamBase stays in charge of the core product information (product number, name, status, unit of measure). Struct is where your team enriches it with everything a customer needs to make a purchase decision. The two are kept in sync automatically every 10 minutes, so your content team never needs to manually re-enter product data.</p>
+      <p>The same applies to product categories: the category structure from RamBase is brought into Struct every 10 minutes, where it can be enriched with images and descriptions for the webshop navigation.</p>
     </div>
-    <div class="card-note">
-      <strong>Still to agree with Pretec:</strong>
-      How often should products sync — hourly, nightly, or as soon as a change happens in RamBase? What should happen in the webshop when a product is deactivated in RamBase?
+    <div class="card-agreed">
+      <strong>✓ Agreed</strong>
+      <ul>
+        <li>Sync frequency: every 10 minutes</li>
+        <li>When a product is deactivated in RamBase, it is automatically removed from listings on the webshop. Its product page URL remains accessible, showing "Ikke lenger tilgjengelig" (No longer available) — so existing bookmarks and external links are not broken.</li>
+      </ul>
     </div>
   </div>
 
@@ -133,15 +140,19 @@
       <span class="flow-sys">Harmony</span>
       <span class="flow-arrow">→</span>
       <span class="flow-sys">Webshop catalogue</span>
-      <span class="flow-label">— automatic</span>
+      <span class="flow-label">— automatic, every 10 minutes</span>
     </div>
     <div class="card-body">
-      <p>Once a product is enriched in Struct — description written, images added — this integration takes care of making it visible in the webshop. It reads the finished product from Struct and publishes it to the webshop catalogue automatically.</p>
-      <p>This is the second half of the product journey: integration 1 brings products <em>in</em> to Struct, and integration 2 sends them <em>out</em> to the webshop. When a product is unpublished or deactivated, the webshop is updated to match.</p>
+      <p>Once a product is enriched in Struct — description written, images added — Pretec's content team marks it as "Published for web". From that moment, this integration takes care of making it visible on the webshop automatically within 10 minutes.</p>
+      <p>This is the second half of the product journey: integration 1 brings products <em>in</em> to Struct for enrichment, and integration 2 sends them <em>out</em> to the webshop once they are ready. Products that have not been marked as ready never appear on the webshop, regardless of their status in RamBase — this gives Pretec full control over the launch timing of new products.</p>
     </div>
-    <div class="card-note">
-      <strong>Still to agree with Pretec:</strong>
-      What makes a product "ready to publish" — is there a specific flag or checklist in Struct? What should the webshop show when a product is no longer available?
+    <div class="card-agreed">
+      <strong>✓ Agreed</strong>
+      <ul>
+        <li>A product only appears on the webshop when a Pretec editor explicitly marks it "Published for web" in Struct — no automatic publishing.</li>
+        <li>When a product is deactivated in RamBase or unpublished in Struct, it is removed from all listings and search results. Its product page URL remains accessible, showing "Ikke lenger tilgjengelig".</li>
+        <li>Sync frequency: every 10 minutes.</li>
+      </ul>
     </div>
   </div>
 
@@ -160,15 +171,20 @@
       <span class="flow-sys">Harmony</span>
       <span class="flow-arrow">→</span>
       <span class="flow-sys">Webshop catalogue</span>
-      <span class="flow-label">— regular updates</span>
+      <span class="flow-label">— every 10 minutes</span>
     </div>
     <div class="card-body">
-      <p>This integration keeps the webshop up to date with what is actually in stock. Stock levels from RamBase are sent to the webshop on a regular schedule, so customers can see whether a product is available, low in stock, or out of stock before they place an order.</p>
-      <p>The plan for Phase 1 is to update availability at regular intervals (for example every 15 minutes or every hour), rather than in real time. This is a practical starting point — the exact frequency and how availability is shown (exact numbers or simple bands like "in stock / out of stock") still needs to be agreed.</p>
+      <p>This integration keeps the webshop up to date with what is actually in stock. Stock levels from RamBase are sent to the webshop every 10 minutes, so logged-in customers can see whether a product is available before placing an order.</p>
+      <p>Availability is shown as a simple "På lager" (In stock) or "Ikke på lager" (Out of stock) indicator — no exact numbers are displayed. An out-of-stock item can still be added to the cart and submitted as a quote request; Pretec Sales handles availability and fulfilment from RamBase.</p>
     </div>
-    <div class="card-note">
-      <strong>Still to agree with Pretec:</strong>
-      Should the webshop show exact stock numbers or just "in stock / low / out of stock"? How quickly must stock changes appear on the webshop? Should anonymous visitors see availability, or only logged-in customers?
+    <div class="card-agreed">
+      <strong>✓ Agreed</strong>
+      <ul>
+        <li>Display: "På lager" / "Ikke på lager" — no exact quantities shown.</li>
+        <li>Availability is only visible to logged-in customers. Anonymous visitors do not see stock status.</li>
+        <li>Sync frequency: every 10 minutes. Stock changes in RamBase appear on the webshop within approximately 10 minutes.</li>
+        <li>The exact RamBase stock field and warehouse scope will be confirmed during integration setup.</li>
+      </ul>
     </div>
   </div>
 
@@ -185,7 +201,7 @@
       <span class="flow-sys">RamBase</span>
       <span class="flow-arrow">→</span>
       <span class="flow-sys">Webshop</span>
-      <span class="flow-label">— existing customers, on a schedule</span>
+      <span class="flow-label">— existing customers, every 10 minutes</span>
     </div>
     <div class="flow-line">
       <span class="flow-sys">Webshop</span>
@@ -195,12 +211,17 @@
     </div>
     <div class="card-body">
       <p>This is the only integration that flows in both directions. It covers two separate situations:</p>
-      <p><strong>Existing customers:</strong> Companies and contact persons that already exist in RamBase are automatically brought into the webshop on a schedule. When an existing customer logs in for the first time, their company information is already there — no manual setup needed.</p>
-      <p><strong>New company applications:</strong> When a new company applies for access to the webshop, Pretec Sales reviews and approves the application in the Maestro back-office. On approval, the company is automatically created in RamBase as well — so the Pretec team does not have to create it twice. The RamBase customer ID is linked back to the webshop account automatically.</p>
+      <p><strong>Existing customers:</strong> Companies and contact persons that already exist in RamBase are automatically brought into the webshop every 10 minutes. When an existing customer logs in for the first time, their company information is already there — no manual setup needed.</p>
+      <p><strong>New company applications:</strong> When a new company applies for access to the webshop, Pretec Sales reviews and approves the application in the Maestro back-office. On approval, the company is automatically created in RamBase — so the Pretec team does not have to create it twice. Before approving, Sales fills in three fields: shipment arrangement, shipment partner customer number (if applicable), and CoBuilder membership. The RamBase customer ID is then linked back to the webshop account automatically.</p>
+      <p>If an applicant provides an organisation number that already exists in RamBase, the application is blocked and the applicant is directed to contact Pretec Sales directly. This prevents duplicate company records.</p>
     </div>
-    <div class="card-note">
-      <strong>Still to agree with Pretec:</strong>
-      If an applicant names a company that already exists in RamBase, should the webshop link to the existing record or create a new one? What information does Pretec Sales fill in when approving a new company that goes into RamBase?
+    <div class="card-agreed">
+      <strong>✓ Agreed</strong>
+      <ul>
+        <li>Duplicate check: organisation number matched against existing RamBase companies. Duplicate → application blocked, applicant directed to contact Sales.</li>
+        <li>Approval fields Pretec Sales fills in: shipment arrangement, shipment partner customer number, CoBuilder membership.</li>
+        <li>When a customer is deactivated in RamBase, their webshop access is blocked within 10 minutes (next sync cycle).</li>
+      </ul>
     </div>
   </div>
 
@@ -217,16 +238,24 @@
       <span class="flow-sys">Sanity CMS</span>
       <span class="flow-arrow">→</span>
       <span class="flow-sys">Webshop</span>
-      <span class="flow-label">— on publish</span>
+      <span class="flow-label">— live on publish</span>
     </div>
     <div class="card-body">
-      <p>Not everything on the webshop is a product. Pages like the front page, campaign banners, category descriptions, and the navigation menu need to be written and maintained by Pretec's team. Sanity is the tool where this editorial content is authored.</p>
-      <p>When content is published in Sanity, it automatically appears on the webshop — no developer needed. This gives Pretec full control over the non-product content: what to feature, what campaigns to run, and how the site is structured.</p>
-      <p>On pages like category pages, the editorial content from Sanity and the product catalogue work together — Pretec writes the category banner and description in Sanity, and the products appear alongside it from the catalogue automatically.</p>
+      <p>Not everything on the webshop is a product. Pages like About, Contact, Terms and conditions, and similar informational pages need to be written and maintained by Pretec's team. Sanity is the tool where this editorial content is authored.</p>
+      <p>When content is published in Sanity, it automatically appears on the webshop within seconds — no developer needed. This gives Pretec full control over the non-product content on the site.</p>
+      <p>The webshop navigation (the menu structure) is driven automatically from the product category tree, not from Sanity. Pretec does not need to manually maintain the navigation — it updates automatically as categories change in RamBase.</p>
+    </div>
+    <div class="card-agreed">
+      <strong>✓ Agreed</strong>
+      <ul>
+        <li>Phase 1 content type: editorial landing pages only (About, Contact, Terms, etc.). Category banners and campaign banners are Phase 2.</li>
+        <li>Navigation is driven automatically from the product category tree — no authoring in Sanity required.</li>
+        <li>Content publishes live to the webshop within seconds of being published in Sanity.</li>
+      </ul>
     </div>
     <div class="card-note">
-      <strong>Still to agree with Pretec:</strong>
-      Which types of content are needed for Phase 1 (landing pages, category descriptions, banners, navigation)? Who in the Pretec team will be authoring and approving content in Sanity?
+      <strong>Still to confirm with Pretec:</strong>
+      Which specific editorial pages are needed at launch, and who at Pretec will have authoring rights in Sanity Studio.
     </div>
   </div>
 
@@ -240,12 +269,12 @@
       </div>
     </div>
     <div class="card-body">
-      <p>Integrations 1, 3, and 4 all read from or write to RamBase, as do the price lookup and order history features of the webshop. This integration describes the secure connection layer that all of them share — how the platform authenticates to RamBase, how credentials are stored safely, and how the connection is managed across different environments (test, staging, and production).</p>
-      <p>From Pretec's perspective, the main requirement is straightforward: Pretec provides the API access to RamBase with the right permissions, and Geta takes care of the secure setup and ongoing operation. Credentials are stored in a secure vault and can be rotated without downtime.</p>
+      <p>Integrations 1, 3, and 4 all read from or write to RamBase, as do the live price lookup and order history features of the webshop. This integration describes the secure connection layer that all of them share — how the platform authenticates to RamBase, how credentials are stored safely, and how the connection is managed across different environments (test, staging, and production).</p>
+      <p>From Pretec's perspective, the main requirement is straightforward: Pretec provides the API access to RamBase with the right permissions, and Geta takes care of the secure setup and ongoing operation. Credentials are stored in a secure vault and can be rotated without downtime. Separate credentials are used for the test and production environments.</p>
     </div>
     <div class="card-note">
-      <strong>Waiting on Pretec:</strong>
-      Access to the RamBase test environment is needed before Geta can confirm several open technical details — including how live prices are looked up per customer and how new sales quotes are created. These items are noted and will be resolved once credentials are available.
+      <strong>Waiting on Pretec — RamBase API credentials:</strong>
+      Access to the RamBase test environment is needed before Geta can confirm six outstanding technical details — including how live prices are looked up per customer, exact order filter fields, and how new sales quotes are created. All other decisions for this integration are resolved. Once credentials are available, these items can be verified quickly.
     </div>
   </div>
 
@@ -254,12 +283,9 @@
   <div class="section-label">Summary of open items</div>
   <div class="card">
     <div class="card-body">
-      <p>The following questions need to be answered by Pretec before the integrations above can be fully specified and built. They have been raised individually in each section above and are collected here for convenience.</p>
-      <p style="margin-top: 16px;"><strong>Products (1 &amp; 2):</strong> Sync frequency. What marks a product as ready to publish. What the webshop shows when a product is deactivated.</p>
-      <p style="margin-top: 10px;"><strong>Stock (3):</strong> Acceptable staleness of stock data. Whether to show exact quantities or stock bands. Whether anonymous visitors see availability.</p>
-      <p style="margin-top: 10px;"><strong>Customers (4):</strong> De-duplication rule for company applications. Extra information Pretec Sales fills in when approving a new company. What happens when a customer is deactivated in RamBase.</p>
-      <p style="margin-top: 10px;"><strong>Content (5):</strong> Which content types are in Phase 1 scope. Who authors and approves content in Sanity.</p>
-      <p style="margin-top: 10px;"><strong>RamBase access (6):</strong> Provide API credentials for the test environment so Geta can verify the remaining open technical points.</p>
+      <p>All integration decisions have been agreed. Two items remain open:</p>
+      <p style="margin-top: 16px;"><strong>RamBase API credentials (integration 6):</strong> Pretec to provision API credentials for the RamBase test environment. This unblocks verification of the price lookup, order filtering, and quote creation details that cannot be confirmed from public documentation alone.</p>
+      <p style="margin-top: 10px;"><strong>Sanity authoring access (integration 5):</strong> Pretec to confirm which pages are needed at launch and nominate the team members who will author content in Sanity Studio.</p>
     </div>
   </div>
 

@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pretec Commerce Platform — Full Specification</title>
+<style>
+:root{
+  --bg:#f7f8fa;--surface:#fff;--border:#e4e7ec;
+  --blue:#1a56db;--blue-light:#eff4ff;--blue-mid:#c7d7fd;
+  --text:#111827;--muted:#6b7280;--small:#374151;
+  --green:#065f46;--green-bg:#ecfdf5;--green-bd:#a7f3d0;
+  --yellow:#92400e;--yellow-bg:#fffbeb;--yellow-bd:#fde68a;
+  --red:#991b1b;--red-bg:#fef2f2;--red-bd:#fca5a5;
+  --radius:10px;
+  --font:"Segoe UI",system-ui,-apple-system,sans-serif;
+  --sidebar:260px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;line-height:1.7;}
+
+/* Layout */
+.layout{display:flex;min-height:100vh;}
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;background:var(--surface);
+  border-right:1px solid var(--border);
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  padding:28px 0 40px;
+}
+.main{flex:1;min-width:0;padding:48px 48px 100px 48px;max-width:900px;}
+
+/* Sidebar nav */
+.nav-logo{padding:0 20px 20px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);}
+.nav-group{margin-bottom:4px;}
+.nav-group-label{padding:8px 20px 4px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.nav-link{display:block;padding:5px 20px;font-size:13px;color:var(--small);text-decoration:none;border-left:3px solid transparent;}
+.nav-link:hover{background:var(--bg);color:var(--blue);border-left-color:var(--blue);}
+.nav-link.active{background:var(--blue-light);color:var(--blue);border-left-color:var(--blue);font-weight:600;}
+
+/* Cover */
+.cover{margin-bottom:56px;padding-bottom:40px;border-bottom:2px solid var(--border);}
+.cover-eyebrow{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;}
+.cover-title{font-size:36px;font-weight:700;line-height:1.2;margin-bottom:16px;}
+.cover-sub{font-size:16px;color:var(--muted);max-width:640px;line-height:1.7;}
+.cover-meta{margin-top:20px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:24px;}
+.cover-intro{margin-top:28px;background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:var(--radius);padding:20px 24px;}
+.cover-intro p{font-size:14px;color:#1e3a8a;line-height:1.75;}
+.cover-intro p+p{margin-top:8px;}
+
+/* Chapter headings */
+.chapter{margin:56px 0 28px;}
+.chapter-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.chapter-title{font-size:26px;font-weight:700;line-height:1.25;}
+hr.chapter-rule{border:none;border-top:2px solid var(--border);margin:0 0 28px;}
+
+/* Section cards */
+.spec-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;margin-bottom:24px;}
+.spec-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;}
+.spec-badge{flex-shrink:0;background:var(--blue);color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;letter-spacing:.04em;white-space:nowrap;}
+.spec-title{font-size:19px;font-weight:700;line-height:1.3;}
+.spec-desc{font-size:14px;color:var(--muted);margin-top:2px;}
+.spec-body{font-size:14px;color:var(--small);line-height:1.75;}
+.spec-body+.spec-body{margin-top:12px;}
+
+/* Sub-sections inside a card */
+.sub{margin-top:20px;}
+.sub-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;margin-top:10px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--bg);text-align:left;padding:8px 12px;font-weight:600;color:var(--muted);border-bottom:2px solid var(--border);white-space:nowrap;}
+td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+td:first-child{font-weight:600;white-space:nowrap;}
+td code{font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;}
+
+/* Callouts */
+.callout{margin-top:16px;border-radius:8px;padding:12px 16px;font-size:13px;}
+.callout-green{background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green);}
+.callout-yellow{background:var(--yellow-bg);border:1px solid var(--yellow-bd);color:var(--yellow);}
+.callout strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;}
+.callout ul{margin:4px 0 0 16px;}
+.callout li{margin-top:3px;}
+
+/* Flow chips */
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:12px 0;font-size:13px;}
+.flow-chip{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-weight:600;}
+.flow-arrow{color:var(--muted);}
+.flow-note{font-size:12px;color:var(--muted);font-style:italic;}
+
+/* Summary open items */
+.open-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:700px){.open-grid{grid-template-columns:1fr;}}
+.open-card{background:var(--yellow-bg);border:1px solid var(--yellow-bd);border-radius:8px;padding:16px 18px;}
+.open-card-title{font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:8px;}
+.open-card ul{margin:0 0 0 14px;font-size:13px;color:var(--yellow);}
+.open-card li{margin-top:4px;}
+
+@media(max-width:860px){
+  .layout{flex-direction:column;}
+  .sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid var(--border);}
+  .main{padding:28px 20px 60px;}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="nav-logo">Pretec Spec</div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-link" href="#cover">Introduction</a>
+    <a class="nav-link" href="#open-summary">Open items</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Integrations</div>
+    <a class="nav-link" href="#i1">I-1 Product & Category sync</a>
+    <a class="nav-link" href="#i2">I-2 Catalog publish</a>
+    <a class="nav-link" href="#i3">I-3 Inventory sync</a>
+    <a class="nav-link" href="#i4">I-4 Customer sync</a>
+    <a class="nav-link" href="#i5">I-5 Content sync (Sanity)</a>
+    <a class="nav-link" href="#i6">I-6 RamBase API integration</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Services</div>
+    <a class="nav-link" href="#s1">S-1 Pretec Service API</a>
+    <a class="nav-link" href="#s2">S-2 Price</a>
+    <a class="nav-link" href="#s3">S-3 Cart</a>
+    <a class="nav-link" href="#s4">S-4 Quote / checkout</a>
+    <a class="nav-link" href="#s5">S-5 Query (Min side)</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Functional</div>
+    <a class="nav-link" href="#f1">F-1 Catalog browsing</a>
+    <a class="nav-link" href="#f2">F-2 Search & filtering</a>
+    <a class="nav-link" href="#f3">F-3 Pricing display</a>
+    <a class="nav-link" href="#f4">F-4 Cart UX</a>
+    <a class="nav-link" href="#f5">F-5 Checkout & quote UX</a>
+    <a class="nav-link" href="#f6">F-6 My Page / Min side</a>
+    <a class="nav-link" href="#f7">F-7 Registration & approval</a>
+    <a class="nav-link" href="#f8">F-8 Content rendering</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Authentication</div>
+    <a class="nav-link" href="#a1">A-1 Authentication & identity</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Configuration</div>
+    <a class="nav-link" href="#c1">C-1 Harmony sync config</a>
+    <a class="nav-link" href="#c2">C-2 Maestro usage</a>
+    <a class="nav-link" href="#c3">C-3 Storefront customization</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Cross-cutting</div>
+    <a class="nav-link" href="#x1">X-1 Localization & markets</a>
+    <a class="nav-link" href="#x2">X-2 Environments & deployment</a>
+    <a class="nav-link" href="#x3">X-3 Observability & monitoring</a>
+    <a class="nav-link" href="#x4">X-4 Resilience & error handling</a>
+    <a class="nav-link" href="#x5">X-5 Security & data privacy</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- COVER -->
+<div class="cover" id="cover">
+  <div class="cover-eyebrow">Pretec Commerce Platform</div>
+  <div class="cover-title">Full Platform Specification</div>
+  <div class="cover-sub">The definitive specification for the Pretec B2B e-commerce platform — covering all integrations, services, functional capabilities, authentication, configuration, and cross-cutting concerns.</div>
+  <div class="cover-meta">
+    <span><strong>Audience:</strong> Pretec and Geta</span>
+    <span><strong>Prepared by:</strong> Geta</span>
+    <span><strong>Date:</strong> June 2026</span>
+    <span><strong>Status:</strong> Complete — open items tracked in §9</span>
+  </div>
+  <div class="cover-intro">
+    <p>The Pretec webshop is a B2B e-commerce platform built on the Mosaik storefront (Next.js / React), powered by RamBase ERP as the source of truth, with Struct for product enrichment, Sanity for editorial content, and a Geta-built Pretec Service API for live price, cart, quote, and order operations. Harmony synchronises data between systems on a 10-minute schedule.</p>
+    <p>This document consolidates every agreed decision across all specification areas. Decisions are confirmed; genuinely open items requiring Pretec input are highlighted in yellow throughout and collected in the <a href="#open-summary" style="color:#1e3a8a;">open items summary</a>.</p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ INTEGRATIONS -->
+<div class="chapter" id="integrations">
+  <div class="chapter-label">Section 1</div>
+  <div class="chapter-title">Integrations</div>
+</div>
+<hr class="chapter-rule"/>
+
+<!-- I-1 -->
+<div class="spec-section" id="i1">
+  <div class="spec-header">
+    <div class="spec-badge">I-1</div>
+    <div>
+      <div class="spec-title">Product &amp; Category Sync — RamBase → Struct via Harmony</div>
+      <div class="spec-desc">Products and categories originate in RamBase and are synced into Struct for enrichment.</div>
+    </div>
+  </div>
+  <div class="flow">
+    <span class="flow-chip">RamBase</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">Harmony</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">Struct</span>
+    <span class="flow-note">— scheduled delta, every 10 min</span>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Sync cadence</td><td>Every 10 minutes, delta (changed records only)</td></tr>
+      <tr><td>Direction</td><td>One-way: RamBase → Struct. No write-back.</td></tr>
+      <tr><td>System of record</td><td>RamBase owns: SKU, status, UoM, category. Struct owns: display name, descriptions, images, attributes, SEO.</td></tr>
+      <tr><td>Product display name</td><td>Struct display name overrides RamBase ERP name on the storefront.</td></tr>
+      <tr><td>Category source</td><td>RamBase (authoritative). Up to 4 levels: Segment → K1 → K2 → K3. Enriched in Struct.</td></tr>
+      <tr><td>Deactivation</td><td>RamBase status change synced to Struct; downstream catalog sync (I-2) removes from listings. URL remains accessible with "Ikke lenger tilgjengelig".</td></tr>
+      <tr><td>Enrichment preservation</td><td>Harmony preserves Struct-owned fields (descriptions, images, display name) during RamBase updates.</td></tr>
+      <tr><td>Initial load</td><td>Full load of all active products and categories at go-live; delta thereafter.</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Total active product count in RamBase (for initial load planning)</li>
+      <li>Expected daily product change rate</li>
+    </ul>
+  </div>
+</div>
+
+<!-- I-2 -->
+<div class="spec-section" id="i2">
+  <div class="spec-header">
+    <div class="spec-badge">I-2</div>
+    <div>
+      <div class="spec-title">Catalog Publish — Struct → Storefront Catalog via Harmony</div>
+      <div class="spec-desc">Enriched, publish-flagged products and categories are pushed from Struct to the Storefront Catalog.</div>
+    </div>
+  </div>
+  <div class="flow">
+    <span class="flow-chip">Struct</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">Harmony Catalog Sync</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">Storefront Catalog</span>
+    <span class="flow-note">— every 10 min</span>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Publish trigger</td><td>Explicit "Published for web" flag in Struct — Pretec marks each product ready. Active in RamBase AND published in Struct = visible on storefront.</td></tr>
+      <tr><td>Sync cadence</td><td>Every 10 minutes, delta</td></tr>
+      <tr><td>Deactivated product</td><td>Removed from listings and search. URL stays accessible showing "Ikke lenger tilgjengelig" — no 404, no redirect.</td></tr>
+      <tr><td>Deleted product</td><td>URL returns 404 (exceptional case only — deactivation is the normal path).</td></tr>
+      <tr><td>Category tree</td><td>From RamBase via Struct. Storefront-only categories not in Phase 1.</td></tr>
+      <tr><td>Assets</td><td>Product images and documents from Struct, served via Storefront CDN.</td></tr>
+      <tr><td>Not synced here</td><td>Price (live via Service API), inventory (I-3), editorial content (I-5).</td></tr>
+      <tr><td>Variants</td><td>Variant relationships defined in Struct, synced to catalog. Each variant has its own SKU, availability, and price.</td></tr>
+      <tr><td>Error handling</td><td>Per-product failure isolation. Auto-retry on next cycle after data correction.</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Exact field name for "Published for web" flag in Struct (confirm during configuration)</li>
+      <li>Maximum number of assets per product (images + documents)</li>
+      <li>Whether category enrichment (images, banners on category pages) is in scope for launch</li>
+    </ul>
+  </div>
+</div>
+
+<!-- I-3 -->
+<div class="spec-section" id="i3">
+  <div class="spec-header">
+    <div class="spec-badge">I-3</div>
+    <div>
+      <div class="spec-title">Inventory Sync — RamBase → Storefront Catalog via Harmony</div>
+      <div class="spec-desc">Stock availability is synced from RamBase to the Storefront Catalog; shown to logged-in users as a binary indicator.</div>
+    </div>
+  </div>
+  <div class="flow">
+    <span class="flow-chip">RamBase</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">Harmony Inventory Sync</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">Storefront Catalog</span>
+    <span class="flow-note">— every 10 min</span>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Display model</td><td>Binary: "På lager" / "Ikke på lager". No exact quantities, no low-stock band.</td></tr>
+      <tr><td>Visible to</td><td>Logged-in, approved users only. Anonymous users see no availability.</td></tr>
+      <tr><td>Sync cadence</td><td>Every 10 minutes, delta. Max staleness ~10 min.</td></tr>
+      <tr><td>Stock field</td><td>Configured during integration setup based on what RamBase exposes. Threshold: quantity > 0 = in stock.</td></tr>
+      <tr><td>Multi-warehouse</td><td>Configured during setup to match Pretec's RamBase warehouse configuration.</td></tr>
+      <tr><td>OOS behavior</td><td>Informational — does not block add-to-cart or quote submission. Pretec Sales handles fulfilment.</td></tr>
+      <tr><td>Failure behavior</td><td>Last known state retained. Per-product failure isolation.</td></tr>
+      <tr><td>Separate from catalog</td><td>Inventory sync is independent of Catalog Sync (I-2). Inventory update does not require a catalog re-sync.</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>RamBase available-quantity field name and warehouse scope (confirm during Harmony setup)</li>
+      <li>Exact Norwegian availability labels — "På lager" / "Ikke på lager" to confirm with Pretec</li>
+    </ul>
+  </div>
+</div>
+
+<!-- I-4 -->
+<div class="spec-section" id="i4">
+  <div class="spec-header">
+    <div class="spec-badge">I-4</div>
+    <div>
+      <div class="spec-title">Customer Sync — RamBase ↔ Mosaik</div>
+      <div class="spec-desc">Two-way: existing customers sync from RamBase to Mosaik; new company applications create a company in RamBase on approval.</div>
+    </div>
+  </div>
+  <div class="flow">
+    <span class="flow-chip">RamBase</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">Harmony</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">Mosaik</span>
+    <span class="flow-note">— every 10 min (existing customers)</span>
+  </div>
+  <div class="flow">
+    <span class="flow-chip">Mosaik</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">Harmony</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">RamBase</span>
+    <span class="flow-note">— on approval (new companies)</span>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Inbound cadence</td><td>Every 10 minutes, delta (change detection via RamBase last-modified timestamp)</td></tr>
+      <tr><td>System of record</td><td>RamBase — overwrites Mosaik on every sync</td></tr>
+      <tr><td>New company flow</td><td>Company created in Mosaik on approval → Harmony syncs to RamBase → RamBase ID written back to Mosaik</td></tr>
+      <tr><td>Sales fields on approval</td><td>Shipment arrangement, shipment partner customer number, CoBuilder membership</td></tr>
+      <tr><td>De-duplication</td><td>Org number matched against RamBase. Match → application blocked, applicant directed to contact Sales.</td></tr>
+      <tr><td>Deactivated customer</td><td>Blocked in Mosaik — user cannot log in</td></tr>
+      <tr><td>Deleted customer</td><td>Deleted from Mosaik</td></tr>
+      <tr><td>Approval rollback</td><td>If RamBase errors on new company creation, approval rolls back. Pretec Sales retries manually.</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-green">
+    <strong>No open items</strong>
+    All decisions resolved.
+  </div>
+</div>
+
+<!-- I-5 -->
+<div class="spec-section" id="i5">
+  <div class="spec-header">
+    <div class="spec-badge">I-5 / F-8</div>
+    <div>
+      <div class="spec-title">Content Sync &amp; Rendering — Sanity → Storefront</div>
+      <div class="spec-desc">Editorial landing pages authored in Sanity are published to the Storefront via webhook in near-real-time.</div>
+    </div>
+  </div>
+  <div class="flow">
+    <span class="flow-chip">Sanity</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">Webhook</span><span class="flow-arrow">→</span>
+    <span class="flow-chip">Storefront</span>
+    <span class="flow-note">— near-real-time on publish</span>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Phase 1 content types</td><td>Editorial landing pages only (About, Contact, Terms, Privacy, etc.). Category banners and campaign banners are Phase 2.</td></tr>
+      <tr><td>Navigation</td><td>Driven automatically from catalog category tree — not managed in Sanity. No mega menu authoring needed.</td></tr>
+      <tr><td>Delivery mechanism</td><td>Sanity webhook → near-real-time storefront update (seconds to minutes after publish)</td></tr>
+      <tr><td>Draft/publish</td><td>Standard Sanity workflow. Drafts not visible on live storefront.</td></tr>
+      <tr><td>Unpublish</td><td>URL returns 404</td></tr>
+      <tr><td>Assets</td><td>Hosted on Sanity CDN. Separate from product assets in Struct.</td></tr>
+      <tr><td>Sanity/Struct boundary</td><td>Editorial pages → Sanity. Product descriptions, images, category descriptions → Struct.</td></tr>
+      <tr><td>Not Harmony</td><td>Content sync uses Sanity's own webhook, not Harmony.</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Final list of editorial pages needed at launch</li>
+      <li>Additional content fields beyond rich text (hero image, CTA button)</li>
+      <li>Who at Pretec has publishing rights in Sanity Studio</li>
+    </ul>
+  </div>
+</div>
+
+<!-- I-6 -->
+<div class="spec-section" id="i6">
+  <div class="spec-header">
+    <div class="spec-badge">I-6</div>
+    <div>
+      <div class="spec-title">RamBase API Integration — Auth, Credentials, Scoping</div>
+      <div class="spec-desc">The shared integration foundation for all RamBase-connected services: authentication, credential management, query model, and known document types.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Authentication &amp; credentials</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Grant type</td><td>OAuth 2.0 Client Credentials</td></tr>
+      <tr><td>Token endpoint</td><td><code>POST https://api.rambase.net/oauth2/access_token</code></td></tr>
+      <tr><td>Token transmission</td><td><code>Authorization: Bearer</code> header</td></tr>
+      <tr><td>Token reuse</td><td>Cached until expiry or 401 response, then re-requested</td></tr>
+      <tr><td>Company selector</td><td><code>$db</code> query parameter on every request</td></tr>
+      <tr><td>Credential sets</td><td>Two: test (Mosaik test + staging) and production. Stored in Infisical, never committed.</td></tr>
+      <tr><td>Customer scoping</td><td>Single system credential. Customer ID passed as <code>$filter</code> parameter per request — frontend never sends customer ID.</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">RamBase document types in use</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Code</th><th>Name</th><th>Used by</th></tr>
+      <tr><td>ART / IPA / PLI</td><td>Product / Item Price Agreement / Price List</td><td>Price (S-2)</td></tr>
+      <tr><td>CRQ / CQU</td><td>Sales Quote Request / Sales Quote</td><td>Quote / checkout (S-4)</td></tr>
+      <tr><td>COA</td><td>Sales Order</td><td>Min side (S-5)</td></tr>
+      <tr><td>CUS</td><td>Customer</td><td>Customer resolution, delivery address</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Standard query parameters</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Parameter</th><th>Purpose</th></tr>
+      <tr><td><code>$db</code></td><td>Company database (required on all requests)</td></tr>
+      <tr><td><code>$filter</code></td><td>Filter expression for customer scoping and date/status filters</td></tr>
+      <tr><td><code>$top</code> / <code>$pageKey</code></td><td>Cursor-based pagination (not <code>$pageno</code>)</td></tr>
+      <tr><td><code>$inlineCount=allpages</code></td><td>Total record count in response</td></tr>
+      <tr><td><code>$showDomainValues=true</code></td><td>Readable labels for numeric status codes</td></tr>
+      <tr><td><code>$orderBy</code>, <code>$select</code>, <code>$expand</code></td><td>Sort, field selection, nested field expansion</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items — require RamBase API credentials to resolve</strong>
+    <ul>
+      <li>Price-lookup endpoint for (product, customer) without creating a quote</li>
+      <li>Whether one system account can read prices for any customer by parameter</li>
+      <li>Exact <code>$filter</code> field paths for date range, status, and PO number on orders</li>
+      <li>Quote create endpoint, path, method, and required field schema</li>
+      <li>PDF retrieval for order confirmations and invoices</li>
+      <li>Per-resource rate limits and throttling behaviour</li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ SERVICES -->
+<div class="chapter" id="services">
+  <div class="chapter-label">Section 2</div>
+  <div class="chapter-title">Services</div>
+</div>
+<hr class="chapter-rule"/>
+
+<!-- S-1 -->
+<div class="spec-section" id="s1">
+  <div class="spec-header">
+    <div class="spec-badge">S-1</div>
+    <div>
+      <div class="spec-title">Pretec Service API — Platform Overview</div>
+      <div class="spec-desc">Geta-built .NET service that wraps the RamBase API and exposes live commerce operations to the Mosaik Storefront via standard Mosaik contracts.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Architecture</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Runtime</td><td>.NET service on AWS EKS, in the Istio service mesh alongside standard Mosaik services</td></tr>
+      <tr><td>Routing</td><td>Istio VirtualService — <code>/price</code>, <code>/cart</code>, <code>/quote</code>, <code>/orders</code> routed to Pretec Service API; all else to standard Mosaik services</td></tr>
+      <tr><td>Storefront view</td><td>One base URL — storefront cannot distinguish Pretec API from Mosaik platform services</td></tr>
+      <tr><td>API contracts</td><td>Mirrors standard Mosaik contracts — enables no-fork starterkit reuse</td></tr>
+      <tr><td>Storage</td><td>MongoDB (EKS) for service-owned cart state</td></tr>
+      <tr><td>Observability</td><td>OpenTelemetry (OTEL) → Grafana</td></tr>
+      <tr><td>Consumer</td><td>Mosaik Storefront only</td></tr>
+    </table></div>
+  </div>
+</div>
+
+<!-- S-2 -->
+<div class="spec-section" id="s2">
+  <div class="spec-header">
+    <div class="spec-badge">S-2</div>
+    <div>
+      <div class="spec-title">Price Service</div>
+      <div class="spec-desc">Live batch per-user B2B price lookup from RamBase, fetched client-side after catalog render.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Fetch pattern</td><td>Catalog renders first (no RamBase dependency). Prices fetched client-side in a batch call after render.</td></tr>
+      <tr><td>Scope</td><td>Logged-in, approved users only. Anonymous users see no prices — no "log in to see price" prompt.</td></tr>
+      <tr><td>Currency / VAT</td><td>NOK, ex-VAT only. No VAT amounts shown anywhere.</td></tr>
+      <tr><td>Loading state</td><td>"Henter pris…" shown while fetching</td></tr>
+      <tr><td>Degradation</td><td>"Pris på forespørsel" on timeout or error. RamBase handles fallback (customer price → list price); storefront never distinguishes the two.</td></tr>
+      <tr><td>Caching</td><td>None in Phase 1. Redis an option if latency requires it.</td></tr>
+      <tr><td>Tiered pricing</td><td>Not in Phase 1 — one price per (product, customer)</td></tr>
+      <tr><td>Retail price comparison</td><td>Phase 2 (customer requirement 2.6.2)</td></tr>
+    </table></div>
+  </div>
+</div>
+
+<!-- S-3 -->
+<div class="spec-section" id="s3">
+  <div class="spec-header">
+    <div class="spec-badge">S-3</div>
+    <div>
+      <div class="spec-title">Cart Service</div>
+      <div class="spec-desc">Service-owned cart stored in MongoDB, mirroring the standard Mosaik cart-public API contract.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Storage</td><td>MongoDB (EKS). Keyed by RamBase customer ID resolved from logged-in user's Mosaik mapping.</td></tr>
+      <tr><td>Scope</td><td>Per individual user. Each user has their own cart.</td></tr>
+      <tr><td>Contract</td><td>Mirrors standard Mosaik cart-public API</td></tr>
+      <tr><td>TTL</td><td>90 days, sliding — reset to 90 days on every read or write</td></tr>
+      <tr><td>Expiry</td><td>Silent deletion — no notification to the user</td></tr>
+      <tr><td>Cart cleared</td><td>Automatically on successful quote submission</td></tr>
+      <tr><td>Price storage</td><td>Prices not stored as truth on lines — fetched live for display</td></tr>
+      <tr><td>Access</td><td>Logged-in, approved users only. No anonymous cart.</td></tr>
+    </table></div>
+  </div>
+</div>
+
+<!-- S-4 -->
+<div class="spec-section" id="s4">
+  <div class="spec-header">
+    <div class="spec-badge">S-4</div>
+    <div>
+      <div class="spec-title">Quote / Checkout Service</div>
+      <div class="spec-desc">Creates a RamBase sales quote from the cart. Always request-for-quote — no firm online ordering.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Document type</td><td>RamBase Sales Quote (CRQ → CQU → COA on Sales conversion)</td></tr>
+      <tr><td>Endpoint</td><td><code>POST /carts/{id}/create-order-request</code></td></tr>
+      <tr><td>Checkout fields</td><td>Customer reference / PO (optional), delivery address (required), requested delivery date (optional), comment (optional)</td></tr>
+      <tr><td>On success</td><td>Cart cleared; on-screen confirmation. No confirmation email in Phase 1.</td></tr>
+      <tr><td>On failure</td><td>Clear, retryable error on page. Cart preserved. Never silently dropped.</td></tr>
+      <tr><td>Retry</td><td>User retries manually. No automatic retry (write safety).</td></tr>
+      <tr><td>Idempotency</td><td>No idempotency key in Phase 1. Duplicate-quote risk mitigated by Sales review.</td></tr>
+      <tr><td>Quotes in Min side</td><td>Not shown — Min side shows orders and invoices only.</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Custom delivery address in Phase 1 — or saved RamBase addresses only (decision deferred)</li>
+      <li>RamBase quote endpoint and required field mapping (blocked on credentials — see I-6)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- S-5 -->
+<div class="spec-section" id="s5">
+  <div class="spec-header">
+    <div class="spec-badge">S-5</div>
+    <div>
+      <div class="spec-title">Query Service — Min side (Orders &amp; Invoices)</div>
+      <div class="spec-desc">Read-only order and invoice history from RamBase, scoped to the logged-in user's company.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Access</td><td>Logged-in, approved users only</td></tr>
+      <tr><td>Scope</td><td>Company-level — all users of the same company see the same order history</td></tr>
+      <tr><td>Phase 1 content</td><td>Sales orders only. No invoices, credit notes, or PDFs in Phase 1.</td></tr>
+      <tr><td>Filters</td><td>Date range, order status, order / reference number (free-text search)</td></tr>
+      <tr><td>Default sort</td><td>Newest first</td></tr>
+      <tr><td>Pagination</td><td>Cursor-based (<code>$top</code> / <code>$pageKey</code> with <code>$inlineCount=allpages</code>)</td></tr>
+      <tr><td>RamBase scoping</td><td><code>$filter</code> on customer ID resolved from the Mosaik mapping</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>RamBase order status field names and domain values (blocked on credentials — see I-6)</li>
+      <li>Norwegian order status display labels (confirm with Pretec)</li>
+      <li>Page size for order list</li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ FUNCTIONAL -->
+<div class="chapter" id="functional">
+  <div class="chapter-label">Section 3</div>
+  <div class="chapter-title">Functional Capabilities</div>
+</div>
+<hr class="chapter-rule"/>
+
+<!-- F-1 -->
+<div class="spec-section" id="f1">
+  <div class="spec-header">
+    <div class="spec-badge">F-1</div>
+    <div>
+      <div class="spec-title">Catalog &amp; Product Browsing</div>
+      <div class="spec-desc">Category listing pages, product detail pages, and variant selection — available to anonymous and logged-in users.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Access model</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Capability</th><th>Anonymous</th><th>Logged-in</th></tr>
+      <tr><td>Browse categories and products</td><td>✅</td><td>✅</td></tr>
+      <tr><td>Product enrichment, images, documents</td><td>✅</td><td>✅</td></tr>
+      <tr><td>Availability (In stock / Out of stock)</td><td>❌</td><td>✅</td></tr>
+      <tr><td>Customer-specific prices</td><td>❌</td><td>✅</td></tr>
+      <tr><td>Add to cart / checkout</td><td>❌</td><td>✅</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Product name</td><td>From Struct (overrides RamBase ERP name)</td></tr>
+      <tr><td>Category depth</td><td>Up to 4 levels: Segment → K1 → K2 → K3</td></tr>
+      <tr><td>Default sort</td><td>Creation date, newest first</td></tr>
+      <tr><td>Pagination</td><td>Page-based (not infinite scroll). Page size = Mosaik default.</td></tr>
+      <tr><td>Variants</td><td>Variant selector on detail page. Selecting a variant updates SKU, availability, price without page reload. URL updates for linkability.</td></tr>
+      <tr><td>Deactivated product URL</td><td>Shows "Ikke lenger tilgjengelig". No add-to-cart, no price.</td></tr>
+      <tr><td>Availability display</td><td>"På lager" / "Ikke på lager" — logged-in only</td></tr>
+      <tr><td>Price display</td><td>"Henter pris…" → price or "Pris på forespørsel" — logged-in only</td></tr>
+      <tr><td>Breadcrumbs</td><td>Full category path, all levels clickable</td></tr>
+    </table></div>
+  </div>
+</div>
+
+<!-- F-2 -->
+<div class="spec-section" id="f2">
+  <div class="spec-header">
+    <div class="spec-badge">F-2</div>
+    <div>
+      <div class="spec-title">Search &amp; Filtering</div>
+      <div class="spec-desc">Full-text search and faceted filtering powered by the Mosaik search-catalog-public API, available to all users.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Search engine</td><td>Mosaik search-catalog-public API (<code>GET /search</code>, <code>GET /facets</code>, <code>POST /aggregate-search</code>)</td></tr>
+      <tr><td>Search access</td><td>Available to all users (anonymous and logged-in)</td></tr>
+      <tr><td>Searchable fields</td><td>Product name, article number / SKU, product description</td></tr>
+      <tr><td>Autocomplete</td><td>None — search triggered on explicit submit</td></tr>
+      <tr><td>Filters</td><td>Category (all users), product attributes / facets (all users), availability toggle (logged-in only)</td></tr>
+      <tr><td>Sort options</td><td>Newest first (default), product name A–Z</td></tr>
+      <tr><td>Facets</td><td>Driven by Struct attribute fields. Dynamic — only values with matching products shown.</td></tr>
+      <tr><td>Availability filter</td><td>Passes <code>IsInStock: true/false</code>. Logged-in only.</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Specific product attribute fields to expose as facets (depends on Struct enrichment schema agreed in I-1)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- F-3 -->
+<div class="spec-section" id="f3">
+  <div class="spec-header">
+    <div class="spec-badge">F-3</div>
+    <div>
+      <div class="spec-title">Pricing Display</div>
+      <div class="spec-desc">Customer-specific B2B prices fetched live, shown ex-VAT in NOK, with graceful loading and fallback states.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>State</th><th>Display</th><th>Shown to</th></tr>
+      <tr><td>Anonymous</td><td>Price area absent — no prompt</td><td>—</td></tr>
+      <tr><td>Loading</td><td>"Henter pris…"</td><td>Logged-in</td></tr>
+      <tr><td>Price returned</td><td>Price, NOK, ex-VAT</td><td>Logged-in</td></tr>
+      <tr><td>No price / error</td><td>"Pris på forespørsel"</td><td>Logged-in</td></tr>
+    </table></div>
+    <div class="tbl-wrap" style="margin-top:12px;"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Fetch pattern</td><td>Catalog renders first. Batch price fetch client-side after render.</td></tr>
+      <tr><td>Fallback logic</td><td>RamBase handles fallback (customer price → list price). Storefront only receives a price or nothing.</td></tr>
+      <tr><td>VAT</td><td>Ex-VAT only. No VAT amounts anywhere.</td></tr>
+      <tr><td>Retail price comparison</td><td>Phase 2</td></tr>
+      <tr><td>Tiered pricing</td><td>Phase 1: one price per (product, customer)</td></tr>
+    </table></div>
+  </div>
+</div>
+
+<!-- F-4 -->
+<div class="spec-section" id="f4">
+  <div class="spec-header">
+    <div class="spec-badge">F-4</div>
+    <div>
+      <div class="spec-title">Cart UX</div>
+      <div class="spec-desc">Per-user cart with quantity input on listing cards, 90-day sliding expiry, and live price display per line.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Cart scope</td><td>Per individual user (not shared per company)</td></tr>
+      <tr><td>Add from listing</td><td>Quantity input field on each product card — user sets quantity before adding</td></tr>
+      <tr><td>OOS in cart</td><td>Warning shown on affected line. Does not block checkout — informational only.</td></tr>
+      <tr><td>TTL</td><td>90 days, sliding. Silent deletion on expiry — no notification.</td></tr>
+      <tr><td>Price per line</td><td>"Henter pris…" while loading, then ex-VAT NOK or "Pris på forespørsel"</td></tr>
+      <tr><td>Cleared on success</td><td>Cart cleared automatically on successful quote submission</td></tr>
+      <tr><td>Re-order / saved carts</td><td>Phase 2</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Cart total when one or more lines show "Pris på forespørsel" — exclude from sum or show total as "Pris på forespørsel"</li>
+      <li>Minimum order quantity per product — confirm with Pretec</li>
+    </ul>
+  </div>
+</div>
+
+<!-- F-5 -->
+<div class="spec-section" id="f5">
+  <div class="spec-header">
+    <div class="spec-badge">F-5</div>
+    <div>
+      <div class="spec-title">Checkout &amp; Quote UX</div>
+      <div class="spec-desc">Single-page checkout that submits the cart as a RamBase request-for-quote. No online payment.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Model</td><td>Always request-for-quote. No firm online ordering, no payment.</td></tr>
+      <tr><td>Checkout fields</td><td>Customer reference / PO (optional), delivery address (required), delivery date (optional), comment (optional)</td></tr>
+      <tr><td>Layout</td><td>Single page — no multi-step wizard</td></tr>
+      <tr><td>On success</td><td>On-screen confirmation with quote summary. Cart cleared. No email in Phase 1.</td></tr>
+      <tr><td>On failure</td><td>Error on page, cart preserved, retry available. Never silently dropped.</td></tr>
+      <tr><td>Submit button</td><td>Disabled while submission in flight (prevents duplicate submission)</td></tr>
+      <tr><td>Quotes in Min side</td><td>Not shown — handled by Pretec Sales in RamBase</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Custom delivery address entry in Phase 1 — or saved RamBase addresses only (decision deferred)</li>
+      <li>Exact wording for submit button and confirmation page</li>
+    </ul>
+  </div>
+</div>
+
+<!-- F-6 -->
+<div class="spec-section" id="f6">
+  <div class="spec-header">
+    <div class="spec-badge">F-6</div>
+    <div>
+      <div class="spec-title">My Page / Min side</div>
+      <div class="spec-desc">Company-shared order history from RamBase with date/status/reference filters. Orders only in Phase 1.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Access</td><td>Logged-in, approved users only</td></tr>
+      <tr><td>Scope</td><td>Company-level — all users of the same company see the same history</td></tr>
+      <tr><td>Phase 1 content</td><td>Sales orders only. No invoices, credit notes, PDFs.</td></tr>
+      <tr><td>Filters</td><td>Date range, order status (dropdown), order / reference number (free-text)</td></tr>
+      <tr><td>Default sort</td><td>Newest first</td></tr>
+      <tr><td>Order detail</td><td>Order number, date, status, PO/reference, delivery address, lines with product/SKU/qty/price, total</td></tr>
+      <tr><td>Invoices / PDFs</td><td>Phase 2</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>RamBase order status field names and domain values (blocked on I-6 credentials)</li>
+      <li>Norwegian order status display labels (confirm with Pretec)</li>
+      <li>Page size for order list</li>
+    </ul>
+  </div>
+</div>
+
+<!-- F-7 -->
+<div class="spec-section" id="f7">
+  <div class="spec-header">
+    <div class="spec-badge">F-7</div>
+    <div>
+      <div class="spec-title">Customer Registration &amp; Approval</div>
+      <div class="spec-desc">Invitation-based onboarding: company application → Maestro approval → RamBase company created → invitation → account created at acceptance.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Account states</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>State</th><th>Description</th></tr>
+      <tr><td>Anonymous</td><td>Browsing only. No account.</td></tr>
+      <tr><td>Application pending</td><td>Application submitted. No account yet. Pretec Sales reviews.</td></tr>
+      <tr><td>Approved / invited</td><td>Approval granted. Company in RamBase. Invitation sent. No account yet.</td></tr>
+      <tr><td>Active</td><td>Invitation accepted. Cognito user created. Mosaik mapping recorded. Full B2B access.</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Phone at registration</td><td>Required</td></tr>
+      <tr><td>Invitation expiry</td><td>7 days</td></tr>
+      <tr><td>Resend</td><td>Available in Maestro (Pretec Sales)</td></tr>
+      <tr><td>Additional users</td><td>Same invitation flow, but contact information only — no company fields</td></tr>
+      <tr><td>Deactivation</td><td>Blocked on next Harmony sync (up to 10 min after RamBase change)</td></tr>
+      <tr><td>De-duplication</td><td>Org number matched against RamBase. Match → application blocked.</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Invitation email content and branding</li>
+      <li>Who at Pretec has org-admin approval rights</li>
+    </ul>
+  </div>
+</div>
+
+<!-- F-8 -->
+<div class="spec-section" id="f8">
+  <div class="spec-header">
+    <div class="spec-badge">F-8</div>
+    <div>
+      <div class="spec-title">Content Rendering</div>
+      <div class="spec-desc">Editorial landing pages from Sanity rendered in the Storefront. Navigation driven automatically from catalog category tree.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Phase 1 scope</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Content type</th><th>Phase 1</th><th>Notes</th></tr>
+      <tr><td>Editorial landing pages</td><td>✅</td><td>About, Contact, Terms, Privacy, etc.</td></tr>
+      <tr><td>Category content (banners)</td><td>❌</td><td>Phase 2</td></tr>
+      <tr><td>Campaign / promo banners</td><td>❌</td><td>Phase 2</td></tr>
+      <tr><td>Navigation (mega menu)</td><td>Auto from catalog</td><td>Not managed in Sanity</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Delivery</td><td>Sanity webhook → near-real-time (seconds to minutes after publish)</td></tr>
+      <tr><td>Navigation source</td><td>Catalog category tree — automatic, no Sanity authoring needed</td></tr>
+      <tr><td>Draft / publish</td><td>Standard Sanity workflow. Drafts not live.</td></tr>
+      <tr><td>Asset hosting</td><td>Sanity CDN</td></tr>
+    </table></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ AUTH -->
+<div class="chapter" id="auth">
+  <div class="chapter-label">Section 4</div>
+  <div class="chapter-title">Authentication &amp; Identity</div>
+</div>
+<hr class="chapter-rule"/>
+
+<!-- A-1 -->
+<div class="spec-section" id="a1">
+  <div class="spec-header">
+    <div class="spec-badge">A-1</div>
+    <div>
+      <div class="spec-title">Authentication &amp; Identity</div>
+      <div class="spec-desc">AWS Cognito for identity. RamBase customer resolved server-side from the Mosaik mapping — never as a token claim.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Identity provider</td><td>AWS Cognito</td></tr>
+      <tr><td>Token validated</td><td>ID token (not access token) — avoids Cognito Plus tier</td></tr>
+      <tr><td>Custom token claims</td><td>None — no <code>rambaseCustomerId</code> claim</td></tr>
+      <tr><td>Pre-Token-Generation Lambda</td><td>Not used</td></tr>
+      <tr><td>Customer resolution</td><td>Per request: Service API calls Mosaik <code>GET /customers/current</code> with authenticated subject. Returns RamBase Company ID.</td></tr>
+      <tr><td>No-mapping handling</td><td>"Not onboarded" state — never a 500. User sees clear message to contact Pretec.</td></tr>
+      <tr><td>Session timeout</td><td>8 hours</td></tr>
+      <tr><td>SSO</td><td>Phase 2</td></tr>
+      <tr><td>RamBase auth</td><td>OAuth2 Client Credentials (system credential, not per-user) — see I-6</td></tr>
+      <tr><td>Account creation</td><td>At invitation acceptance — see F-7</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Confirm single system account can read prices for any customer by parameter (to verify during build)</li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ CONFIG -->
+<div class="chapter" id="config">
+  <div class="chapter-label">Section 5</div>
+  <div class="chapter-title">Platform Configuration</div>
+</div>
+<hr class="chapter-rule"/>
+
+<!-- C-1 -->
+<div class="spec-section" id="c1">
+  <div class="spec-header">
+    <div class="spec-badge">C-1</div>
+    <div>
+      <div class="spec-title">Harmony Sync Configuration</div>
+      <div class="spec-desc">Cross-cutting engine configuration: cadence, initial vs. delta load, conflict rules, error handling, and monitoring for all Harmony sync flows.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">All sync flows</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Flow</th><th>Direction</th><th>Cadence</th></tr>
+      <tr><td>I-1 Product &amp; Category</td><td>RamBase → Struct</td><td>Every 10 min, delta</td></tr>
+      <tr><td>I-2 Catalog publish</td><td>Struct → Storefront Catalog</td><td>Every 10 min, delta</td></tr>
+      <tr><td>I-3 Inventory</td><td>RamBase → Storefront Catalog</td><td>Every 10 min, delta</td></tr>
+      <tr><td>I-4 Customer sync</td><td>RamBase → Mosaik</td><td>Every 10 min, delta</td></tr>
+      <tr><td>I-5 Content (Sanity)</td><td>Sanity → Storefront</td><td>Webhook — not Harmony</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Initial full load</td><td>Full sync of all records at go-live; delta thereafter. High-volume loads scheduled outside peak hours.</td></tr>
+      <tr><td>Conflict handling</td><td>RamBase wins on I-1/I-3/I-4. Struct wins on I-2. No write-back to RamBase in Phase 1.</td></tr>
+      <tr><td>Partial failure</td><td>Per-record isolation — one failing record does not block the rest</td></tr>
+      <tr><td>Retry</td><td>Automatic on next cycle after data correction — no manual intervention</td></tr>
+      <tr><td>Failure logging</td><td>Record ID, reason, timestamp, source/target — visible in Harmony / Maestro operations view</td></tr>
+      <tr><td>Technical failures</td><td>Geta responds</td></tr>
+      <tr><td>Data-quality failures</td><td>Pretec corrects source data in RamBase or Struct</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Total product volume and daily change rate (Pretec to confirm before go-live)</li>
+      <li>Operational contact at Pretec for sync failure alerts</li>
+      <li>Go-live timing for initial full load</li>
+    </ul>
+  </div>
+</div>
+
+<!-- C-2 -->
+<div class="spec-section" id="c2">
+  <div class="spec-header">
+    <div class="spec-badge">C-2</div>
+    <div>
+      <div class="spec-title">Maestro Backoffice Usage</div>
+      <div class="spec-desc">Mosaik Maestro used as-provided — no custom development. Pretec manages customer approvals, redirects, and user access.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Feature usage</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Feature</th><th>Used for</th><th>Operator</th></tr>
+      <tr><td>Customer approval</td><td>Review applications, send/resend invitations</td><td>Pretec Sales</td></tr>
+      <tr><td>User management</td><td>View and manage storefront users</td><td>Pretec (multiple roles)</td></tr>
+      <tr><td>Redirects</td><td>URL redirect management (self-service)</td><td>Pretec — self-service</td></tr>
+      <tr><td>Translations</td><td>UI string overrides</td><td>Geta (Norwegian only, minimal)</td></tr>
+      <tr><td>Service versions</td><td>Deployed service version management</td><td>Geta operations</td></tr>
+      <tr><td>Harmony sync ops</td><td>Sync run status and failure logs</td><td>Geta operations</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Access model</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Pretec role</th><th>Maestro access</th></tr>
+      <tr><td>Sales</td><td>Customer approval, invitations, user management</td></tr>
+      <tr><td>Marketing / content</td><td>Redirects</td></tr>
+      <tr><td>Operations / admin</td><td>User management, redirects, general visibility</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Full list of Pretec users requiring Maestro access (names and roles)</li>
+      <li>Pretec contact for escalating Maestro issues</li>
+    </ul>
+  </div>
+</div>
+
+<!-- C-3 -->
+<div class="spec-section" id="c3">
+  <div class="spec-header">
+    <div class="spec-badge">C-3</div>
+    <div>
+      <div class="spec-title">Storefront Customization</div>
+      <div class="spec-desc">No-fork model: core starterkit unmodified; Pretec requirements applied via theme config and starterkit extensions.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Customization model</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Approach</th><th>What</th></tr>
+      <tr><td>Configuration</td><td>Branding (logo, colors, typography), navigation driven from catalog, default sort, feature flags</td></tr>
+      <tr><td>Starterkit extension</td><td>Anonymous vs. logged-in price/cart rendering, "Ikke lenger tilgjengelig" state, invitation-based onboarding flow (new page set)</td></tr>
+      <tr><td>As-provided (no changes)</td><td>Product listing/detail, search/filtering, cart components, Cognito auth, Maestro, Harmony, Sanity Studio, CDN</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Upgrade strategy</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Update type</th><th>Responsibility</th><th>Process</th></tr>
+      <tr><td>Security / critical patches</td><td>Geta (proactive)</td><td>Applied to test; promoted after smoke test</td></tr>
+      <tr><td>Minor releases</td><td>Pretec-initiated</td><td>Geta applies to test; Pretec validates; promotes to production</td></tr>
+      <tr><td>Major Mosaik releases</td><td>Pretec-initiated</td><td>Geta assesses breaking changes; scoped as change request</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Pretec brand guidelines and design assets (provide to Geta before design/build begins)</li>
+      <li>Exact typefaces and color tokens for Pretec theme</li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ CROSS-CUTTING -->
+<div class="chapter" id="cross-cutting">
+  <div class="chapter-label">Section 6</div>
+  <div class="chapter-title">Cross-cutting &amp; Non-functional</div>
+</div>
+<hr class="chapter-rule"/>
+
+<!-- X-1 -->
+<div class="spec-section" id="x1">
+  <div class="spec-header">
+    <div class="spec-badge">X-1</div>
+    <div>
+      <div class="spec-title">Localization &amp; Markets</div>
+      <div class="spec-desc">Norwegian only, NOK only, ex-VAT. Data layer is locale-ready; UI ships with a single locale and no language switcher.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="tbl-wrap"><table>
+      <tr><th>Dimension</th><th>Phase 1</th></tr>
+      <tr><td>Language</td><td>Norwegian only</td></tr>
+      <tr><td>Market</td><td>Norway only</td></tr>
+      <tr><td>Currency</td><td>NOK only</td></tr>
+      <tr><td>VAT display</td><td>Ex-VAT (net). No VAT amounts shown.</td></tr>
+      <tr><td>Language switcher</td><td>Not built. No locale prefix in URLs.</td></tr>
+      <tr><td>URL structure</td><td>No locale prefix (e.g. <code>/produkter/...</code>). Trade-off: adding a second locale later requires redirects (managed via Maestro).</td></tr>
+      <tr><td>Data layer</td><td>Locale-ready — Sanity and Struct models support per-locale values for future expansion without schema migration.</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Text ownership</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Text type</th><th>Managed in</th></tr>
+      <tr><td>Storefront UI strings</td><td>Maestro translations</td></tr>
+      <tr><td>Editorial content</td><td>Sanity (authored by Pretec)</td></tr>
+      <tr><td>Product data</td><td>Struct (enriched by Pretec)</td></tr>
+      <tr><td>ERP-controlled text</td><td>RamBase (as-is, not localized)</td></tr>
+    </table></div>
+  </div>
+</div>
+
+<!-- X-2 -->
+<div class="spec-section" id="x2">
+  <div class="spec-header">
+    <div class="spec-badge">X-2</div>
+    <div>
+      <div class="spec-title">Environments &amp; Deployment</div>
+      <div class="spec-desc">Three environments: test, staging/UAT, production. Pretec must approve staging before any production deployment.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Environment mapping</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Mosaik env</th><th>RamBase</th><th>Struct</th><th>Sanity</th><th>Secrets</th></tr>
+      <tr><td>Test</td><td>Test</td><td>Test</td><td>Test dataset</td><td>Infisical (test)</td></tr>
+      <tr><td>Staging / UAT</td><td>Test</td><td>Test</td><td>Staging dataset</td><td>Infisical (staging)</td></tr>
+      <tr><td>Production</td><td>Production</td><td>Production</td><td>Production dataset</td><td>Infisical (production)</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Release gate</td><td>Pretec tests and approves on staging before any production deployment</td></tr>
+      <tr><td>Production re-test</td><td>Re-test in production before go-live</td></tr>
+      <tr><td>Secrets management</td><td>Infisical, per-environment. Never committed or baked into images.</td></tr>
+      <tr><td>Credential sets</td><td>RamBase: 2 (test shares test+staging); Struct: 2; Sanity: 3 datasets</td></tr>
+      <tr><td>PII</td><td>Production PII never copied into test or staging</td></tr>
+      <tr><td>Platform upgrades</td><td>Geta validates on staging; Pretec approves promotion to production</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>RamBase <code>$db</code> (company database) value per environment — confirm with Pretec</li>
+    </ul>
+  </div>
+</div>
+
+<!-- X-3 -->
+<div class="spec-section" id="x3">
+  <div class="spec-header">
+    <div class="spec-badge">X-3</div>
+    <div>
+      <div class="spec-title">Observability &amp; Monitoring</div>
+      <div class="spec-desc">OpenTelemetry → Grafana. Hard failures alert to Slack/email. Pretec has read-only access to a business-facing sync dashboard.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Telemetry</td><td>OpenTelemetry (traces, metrics, logs) → Grafana</td></tr>
+      <tr><td>Geta ops dashboard</td><td>Full technical view: Service API latency/errors, RamBase health, MongoDB, sync internals</td></tr>
+      <tr><td>Pretec business dashboard</td><td>Read-only: per-flow sync status, last-successful-sync timestamp, failed-record counts</td></tr>
+      <tr><td>Alerts</td><td>Sync job failed, Service API down, RamBase unreachable → Slack + email</td></tr>
+      <tr><td>Degradation alerts</td><td>Dashboard-only in Phase 1 (no numeric SLO yet)</td></tr>
+      <tr><td>Log retention</td><td>~30 days</td></tr>
+      <tr><td>PII in logs</td><td>None — logs use identifiers (customer/cart IDs), not personal data</td></tr>
+      <tr><td>Technical failures</td><td>Geta first responder</td></tr>
+      <tr><td>Business sync issues</td><td>Pretec first responder (business hours), escalates to Geta</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Numeric SLOs deferred — set post-launch with real traffic data</li>
+    </ul>
+  </div>
+</div>
+
+<!-- X-4 -->
+<div class="spec-section" id="x4">
+  <div class="spec-header">
+    <div class="spec-badge">X-4</div>
+    <div>
+      <div class="spec-title">Resilience &amp; Error Handling</div>
+      <div class="spec-desc">Catalog and inventory remain usable during RamBase outages. Prices degrade to "Pris på forespørsel". Quote failures are retryable, never silent.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Timeout &amp; retry policy</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Call type</th><th>Timeout</th><th>Retry</th></tr>
+      <tr><td>Idempotent reads (price, orders)</td><td>~3 seconds</td><td>1 automatic retry</td></tr>
+      <tr><td>Writes (quote submission)</td><td>~3 seconds</td><td>No automatic retry</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Graceful degradation</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Capability</th><th>If RamBase unavailable</th></tr>
+      <tr><td>Catalog browsing</td><td>Unaffected — served from synced data</td></tr>
+      <tr><td>Inventory display</td><td>Last synced state shown (may be slightly stale)</td></tr>
+      <tr><td>Price display</td><td>Degrades to "Pris på forespørsel"</td></tr>
+      <tr><td>Cart</td><td>Cart usable; price display degrades</td></tr>
+      <tr><td>Quote submission</td><td>Clear, retryable error. Cart preserved. Never silently dropped.</td></tr>
+      <tr><td>Min side (orders)</td><td>Clear error with retry action</td></tr>
+      <tr><td>Login / no mapping</td><td>"Not onboarded" state — never a 500</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-green">
+    <strong>No blocking open items</strong>
+    No circuit breaker in Phase 1 (accepted risk, revisit if needed). Timeout values tunable with real latency data.
+  </div>
+</div>
+
+<!-- X-5 -->
+<div class="spec-section" id="x5">
+  <div class="spec-header">
+    <div class="spec-badge">X-5</div>
+    <div>
+      <div class="spec-title">Security &amp; Data Privacy</div>
+      <div class="spec-desc">ID token validation, server-side customer resolution, EU/EEA data residency, two-tier role model, GDPR compliance.</div>
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Key decisions</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Token validation</td><td>ID token validated on every request (issuer, audience, signature, expiry)</td></tr>
+      <tr><td>Customer resolution</td><td>Server-side from Mosaik mapping. Client cannot spoof another customer's data.</td></tr>
+      <tr><td>Data residency</td><td>All PII in EU/EEA AWS region (e.g. eu-north-1)</td></tr>
+      <tr><td>Secrets</td><td>Per-environment in Infisical. Never committed.</td></tr>
+      <tr><td>Payment data</td><td>None — quote-only, no payments</td></tr>
+      <tr><td>Cart TTL</td><td>90 days sliding. Expires silently.</td></tr>
+      <tr><td>Log PII</td><td>None — identifiers only</td></tr>
+    </table></div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">User roles</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Role</th><th>Capabilities</th></tr>
+      <tr><td>Standard user</td><td>Company orders, quotes, documentation (My Page)</td></tr>
+      <tr><td>Org-admin</td><td>All standard + invite/manage/delete company's standard users</td></tr>
+    </table></div>
+    <div class="callout callout-green" style="margin-top:10px;">
+      Org-admin status is assigned by Pretec in RamBase only — users cannot self-promote or grant org-admin to others.
+    </div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Consent</div>
+    <div class="spec-body">Two consents per contact person: privacy policy accepted, marketing consent. Synced to <strong>RamBase Privacy</strong> (source of truth).</div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Retention &amp; deletion</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Data</th><th>Retention / deletion rule</th></tr>
+      <tr><td>Cart</td><td>90-day sliding TTL</td></tr>
+      <tr><td>Logs</td><td>~30 days</td></tr>
+      <tr><td>Contact deletion</td><td>RamBase-driven, propagates to Mosaik via I-4. Org-admin can delete standard users in-app.</td></tr>
+      <tr><td>Org-admin / company deletion</td><td>Requires contacting Pretec → actioned in RamBase → propagates to Mosaik</td></tr>
+    </table></div>
+  </div>
+  <div class="callout callout-yellow">
+    <strong>Open items</strong>
+    <ul>
+      <li>Maestro / backoffice Pretec staff role definitions (define with C-2)</li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════ OPEN ITEMS SUMMARY -->
+<div class="chapter" id="open-summary">
+  <div class="chapter-label">Section 7</div>
+  <div class="chapter-title">Open Items Summary</div>
+</div>
+<hr class="chapter-rule"/>
+
+<div class="spec-body" style="margin-bottom:20px;font-size:14px;color:var(--muted);">All genuine open items across every spec area. Items blocked on RamBase credentials are grouped separately — they resolve together once credentials are available.</div>
+
+<div style="background:var(--yellow-bg);border:1px solid var(--yellow-bd);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;">
+  <div style="font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:10px;">BLOCKING — RamBase API credentials needed (I-6)</div>
+  <div style="font-size:13px;color:var(--yellow);">These six items cannot be resolved from public documentation. They unblock together once Pretec provisions API credentials for the test environment.</div>
+  <ul style="margin:10px 0 0 16px;font-size:13px;color:var(--yellow);">
+    <li>Price-lookup endpoint for (product, customer) without creating a quote</li>
+    <li>Whether one system account can read prices for any customer by parameter</li>
+    <li>Exact <code>$filter</code> field paths for date range, status, and PO number on orders (affects F-6)</li>
+    <li>Quote create endpoint, method, and required field schema (affects F-5, S-4)</li>
+    <li>PDF retrieval for order confirmations and invoices</li>
+    <li>Per-resource rate limits and throttling behaviour</li>
+  </ul>
+</div>
+
+<div class="open-grid">
+  <div class="open-card">
+    <div class="open-card-title">I-2 Catalog publish</div>
+    <ul>
+      <li>Exact "Published for web" field name in Struct</li>
+      <li>Max assets per product</li>
+      <li>Category enrichment scope at launch</li>
+    </ul>
+  </div>
+  <div class="open-card">
+    <div class="open-card-title">I-3 Inventory sync</div>
+    <ul>
+      <li>RamBase available-quantity field + warehouse scope</li>
+      <li>Norwegian labels: "På lager" / "Ikke på lager"</li>
+    </ul>
+  </div>
+  <div class="open-card">
+    <div class="open-card-title">I-5 / F-8 Content (Sanity)</div>
+    <ul>
+      <li>Launch editorial page list</li>
+      <li>Additional content fields (hero image, CTA)</li>
+      <li>Who at Pretec has Sanity publishing rights</li>
+    </ul>
+  </div>
+  <div class="open-card">
+    <div class="open-card-title">F-4 Cart UX</div>
+    <ul>
+      <li>Cart total when lines show "Pris på forespørsel"</li>
+      <li>Minimum order quantity enforcement</li>
+    </ul>
+  </div>
+  <div class="open-card">
+    <div class="open-card-title">F-5 Checkout</div>
+    <ul>
+      <li>Custom delivery address in Phase 1 — or saved RamBase addresses only (deferred)</li>
+      <li>Wording for submit button and confirmation page</li>
+    </ul>
+  </div>
+  <div class="open-card">
+    <div class="open-card-title">F-6 Min side / S-5 Query</div>
+    <ul>
+      <li>RamBase order status field names and domain values</li>
+      <li>Norwegian order status display labels</li>
+      <li>Order list page size</li>
+    </ul>
+  </div>
+  <div class="open-card">
+    <div class="open-card-title">F-7 Registration</div>
+    <ul>
+      <li>Invitation email content and branding</li>
+      <li>Who at Pretec has org-admin approval rights</li>
+    </ul>
+  </div>
+  <div class="open-card">
+    <div class="open-card-title">C-1 Harmony config</div>
+    <ul>
+      <li>Total product volume and daily change rate</li>
+      <li>Operational contact at Pretec for sync alerts</li>
+      <li>Go-live timing for initial full load</li>
+    </ul>
+  </div>
+  <div class="open-card">
+    <div class="open-card-title">C-2 Maestro</div>
+    <ul>
+      <li>Full Pretec user list for Maestro access</li>
+      <li>Pretec escalation contact for Maestro issues</li>
+    </ul>
+  </div>
+  <div class="open-card">
+    <div class="open-card-title">C-3 Storefront customization</div>
+    <ul>
+      <li>Pretec brand guidelines and design assets</li>
+      <li>Typefaces and color tokens for Pretec theme</li>
+    </ul>
+  </div>
+  <div class="open-card">
+    <div class="open-card-title">X-2 Environments</div>
+    <ul>
+      <li>RamBase <code>$db</code> value per environment</li>
+    </ul>
+  </div>
+  <div class="open-card">
+    <div class="open-card-title">X-5 Security</div>
+    <ul>
+      <li>Maestro / backoffice Pretec staff role definitions</li>
+    </ul>
+  </div>
+</div>
+
+<div style="text-align:center;font-size:13px;color:var(--muted);margin-top:56px;">
+  Pretec Commerce Platform — Full Platform Specification — Prepared by Geta, June 2026
+</div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+// Highlight active nav link on scroll
+(function(){
+  const links = document.querySelectorAll('.nav-link');
+  const ids = Array.from(links).map(l => l.getAttribute('href').replace('#',''));
+  const sections = ids.map(id => document.getElementById(id)).filter(Boolean);
+  function onScroll(){
+    const y = window.scrollY + 80;
+    let active = sections[0];
+    for(const s of sections){ if(s && s.offsetTop <= y) active = s; }
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#'+(active&&active.id)));
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
+</body>
+</html>
